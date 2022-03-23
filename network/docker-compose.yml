@@ -1,0 +1,375 @@
+version: "3.7"
+
+networks:
+  fabric-ca:
+services:
+  ca-tls:
+    container_name: ca-tls
+    image: hyperledger/fabric-ca
+    command: sh -c 'fabric-ca-server start -d -b tls-ca-admin:tls-ca-adminpw --port 7052'
+    environment:
+      - FABRIC_CA_SERVER_HOME=/ca/tls
+      - FABRIC_CA_SERVER_TLS_ENABLED=true
+      - FABRIC_CA_SERVER_CSR_CN=ca-tls
+      - FABRIC_CA_SERVER_CSR_HOSTS=0.0.0.0
+      - FABRIC_CA_SERVER_PORT=7052
+      - FABRIC_CA_SERVER_DEBUG=true
+    volumes:
+      - ./:/ca
+    networks:
+      - fabric-ca
+    ports:
+      - 7052:7052
+
+  manufacturer:
+    container_name: manufacturer
+    image: hyperledger/fabric-ca
+    command: /bin/bash -c 'fabric-ca-server start -d -b manufacturer-admin:manufacturer-adminpw'
+    environment:
+      - FABRIC_CA_SERVER_HOME=/ca/manufacturer
+      - FABRIC_CA_SERVER_TLS_ENABLED=true
+      - FABRIC_CA_SERVER_CSR_CN=manufacturer
+      - FABRIC_CA_SERVER_CSR_HOSTS=0.0.0.0
+      - FABRIC_CA_SERVER_PORT=7053
+      - FABRIC_CA_SERVER_DEBUG=true
+    volumes:
+      - ./:/ca
+    networks:
+      - fabric-ca
+    ports:
+      - 7053:7053
+
+  supplier:
+    container_name: supplier
+    image: hyperledger/fabric-ca
+    command: /bin/bash -c 'fabric-ca-server start -d -b supplier-admin:supplier-adminpw'
+    environment:
+      - FABRIC_CA_SERVER_HOME=/ca/supplier
+      - FABRIC_CA_SERVER_TLS_ENABLED=true
+      - FABRIC_CA_SERVER_CSR_CN=supplier
+      - FABRIC_CA_SERVER_CSR_HOSTS=0.0.0.0
+      - FABRIC_CA_SERVER_PORT=7054
+      - FABRIC_CA_SERVER_DEBUG=true
+    volumes:
+      - ./:/ca
+    networks:
+      - fabric-ca
+    ports:
+      - 7054:7054
+
+  carrier:
+    container_name: carrier
+    image: hyperledger/fabric-ca
+    command: /bin/bash -c 'fabric-ca-server start -d -b carrier-admin:carrier-adminpw'
+    environment:
+      - FABRIC_CA_SERVER_HOME=/ca/carrier
+      - FABRIC_CA_SERVER_TLS_ENABLED=true
+      - FABRIC_CA_SERVER_CSR_CN=carrier
+      - FABRIC_CA_SERVER_CSR_HOSTS=0.0.0.0
+      - FABRIC_CA_SERVER_PORT=7055
+      - FABRIC_CA_SERVER_DEBUG=true
+    volumes:
+      - ./:/ca
+    networks:
+      - fabric-ca
+    ports:
+      - 7055:7055
+
+  middleman:
+    container_name: middleman
+    image: hyperledger/fabric-ca
+    command: /bin/bash -c 'fabric-ca-server start -d -b middleman-admin:middleman-adminpw'
+    environment:
+      - FABRIC_CA_SERVER_HOME=/ca/middleman
+      - FABRIC_CA_SERVER_TLS_ENABLED=true
+      - FABRIC_CA_SERVER_CSR_CN=middleman
+      - FABRIC_CA_SERVER_CSR_HOSTS=0.0.0.0
+      - FABRIC_CA_SERVER_PORT=7056
+      - FABRIC_CA_SERVER_DEBUG=true
+    volumes:
+      - ./:/ca
+    networks:
+      - fabric-ca
+    ports:
+      - 7056:7056
+
+  orderer-manufacturer:
+    container_name: orderer-manufacturer
+    image: hyperledger/fabric-orderer:2.4.2
+    environment:
+      - ORDERER_HOME=/tmp/hyperledger/manufacturer/orderer
+      - ORDERER_HOST=orderer-manufacturer
+      - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
+      - ORDERER_GENERAL_GENESISMETHOD=file
+      - ORDERER_GENERAL_GENESISFILE=/tmp/hyperledger/system-genesis-block/genesis.block
+      - ORDERER_GENERAL_LOCALMSPID=manufacturerMSP
+      - ORDERER_GENERAL_LOCALMSPDIR=/tmp/hyperledger/manufacturer/orderer/msp
+      - ORDERER_GENERAL_TLS_ENABLED=true
+      - ORDERER_GENERAL_TLS_CERTIFICATE=/tmp/hyperledger/manufacturer/orderer/tls/signcerts/cert.pem
+      - ORDERER_GENERAL_TLS_PRIVATEKEY=/tmp/hyperledger/manufacturer/orderer/tls/keystore/key.pem
+      - ORDERER_GENERAL_TLS_ROOTCAS=[/tmp/hyperledger/manufacturer/orderer/tls/tlscacerts/tls-0-0-0-0-7052.pem]
+      - ORDERER_GENERAL_LOGLEVEL=debug
+      - ORDERER_DEBUG_BROADCASTTRACEDIR=data/logs
+    volumes:
+      - ./manufacturer/orderer:/tmp/hyperledger/manufacturer/orderer
+      - ./system-genesis-block:/tmp/hyperledger/system-genesis-block
+    networks:
+      - fabric-ca
+
+  peer1-manufacturer:
+    container_name: peer1-manufacturer
+    image: hyperledger/fabric-peer
+    environment:
+      - CORE_PEER_ID=peer1-manufacturer
+      - CORE_PEER_ADDRESS=peer1-manufacturer:7051
+      - CORE_PEER_LOCALMSPID=manufacturerMSP
+      - CORE_PEER_MSPCONFIGPATH=/tmp/hyperledger/manufacturer/peer1/msp
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=cademo_fabric-ca
+      - FABRIC_LOGGING_SPEC=debug
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/tmp/hyperledger/manufacturer/peer1/tls/signcerts/cert.pem
+      - CORE_PEER_TLS_KEY_FILE=/tmp/hyperledger/manufacturer/peer1/tls/keystore/key.pem
+      - CORE_PEER_TLS_ROOTCERT_FILE=/tmp/hyperledger/manufacturer/peer1/tls/tlscacerts/tls-0-0-0-0-7052.pem
+      - CORE_PEER_GOSSIP_USELEADERELECTION=true
+      - CORE_PEER_GOSSIP_ORGLEADER=false
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1-manufacturer:7051
+      - CORE_PEER_GOSSIP_SKIPHANDSHAKE=true
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/manufacturer/peer1
+    volumes:
+      - /var/run:/host/var/run
+      - ./manufacturer/peer1:/tmp/hyperledger/manufacturer/peer1
+    networks:
+      - fabric-ca
+
+  peer2-manufacturer:
+    container_name: peer2-manufacturer
+    image: hyperledger/fabric-peer
+    environment:
+      - CORE_PEER_ID=peer2-manufacturer
+      - CORE_PEER_ADDRESS=peer2-manufacturer:7051
+      - CORE_PEER_LOCALMSPID=manufacturerMSP
+      - CORE_PEER_MSPCONFIGPATH=/tmp/hyperledger/manufacturer/peer2/msp
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=cademo_fabric-ca
+      - FABRIC_LOGGING_SPEC=debug
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/tmp/hyperledger/manufacturer/peer2/tls/signcerts/cert.pem
+      - CORE_PEER_TLS_KEY_FILE=/tmp/hyperledger/manufacturer/peer2/tls/keystore/key.pem
+      - CORE_PEER_TLS_ROOTCERT_FILE=/tmp/hyperledger/manufacturer/peer2/tls/tlscacerts/tls-0-0-0-0-7052.pem
+      - CORE_PEER_GOSSIP_USELEADERELECTION=true
+      - CORE_PEER_GOSSIP_ORGLEADER=false
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer2-manufacturer:7051
+      - CORE_PEER_GOSSIP_SKIPHANDSHAKE=true
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/manufacturer/peer2
+    volumes:
+      - /var/run:/host/var/run
+      - ./manufacturer/peer2:/tmp/hyperledger/manufacturer/peer2
+    networks:
+      - fabric-ca
+
+  peer1-supplier:
+    container_name: peer1-supplier
+    image: hyperledger/fabric-peer
+    environment:
+      - CORE_PEER_ID=peer1-supplier
+      - CORE_PEER_ADDRESS=peer1-supplier:7051
+      - CORE_PEER_LOCALMSPID=supplierMSP
+      - CORE_PEER_MSPCONFIGPATH=/tmp/hyperledger/supplier/peer1/msp
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=cademo_fabric-ca
+      - FABRIC_LOGGING_SPEC=debug
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/tmp/hyperledger/supplier/peer1/tls/signcerts/cert.pem
+      - CORE_PEER_TLS_KEY_FILE=/tmp/hyperledger/supplier/peer1/tls/keystore/key.pem
+      - CORE_PEER_TLS_ROOTCERT_FILE=/tmp/hyperledger/supplier/peer1/tls/tlscacerts/tls-0-0-0-0-7052.pem
+      - CORE_PEER_GOSSIP_USELEADERELECTION=true
+      - CORE_PEER_GOSSIP_ORGLEADER=false
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1-supplier:7051
+      - CORE_PEER_GOSSIP_SKIPHANDSHAKE=true
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/supplier/peer1
+    volumes:
+      - /var/run:/host/var/run
+      - ./supplier/peer1:/tmp/hyperledger/supplier/peer1
+    networks:
+      - fabric-ca
+
+  peer2-supplier:
+    container_name: peer2-supplier
+    image: hyperledger/fabric-peer
+    environment:
+      - CORE_PEER_ID=peer2-supplier
+      - CORE_PEER_ADDRESS=peer2-supplier:7051
+      - CORE_PEER_LOCALMSPID=supplierMSP
+      - CORE_PEER_MSPCONFIGPATH=/tmp/hyperledger/supplier/peer2/msp
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=cademo_fabric-ca
+      - FABRIC_LOGGING_SPEC=debug
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/tmp/hyperledger/supplier/peer2/tls/signcerts/cert.pem
+      - CORE_PEER_TLS_KEY_FILE=/tmp/hyperledger/supplier/peer2/tls/keystore/key.pem
+      - CORE_PEER_TLS_ROOTCERT_FILE=/tmp/hyperledger/supplier/peer2/tls/tlscacerts/tls-0-0-0-0-7052.pem
+      - CORE_PEER_GOSSIP_USELEADERELECTION=true
+      - CORE_PEER_GOSSIP_ORGLEADER=false
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer2-supplier:7051
+      - CORE_PEER_GOSSIP_SKIPHANDSHAKE=true
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/supplier/peer2
+    volumes:
+      - /var/run:/host/var/run
+      - ./supplier/peer2:/tmp/hyperledger/supplier/peer2
+    networks:
+      - fabric-ca
+
+  peer1-carrier:
+    container_name: peer1-carrier
+    image: hyperledger/fabric-peer
+    environment:
+      - CORE_PEER_ID=peer1-carrier
+      - CORE_PEER_ADDRESS=peer1-carrier:7051
+      - CORE_PEER_LOCALMSPID=carrierMSP
+      - CORE_PEER_MSPCONFIGPATH=/tmp/hyperledger/carrier/peer1/msp
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=cademo_fabric-ca
+      - FABRIC_LOGGING_SPEC=debug
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/tmp/hyperledger/carrier/peer1/tls/signcerts/cert.pem
+      - CORE_PEER_TLS_KEY_FILE=/tmp/hyperledger/carrier/peer1/tls/keystore/key.pem
+      - CORE_PEER_TLS_ROOTCERT_FILE=/tmp/hyperledger/carrier/peer1/tls/tlscacerts/tls-0-0-0-0-7052.pem
+      - CORE_PEER_GOSSIP_USELEADERELECTION=true
+      - CORE_PEER_GOSSIP_ORGLEADER=false
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1-carrier:7051
+      - CORE_PEER_GOSSIP_SKIPHANDSHAKE=true
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/carrier/peer1
+    volumes:
+      - /var/run:/host/var/run
+      - ./carrier/peer1:/tmp/hyperledger/carrier/peer1
+    networks:
+      - fabric-ca
+
+  peer2-carrier:
+    container_name: peer2-carrier
+    image: hyperledger/fabric-peer
+    environment:
+      - CORE_PEER_ID=peer2-carrier
+      - CORE_PEER_ADDRESS=peer2-carrier:7051
+      - CORE_PEER_LOCALMSPID=carrierMSP
+      - CORE_PEER_MSPCONFIGPATH=/tmp/hyperledger/carrier/peer2/msp
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=cademo_fabric-ca
+      - FABRIC_LOGGING_SPEC=debug
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/tmp/hyperledger/carrier/peer2/tls/signcerts/cert.pem
+      - CORE_PEER_TLS_KEY_FILE=/tmp/hyperledger/carrier/peer2/tls/keystore/key.pem
+      - CORE_PEER_TLS_ROOTCERT_FILE=/tmp/hyperledger/carrier/peer2/tls/tlscacerts/tls-0-0-0-0-7052.pem
+      - CORE_PEER_GOSSIP_USELEADERELECTION=true
+      - CORE_PEER_GOSSIP_ORGLEADER=false
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer2-carrier:7051
+      - CORE_PEER_GOSSIP_SKIPHANDSHAKE=true
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/carrier/peer2
+    volumes:
+      - /var/run:/host/var/run
+      - ./carrier/peer2:/tmp/hyperledger/carrier/peer2
+    networks:
+      - fabric-ca
+
+  peer1-middleman:
+    container_name: peer1-middleman
+    image: hyperledger/fabric-peer
+    environment:
+      - CORE_PEER_ID=peer1-middleman
+      - CORE_PEER_ADDRESS=peer1-middleman:7051
+      - CORE_PEER_LOCALMSPID=middlemanMSP
+      - CORE_PEER_MSPCONFIGPATH=/tmp/hyperledger/middleman/peer1/msp
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=cademo_fabric-ca
+      - FABRIC_LOGGING_SPEC=debug
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/tmp/hyperledger/middleman/peer1/tls/signcerts/cert.pem
+      - CORE_PEER_TLS_KEY_FILE=/tmp/hyperledger/middleman/peer1/tls/keystore/key.pem
+      - CORE_PEER_TLS_ROOTCERT_FILE=/tmp/hyperledger/middleman/peer1/tls/tlscacerts/tls-0-0-0-0-7052.pem
+      - CORE_PEER_GOSSIP_USELEADERELECTION=true
+      - CORE_PEER_GOSSIP_ORGLEADER=false
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1-middleman:7051
+      - CORE_PEER_GOSSIP_SKIPHANDSHAKE=true
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/middleman/peer1
+    volumes:
+      - /var/run:/host/var/run
+      - ./middleman/peer1:/tmp/hyperledger/middleman/peer1
+    networks:
+      - fabric-ca
+
+  peer2-middleman:
+    container_name: peer2-middleman
+    image: hyperledger/fabric-peer
+    environment:
+      - CORE_PEER_ID=peer2-middleman
+      - CORE_PEER_ADDRESS=peer2-middleman:7051
+      - CORE_PEER_LOCALMSPID=middlemanMSP
+      - CORE_PEER_MSPCONFIGPATH=/tmp/hyperledger/middleman/peer2/msp
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=cademo_fabric-ca
+      - FABRIC_LOGGING_SPEC=debug
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/tmp/hyperledger/middleman/peer2/tls/signcerts/cert.pem
+      - CORE_PEER_TLS_KEY_FILE=/tmp/hyperledger/middleman/peer2/tls/keystore/key.pem
+      - CORE_PEER_TLS_ROOTCERT_FILE=/tmp/hyperledger/middleman/peer2/tls/tlscacerts/tls-0-0-0-0-7052.pem
+      - CORE_PEER_GOSSIP_USELEADERELECTION=true
+      - CORE_PEER_GOSSIP_ORGLEADER=false
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer2-middleman:7051
+      - CORE_PEER_GOSSIP_SKIPHANDSHAKE=true
+    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/middleman/peer2
+    volumes:
+      - /var/run:/host/var/run
+      - ./middleman/peer2:/tmp/hyperledger/middleman/peer2
+    networks:
+      - fabric-ca
+
+
+  cli-supplier:
+    container_name: cli-supplier
+    image: hyperledger/fabric-tools
+    tty: true
+    stdin_open: true
+    environment:
+      - GOPATH=/opt/gopath
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - FABRIC_LOGGING_SPEC=DEBUG
+      - CORE_PEER_ID=cli-supplier
+      - CORE_PEER_ADDRESS=peer1-supplier:7051
+      - CORE_PEER_LOCALMSPID=supplierMSP
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_ROOTCERT_FILE=/tmp/hyperledger/supplier/peer1/tls/tlscacerts/tls-0-0-0-0-7052.pem
+      - CORE_PEER_MSPCONFIGPATH=/tmp/hyperledger/supplier/peer1/msp
+    working_dir: /tmp/hyperledger/supplier
+    command: sh
+    volumes:
+      - ./supplier/peer1:/tmp/hyperledger/supplier/peer1
+      - ./supplier/admin:/tmp/hyperledger/supplier/admin
+      - ./channel:/tmp/hyperledger/channel
+    networks:
+      - fabric-ca
+
+
+  cli-carrier:
+    container_name: cli-carrier
+    image: hyperledger/fabric-tools
+    tty: true
+    stdin_open: true
+    environment:
+      - GOPATH=/opt/gopath
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - FABRIC_LOGGING_SPEC=DEBUG
+      - CORE_PEER_ID=cli-carrier
+      - CORE_PEER_ADDRESS=peer1-carrier:7051
+      - CORE_PEER_LOCALMSPID=carrierMSP
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_ROOTCERT_FILE=/tmp/hyperledger/carrier/peer1/tls/tlscacerts/tls-0-0-0-0-7052.pem
+      - CORE_PEER_MSPCONFIGPATH=/tmp/hyperledger/carrier/peer1/msp
+    working_dir: /tmp/hyperledger/carrier
+    command: sh
+    volumes:
+      - ./carrier/peer1:/tmp/hyperledger/carrier/peer1
+      - ./carrier/admin:/tmp/hyperledger/carrier/admin
+      - ./channel:/tmp/hyperledger/channel
+    networks:
+      - fabric-ca
