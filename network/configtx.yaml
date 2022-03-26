@@ -1,110 +1,82 @@
-# Copyright IBM Corp. All Rights Reserved.
-#
-# SPDX-License-Identifier: Apache-2.0
-#
-
----
-################################################################################
-#
-#   Section: Organizations
-#
-#   - This section defines the different organizational identities which will
-#   be referenced later in the configuration.
-#
-################################################################################
 Organizations:
-
-    # SampleOrg defines an MSP using the sampleconfig.  It should never be used
-    # in production but may be used as a template for other definitions
-    - &manufacturer
-        # DefaultOrg defines the organization which is used in the sampleconfig
-        # of the fabric.git development environment
-        Name: manufacturerMSP
-
-        # ID to load the MSP definition as
-        ID: manufacturerMSP
-
-        # MSPDir is the filesystem path which contains the MSP configuration
-        MSPDir: ./manufacturer/msp
-
-        # Policies defines the set of policies at this level of the config tree
-        # For organization policies, their canonical path is usually
-        #   /Channel/<Application|Orderer>/<OrgName>/<PolicyName>
+    - &OrdererOrg
+        Name: OrdererOrg
+        ID: OrdererMSP
+        MSPDir: ./cbpm/msp
         Policies:
             Readers:
                 Type: Signature
-                Rule: "OR('manufacturerMSP.member')"
+                Rule: "OR('OrdererMSP.member')"
             Writers:
                 Type: Signature
-                Rule: "OR('manufacturerMSP.member')"
+                Rule: "OR('OrdererMSP.member')"
             Admins:
                 Type: Signature
-                Rule: "OR('manufacturerMSP.admin')"
+                Rule: "OR('OrdererMSP.admin')"
 
         OrdererEndpoints:
-            - orderer-manufacturer:7050
+            - orderer-cbpm:7050
 
-    - &supplier
-        # DefaultOrg defines the organization which is used in the sampleconfig
-        # of the fabric.git development environment
-        Name: supplierMSP
-
-        # ID to load the MSP definition as
-        ID: supplierMSP
-
-        MSPDir: ./supplier/msp
-
-        # Policies defines the set of policies at this level of the config tree
-        # For organization policies, their canonical path is usually
-        #   /Channel/<Application|Orderer>/<OrgName>/<PolicyName>
+    - &ManufacturerOrg
+        Name: ManufacturerOrg
+        ID: ManufacturerMSP
+        MSPDir: ./manufacturer/msp
         Policies:
             Readers:
                 Type: Signature
-                Rule: "OR('supplierMSP.admin', 'supplierMSP.peer', 'supplierMSP.client')"
+                Rule: "OR('ManufacturerMSP.member')"
             Writers:
                 Type: Signature
-                Rule: "OR('supplierMSP.admin', 'supplierMSP.client')"
+                Rule: "OR('ManufacturerMSP.member')"
             Admins:
                 Type: Signature
-                Rule: "OR('supplierMSP.admin')"
+                Rule: "OR('ManufacturerMSP.admin')"
             Endorsement:
                 Type: Signature
-                Rule: "OR('supplierMSP.peer')"
-
-        # leave this flag set to true.
+                Rule: "OR('ManufacturerMSP.peer')"
         AnchorPeers:
-            # AnchorPeers defines the location of peers which can be used
-            # for cross org gossip communication.  Note, this value is only
-            # encoded in the genesis block in the Application section context
+            - Host: peer1-manufacturer
+              Port: 7051
+
+
+    - &SupplierOrg
+        Name: SupplierOrg
+        ID: SupplierMSP
+        MSPDir: ./supplier/msp
+        Policies:
+            Readers:
+                Type: Signature
+                Rule: "OR('SupplierMSP.admin', 'SupplierMSP.peer', 'SupplierMSP.client')"
+            Writers:
+                Type: Signature
+                Rule: "OR('SupplierMSP.admin', 'SupplierMSP.client')"
+            Admins:
+                Type: Signature
+                Rule: "OR('SupplierMSP.admin')"
+            Endorsement:
+                Type: Signature
+                Rule: "OR('SupplierMSP.peer')"
+        AnchorPeers:
             - Host: peer1-supplier
               Port: 7051
 
-    - &carrier
-        # DefaultOrg defines the organization which is used in the sampleconfig
-        # of the fabric.git development environment
-        Name: carrierMSP
-
-        # ID to load the MSP definition as
-        ID: carrierMSP
-
+    - &CarrierOrg
+        Name: CarrierOrg
+        ID: CarrierMSP
         MSPDir: ./carrier/msp
-
-        # Policies defines the set of policies at this level of the config tree
-        # For organization policies, their canonical path is usually
-        #   /Channel/<Application|Orderer>/<OrgName>/<PolicyName>
         Policies:
             Readers:
                 Type: Signature
-                Rule: "OR('carrierMSP.admin', 'carrierMSP.peer', 'carrierMSP.client')"
+                Rule: "OR('CarrierMSP.admin', 'CarrierMSP.peer', 'CarrierMSP.client')"
             Writers:
                 Type: Signature
-                Rule: "OR('carrierMSP.admin', 'carrierMSP.client')"
+                Rule: "OR('CarrierMSP.admin', 'CarrierMSP.client')"
             Admins:
                 Type: Signature
-                Rule: "OR('carrierMSP.admin')"
+                Rule: "OR('CarrierMSP.admin')"
             Endorsement:
                 Type: Signature
-                Rule: "OR('carrierMSP.peer')"
+                Rule: "OR('CarrierMSP.peer')"
 
         AnchorPeers:
             # AnchorPeers defines the location of peers which can be used
@@ -113,13 +85,13 @@ Organizations:
             - Host: peer1-carrier
               Port: 7051
 
-    - &middleman
+    - &MiddlemanOrg
         # DefaultOrg defines the organization which is used in the sampleconfig
         # of the fabric.git development environment
-        Name: middlemanMSP
+        Name: MiddlemanOrg
 
         # ID to load the MSP definition as
-        ID: middlemanMSP
+        ID: MiddlemanMSP
 
         MSPDir: ./middleman/msp
 
@@ -129,16 +101,16 @@ Organizations:
         Policies:
             Readers:
                 Type: Signature
-                Rule: "OR('middlemanMSP.admin', 'middlemanMSP.peer', 'middlemanMSP.client')"
+                Rule: "OR('MiddlemanMSP.admin', 'MiddlemanMSP.peer', 'MiddlemanMSP.client')"
             Writers:
                 Type: Signature
-                Rule: "OR('middlemanMSP.admin', 'middlemanMSP.client')"
+                Rule: "OR('MiddlemanMSP.admin', 'MiddlemanMSP.client')"
             Admins:
                 Type: Signature
-                Rule: "OR('middlemanMSP.admin')"
+                Rule: "OR('MiddlemanMSP.admin')"
             Endorsement:
                 Type: Signature
-                Rule: "OR('middlemanMSP.peer')"
+                Rule: "OR('MiddlemanMSP.peer')"
 
         AnchorPeers:
             # AnchorPeers defines the location of peers which can be used
@@ -177,7 +149,10 @@ Capabilities:
         # not able to participate in channels at v2.0 capability.
         # Prior to enabling V2.0 channel capabilities, ensure that all
         # orderers and peers on a channel are at v2.0.0 or later.
-        V2_0: true
+        # V2_0: true
+        V1_4_3: true
+        V1_3: false
+        V1_1: false        
 
     # Orderer capabilities apply only to the orderers, and may be safely
     # used with prior release peers.
@@ -189,8 +164,9 @@ Capabilities:
         # not able to participate in channels at v2.0 orderer capability.
         # Prior to enabling V2.0 orderer capabilities, ensure that all
         # orderers on channel are at v2.0.0 or later.
-        V2_0: true
-
+        # V2_0: true
+        V1_4_2: true
+        V1_1: false
     # Application capabilities apply only to the peer network, and may be safely
     # used with prior release orderers.
     # Set the value of the capability to true to require it.
@@ -201,7 +177,11 @@ Capabilities:
         # not able to participate in channels at v2.0 application capability.
         # Prior to enabling V2.0 application capabilities, ensure that all
         # peers on channel are at v2.0.0 or later.
-        V2_0: true
+        # V2_0: true
+        V1_4_2: true
+        V1_3: false
+        V1_2: false
+        V1_1: false  
 
 ################################################################################
 #
@@ -250,17 +230,17 @@ Application: &ApplicationDefaults
 Orderer: &OrdererDefaults
 
     # Orderer Type: The orderer implementation to start
-    OrdererType: etcdraft
+    OrdererType: solo
 
     Addresses:
-      - orderer-manufacturer:7050
+        - orderer-cbpm:7050
     
-    EtcdRaft:
-        Consenters:
-        - Host: orderer-manufacturer
-          Port: 7050
-          ClientTLSCert: ./manufacturer/orderer/tls/signcerts/cert.pem
-          ServerTLSCert: ./manufacturer/orderer/tls/signcerts/cert.pem
+    # EtcdRaft:
+    #     Consenters:
+    #     - Host: orderer-cbpm
+    #       Port: 7050
+    #       ClientTLSCert: ./orderer/orderer/tls/signcerts/cert.pem
+    #       ServerTLSCert: ./orderer/orderer/tls/signcerts/cert.pem
 
     # Batch Timeout: The amount of time to wait before creating a batch
     BatchTimeout: 2s
@@ -283,6 +263,7 @@ Orderer: &OrdererDefaults
     # Organizations is the list of orgs which are defined as participants on
     # the orderer side of the network
     Organizations:
+        # - *OrdererOrg
 
     # Policies defines the set of policies at this level of the config tree
     # For Orderer policies, their canonical path is
@@ -344,27 +325,31 @@ Channel: &ChannelDefaults
 #
 ################################################################################
 Profiles:
-
-    TwoOrgsOrdererGenesis:
+    CBPMOrdererGenesis:
         <<: *ChannelDefaults
         Orderer:
             <<: *OrdererDefaults
             Organizations:
-                - *manufacturer
-            Capabilities:
+                - *OrdererOrg
+            Capabilities: 
                 <<: *OrdererCapabilities
         Consortiums:
-            SampleConsortium:
+            CBPMConsortium:
                 Organizations:
-                    - *supplier
-                    - *carrier
-    TwoOrgsChannel:
-        Consortium: SampleConsortium
+                    - *SupplierOrg
+                    - *CarrierOrg
+                    - *ManufacturerOrg
+                    - *MiddlemanOrg
+            SCConsortium:
+                Organizations:
+                    - *SupplierOrg
+                    - *CarrierOrg
+    SCChannel:
         <<: *ChannelDefaults
+        Consortium: SCConsortium
         Application:
             <<: *ApplicationDefaults
             Organizations:
-                - *supplier
-                - *carrier
-            Capabilities:
-                <<: *ApplicationCapabilities
+                - *SupplierOrg
+                - *CarrierOrg
+            Capabilities: *ApplicationCapabilities

@@ -40,7 +40,7 @@
 #############################################################################
 
 # URL of the Fabric-ca-server (default: http://localhost:7054)
-url: https://0.0.0.0:7056
+url: https://0.0.0.0:7057
 
 # Membership Service Provider (MSP) directory
 # This is useful when the client is used to enroll a peer or orderer, so
@@ -117,7 +117,7 @@ csr:
       O: Hyperledger
       OU: Fabric
   hosts:
-    - localhost
+    - CynyardxPro.local
 
 #############################################################################
 #  Registration section used to register a new identity with fabric-ca server

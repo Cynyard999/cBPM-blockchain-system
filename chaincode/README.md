@@ -4,7 +4,7 @@
 
 存放不同channel上的智能合约项目
 
-- TODO
+- test-java: 示范项目，参考fabric-samples/asset-transfer-private-data/chaincode-java
 - TODO
 - TODO
 
