@@ -146,8 +146,7 @@ services:
       - CORE_PEER_LOCALMSPID=ManufacturerMSP
       - CORE_PEER_MSPCONFIGPATH=/tmp/hyperledger/manufacturer/peer1/msp
       - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
-      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=network
-      - FABRIC_LOGGING_SPEC=debug
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=network_fabric-ca
       - CORE_PEER_TLS_ENABLED=true
       - CORE_PEER_TLS_CERT_FILE=/tmp/hyperledger/manufacturer/peer1/tls/signcerts/cert.pem
       - CORE_PEER_TLS_KEY_FILE=/tmp/hyperledger/manufacturer/peer1/tls/keystore/key.pem
@@ -172,7 +171,7 @@ services:
       - CORE_PEER_LOCALMSPID=ManufacturerMSP
       - CORE_PEER_MSPCONFIGPATH=/tmp/hyperledger/manufacturer/peer2/msp
       - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
-      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=network
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=network_fabric-ca
       - FABRIC_LOGGING_SPEC=debug
       - CORE_PEER_TLS_ENABLED=true
       - CORE_PEER_TLS_CERT_FILE=/tmp/hyperledger/manufacturer/peer2/tls/signcerts/cert.pem
@@ -198,7 +197,7 @@ services:
       - CORE_PEER_LOCALMSPID=SupplierMSP
       - CORE_PEER_MSPCONFIGPATH=/tmp/hyperledger/supplier/peer1/msp
       - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
-      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=network
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=network_fabric-ca
       - FABRIC_LOGGING_SPEC=debug
       - CORE_PEER_TLS_ENABLED=true
       - CORE_PEER_TLS_CERT_FILE=/tmp/hyperledger/supplier/peer1/tls/signcerts/cert.pem
@@ -224,7 +223,7 @@ services:
       - CORE_PEER_LOCALMSPID=SupplierMSP
       - CORE_PEER_MSPCONFIGPATH=/tmp/hyperledger/supplier/peer2/msp
       - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
-      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=network
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=network_fabric-ca
       - FABRIC_LOGGING_SPEC=debug
       - CORE_PEER_TLS_ENABLED=true
       - CORE_PEER_TLS_CERT_FILE=/tmp/hyperledger/supplier/peer2/tls/signcerts/cert.pem
@@ -250,7 +249,7 @@ services:
       - CORE_PEER_LOCALMSPID=CarrierMSP
       - CORE_PEER_MSPCONFIGPATH=/tmp/hyperledger/carrier/peer1/msp
       - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
-      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=network
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=network_fabric-ca
       - FABRIC_LOGGING_SPEC=debug
       - CORE_PEER_TLS_ENABLED=true
       - CORE_PEER_TLS_CERT_FILE=/tmp/hyperledger/carrier/peer1/tls/signcerts/cert.pem
@@ -276,7 +275,7 @@ services:
       - CORE_PEER_LOCALMSPID=CarrierMSP
       - CORE_PEER_MSPCONFIGPATH=/tmp/hyperledger/carrier/peer2/msp
       - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
-      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=network
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=network_fabric-ca
       - FABRIC_LOGGING_SPEC=debug
       - CORE_PEER_TLS_ENABLED=true
       - CORE_PEER_TLS_CERT_FILE=/tmp/hyperledger/carrier/peer2/tls/signcerts/cert.pem
@@ -302,7 +301,7 @@ services:
       - CORE_PEER_LOCALMSPID=MiddlemanMSP
       - CORE_PEER_MSPCONFIGPATH=/tmp/hyperledger/middleman/peer1/msp
       - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
-      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=network
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=network_fabric-ca
       - FABRIC_LOGGING_SPEC=debug
       - CORE_PEER_TLS_ENABLED=true
       - CORE_PEER_TLS_CERT_FILE=/tmp/hyperledger/middleman/peer1/tls/signcerts/cert.pem
@@ -328,7 +327,7 @@ services:
       - CORE_PEER_LOCALMSPID=MiddlemanMSP
       - CORE_PEER_MSPCONFIGPATH=/tmp/hyperledger/middleman/peer2/msp
       - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
-      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=network
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=network_fabric-ca
       - FABRIC_LOGGING_SPEC=debug
       - CORE_PEER_TLS_ENABLED=true
       - CORE_PEER_TLS_CERT_FILE=/tmp/hyperledger/middleman/peer2/tls/signcerts/cert.pem

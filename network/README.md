@@ -1,13 +1,14 @@
-- manufacturer: orderer, peer1, peer2, admin
+- cbpm: orderer, admin
+- manufacturer: peer1, peer2, admin
 - supplier: peer1, peer2, admin
 - carrier: peer1, peer2, admin
 - middleman: peer1, peer2, admin
 
 
 
+# 下面的都不用管了
 
-
-# CA配置
+## CA配置
 
 ca服务器配置
 
@@ -619,6 +620,10 @@ docker-compose up -d orderer-cbpm
 
 
 
+# 每次docker-compose up过后需要执行
+
+
+
 配置cli
 
 启动cli并且进入
@@ -634,8 +639,8 @@ docker exec -it cli sh
 用supplier创建scchannel通道
 
 ```shell
-export CORE_PEER_MSPCONFIGPATH=/tmp/hyperledger/fabric/peer/supplier/admin/msp
 # 配置supplier-peer1环境 MSPCONFIGPATH设置为admin的
+export CORE_PEER_MSPCONFIGPATH=/tmp/hyperledger/fabric/peer/supplier/admin/msp
 export CORE_PEER_TLS_ROOTCERT_FILE=/tmp/hyperledger/fabric/peer/supplier/peer1/tls/tlscacerts/tls-0-0-0-0-7052.pem
 export CORE_PEER_TLS_CERT_FILE=/tmp/hyperledger/fabric/peer/supplier/peer1/tls/signcerts/cert.pem
 export CORE_PEER_TLS_KEY_FILE=/tmp/hyperledger/fabric/peer/supplier/peer1/tls/keystore/key.pem
@@ -659,8 +664,8 @@ Carrier节点加入通道
 
 ```shell
 # cli
+# 配置carrier-peer1环境 MSPCONFIGPATH设置为admin的
 export CORE_PEER_MSPCONFIGPATH=/tmp/hyperledger/fabric/peer/carrier/admin/msp
-# 配置supplier-peer1环境 MSPCONFIGPATH设置为admin的
 export CORE_PEER_TLS_ROOTCERT_FILE=/tmp/hyperledger/fabric/peer/carrier/peer1/tls/tlscacerts/tls-0-0-0-0-7052.pem
 export CORE_PEER_TLS_CERT_FILE=/tmp/hyperledger/fabric/peer/carrier/peer1/tls/signcerts/cert.pem
 export CORE_PEER_TLS_KEY_FILE=/tmp/hyperledger/fabric/peer/carrier/peer1/tls/keystore/key.pem
@@ -672,7 +677,7 @@ export CORE_PEER_ADDRESS=peer2-carrier:7051
 peer channel join -b /tmp/hyperledger/fabric/channel-artifacts/scchannel.block
 ```
 
-检测
+检测（如果没有的话会报错
 
 ```shell
 peer channel list
@@ -688,7 +693,7 @@ peer channel list
 
 ```shell
 # cli
-peer lifecycle chaincode package test.tar.gz --path /tmp/hyperledger/fabric/chaincode/test-java --lang java --label test
+# peer lifecycle chaincode package test.tar.gz --path /tmp/hyperledger/fabric/chaincode/test-java --lang java --label test
 
 # supplier-peer1环境 MSPCONFIGPATH设置为admin的
 
@@ -709,6 +714,7 @@ peer chaincode install -n sccc -v 1.0 -l java -p /tmp/hyperledger/fabric/chainco
 
 
 export CORE_PEER_ADDRESS=peer2-carrier:7051
+
 peer chaincode install -n sccc -v 1.0 -l java -p /tmp/hyperledger/fabric/chaincode/test-java
 
 ```
@@ -727,3 +733,20 @@ peer chaincode instantiate -o orderer-cbpm:7050 --tls --cafile /tmp/hyperledger/
 - -o：指定排序节点
 - -C：指定通道名
 - -c：指定初始化参数
+
+如果报错error starting container: Failed to generate platform-specific docker build: Error executing build: API error (404): network xxxx not found ""
+
+新开terminal 输入`docker network ls` 然后根据网络名修改`docker-compose.yml` 中的`CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE` 环境变量
+
+
+
+
+
+```shell
+export ASSET_PROPERTIES=$(echo -n "{\"objectType\":\"asset\",\"assetID\":\"asset1\",\"color\":\"green\",\"size\":20,\"appraisedValue\":100}" | base64 | tr -d \\n)
+peer chaincode invoke -o orderer-cbpm:7050 --ordererTLSHostnameOverride orderer-cbpm --tls --cafile /tmp/hyperledger/fabric/peer/supplier/peer1/tls/tlscacerts/tls-0-0-0-0-7052.pem -C channel -n private -c '{"function":"CreateAsset","Args":[]}' --transient "{\"asset_properties\":\"$ASSET_PROPERTIES\"}"
+
+peer chaincode query -C scchannel -n sccc -c '{"f
+unction":"CreateAsset","Args":[]}' --transient "{\"asset_properties\":\"$ASSET_PROPERTIES\"}"
+```
+
