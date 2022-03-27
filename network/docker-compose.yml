@@ -3,6 +3,58 @@ version: "3.7"
 networks:
   fabric-ca:
 services:
+  couchdb1:
+    container_name: couchdb1
+    image: hyperledger/fabric-couchdb
+    environment: 
+      - COUCHDB_USER=admin
+      - COUCHDB_PASSWORD=123456
+    # Comment/Uncomment the port mapping if you want to hide/expose the CouchDB service,
+    # for example map it to utilize Fauxton User Interface in dev environments.
+    ports:
+      - "5984:5984"
+    networks:
+      - fabric-ca
+
+   # couchdb2:
+   #  container_name: couchdb
+   #  image: hyperledger/fabric-couchdb
+   #  environment: 
+   #   - COUCHDB_USER=admin
+   #   - COUCHDB_PASSWORD=123456
+   #  # Comment/Uncomment the port mapping if you want to hide/expose the CouchDB service,
+   #  # for example map it to utilize Fauxton User Interface in dev environments.
+   #  ports:
+   #    - "6984:5984"
+   #  networks:
+   #    - fabric-ca
+
+   # couchdb3:
+   #  container_name: couchdb
+   #  image: hyperledger/fabric-couchdb
+   #  environment: 
+   #   - COUCHDB_USER=admin
+   #   - COUCHDB_PASSWORD=123456
+   #  # Comment/Uncomment the port mapping if you want to hide/expose the CouchDB service,
+   #  # for example map it to utilize Fauxton User Interface in dev environments.
+   #  ports:
+   #    - "7984:5984"
+   #  networks:
+   #    - fabric-ca
+
+   # couchdb4:
+   #  container_name: couchdb
+   #  image: hyperledger/fabric-couchdb
+   #  environment: 
+   #   - COUCHDB_USER=admin
+   #   - COUCHDB_PASSWORD=123456
+   #  # Comment/Uncomment the port mapping if you want to hide/expose the CouchDB service,
+   #  # for example map it to utilize Fauxton User Interface in dev environments.
+   #  ports:
+   #    - "8984:5984"
+   #  networks:
+   #    - fabric-ca
+
   ca-tls:
     container_name: ca
     image: hyperledger/fabric-ca
@@ -141,6 +193,10 @@ services:
     container_name: peer1-manufacturer
     image: hyperledger/fabric-peer
     environment:
+      - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb1:5984
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=admin
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=123456
       - CORE_PEER_ID=peer1-manufacturer
       - CORE_PEER_ADDRESS=peer1-manufacturer:7051
       - CORE_PEER_LOCALMSPID=ManufacturerMSP
@@ -161,11 +217,17 @@ services:
       - ./manufacturer/peer1:/tmp/hyperledger/manufacturer/peer1
     networks:
       - fabric-ca
+    depends_on:
+      - couchdb1
 
   peer2-manufacturer:
     container_name: peer2-manufacturer
     image: hyperledger/fabric-peer
     environment:
+      - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb1:5984
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=admin
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=123456
       - CORE_PEER_ID=peer2-manufacturer
       - CORE_PEER_ADDRESS=peer2-manufacturer:7051
       - CORE_PEER_LOCALMSPID=ManufacturerMSP
@@ -187,11 +249,18 @@ services:
       - ./manufacturer/peer2:/tmp/hyperledger/manufacturer/peer2
     networks:
       - fabric-ca
+    depends_on:
+      - couchdb1
+
 
   peer1-supplier:
     container_name: peer1-supplier
     image: hyperledger/fabric-peer
     environment:
+      - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb1:5984
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=admin
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=123456
       - CORE_PEER_ID=peer1-supplier
       - CORE_PEER_ADDRESS=peer1-supplier:7051
       - CORE_PEER_LOCALMSPID=SupplierMSP
@@ -213,11 +282,17 @@ services:
       - ./supplier/peer1:/tmp/hyperledger/supplier/peer1
     networks:
       - fabric-ca
+    depends_on:
+      - couchdb1
 
   peer2-supplier:
     container_name: peer2-supplier
     image: hyperledger/fabric-peer
     environment:
+      - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb1:5984
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=admin
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=123456
       - CORE_PEER_ID=peer2-supplier
       - CORE_PEER_ADDRESS=peer2-supplier:7051
       - CORE_PEER_LOCALMSPID=SupplierMSP
@@ -239,11 +314,17 @@ services:
       - ./supplier/peer2:/tmp/hyperledger/supplier/peer2
     networks:
       - fabric-ca
+    depends_on:
+      - couchdb1
 
   peer1-carrier:
     container_name: peer1-carrier
     image: hyperledger/fabric-peer
     environment:
+      - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb1:5984
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=admin
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=123456
       - CORE_PEER_ID=peer1-carrier
       - CORE_PEER_ADDRESS=peer1-carrier:7051
       - CORE_PEER_LOCALMSPID=CarrierMSP
@@ -265,11 +346,17 @@ services:
       - ./carrier/peer1:/tmp/hyperledger/carrier/peer1
     networks:
       - fabric-ca
+    depends_on:
+      - couchdb1
 
   peer2-carrier:
     container_name: peer2-carrier
     image: hyperledger/fabric-peer
     environment:
+      - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb1:5984
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=admin
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=123456
       - CORE_PEER_ID=peer2-carrier
       - CORE_PEER_ADDRESS=peer2-carrier:7051
       - CORE_PEER_LOCALMSPID=CarrierMSP
@@ -291,11 +378,17 @@ services:
       - ./carrier/peer2:/tmp/hyperledger/carrier/peer2
     networks:
       - fabric-ca
+    depends_on:
+      - couchdb1
 
   peer1-middleman:
     container_name: peer1-middleman
     image: hyperledger/fabric-peer
     environment:
+      - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb1:5984
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=admin
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=123456
       - CORE_PEER_ID=peer1-middleman
       - CORE_PEER_ADDRESS=peer1-middleman:7051
       - CORE_PEER_LOCALMSPID=MiddlemanMSP
@@ -311,17 +404,23 @@ services:
       - CORE_PEER_GOSSIP_ORGLEADER=false
       - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1-middleman:7051
       - CORE_PEER_GOSSIP_SKIPHANDSHAKE=true
-    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/middleman/peer1
+    working_dir: /tmp/hperledger/middleman/peer1
     volumes:
       - /var/run:/host/var/run
       - ./middleman/peer1:/tmp/hyperledger/middleman/peer1
     networks:
       - fabric-ca
+    depends_on:
+      - couchdb1
 
   peer2-middleman:
     container_name: peer2-middleman
     image: hyperledger/fabric-peer
     environment:
+      - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb1:5984
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=admin
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=123456
       - CORE_PEER_ID=peer2-middleman
       - CORE_PEER_ADDRESS=peer2-middleman:7051
       - CORE_PEER_LOCALMSPID=MiddlemanMSP
@@ -337,12 +436,14 @@ services:
       - CORE_PEER_GOSSIP_ORGLEADER=false
       - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer2-middleman:7051
       - CORE_PEER_GOSSIP_SKIPHANDSHAKE=true
-    working_dir: /opt/gopath/src/github.com/hyperledger/fabric/middleman/peer2
+    working_dir: /tmp/hyperledger/middleman/peer2
     volumes:
       - /var/run:/host/var/run
       - ./middleman/peer2:/tmp/hyperledger/middleman/peer2
     networks:
       - fabric-ca
+    depends_on:
+      - couchdb1
 
   cli:
     container_name: cli
@@ -350,7 +451,8 @@ services:
     tty: true
     stdin_open: true
     environment:
-      - GOPATH=/tmp/hyperledger
+      - GOPATH=/tmp/hyperledger/fabric/chaincode/go
+      - GO111MODULE=auto
       - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
       - FABRIC_LOGGING_SPEC=DEBUG
       - CORE_PEER_ID=cli
@@ -367,7 +469,9 @@ services:
       - ./supplier:/tmp/hyperledger/fabric/peer/supplier
       - ./carrier:/tmp/hyperledger/fabric/peer/carrier
       - ./middleman:/tmp/hyperledger/fabric/peer/middleman
-      - ../chaincode:/tmp/hyperledger/fabric/chaincode
+      - ./cbpm:/tmp/hyperledger/fabric/peer/cbpm
+      - ../chaincode/go:/tmp/hyperledger/fabric/chaincode/go/src
+      - ../chaincode/java:/tmp/hyperledger/fabric/chaincode/java
     networks:
       - fabric-ca
     depends_on:
