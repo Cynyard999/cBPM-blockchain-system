@@ -83,36 +83,48 @@ TODO：
 1. 将最简单的java链码部署成功，并且成功调用
 2. 通道间流程定义好后，先写一个通道的智能合约
 
+### 选择链码
 
+链码描述-链码路径-链码语言
 
+- go-marbles-couchdb : test-go-asset-transfer : golang
+- go-asset-transfer-couchdb: test-go-asset-transfer : golang
+- java-private-asset-coudhdb: /tmp/hyperledger/fabric/chaincode/java/test-java-private-data : java
 
-
-### go-marbles-couchdb
+### 安装链码
 
 ```shell
-# supplier-peer1环境 MSPCONFIGPATH设置为admin的
+# 输入想要安装的链码路径以及语言版本
+export CHAINCODE=
+export CHAINCODE_LANG=
+
 
 export CORE_PEER_MSPCONFIGPATH=/tmp/hyperledger/fabric/peer/supplier/admin/msp
 export CORE_PEER_ADDRESS=peer1-supplier:7051
 export CORE_PEER_LOCALMSPID=SupplierMSP
 
-peer chaincode install -n scchaincode -v 1.0  -p test-go/go
+peer chaincode install -n scchaincode -v 1.0  -p $CHAINCODE -l $CHAINCODE_LANG
 
 export CORE_PEER_ADDRESS=peer2-supplier:7051
-peer chaincode install -n scchaincode -v 1.0  -p test-go/go
+peer chaincode install -n scchaincode -v 1.0  -p $CHAINCODE -l $CHAINCODE_LANG
 
 
 export CORE_PEER_MSPCONFIGPATH=/tmp/hyperledger/fabric/peer/carrier/admin/msp
 export CORE_PEER_ADDRESS=peer1-carrier:7051
 export CORE_PEER_LOCALMSPID=CarrierMSP
-peer chaincode install -n scchaincode -v 1.0  -p test-go/go
+peer chaincode install -n scchaincode -v 1.0  -p $CHAINCODE -l $CHAINCODE_LANG
 
 
 export CORE_PEER_ADDRESS=peer2-carrier:7051
-peer chaincode install -n scchaincode -v 1.0  -p test-go/go
+peer chaincode install -n scchaincode -v 1.0  -p $CHAINCODE -l $CHAINCODE_LANG
 
+```
 
+### 初始化链码
 
+#### go-marbles-couchdb
+
+```shell
 export CORE_PEER_MSPCONFIGPATH=/tmp/hyperledger/fabric/peer/supplier/admin/msp
 export CORE_PEER_TLS_ROOTCERT_FILE=/tmp/hyperledger/fabric/peer/supplier/peer1/tls/tlscacerts/tls-0-0-0-0-7052.pem
 export CORE_PEER_TLS_CERT_FILE=/tmp/hyperledger/fabric/peer/supplier/peer1/tls/signcerts/cert.pem
@@ -121,10 +133,7 @@ export CORE_PEER_LOCALMSPID=SupplierMSP
 export CORE_PEER_ADDRESS=peer1-supplier:7051
 
 
-peer chaincode instantiate -o orderer-cbpm:7050 --tls --cafile "/tmp/hyperledger/fabric/peer/cbpm/orderer/tls/tlscacerts/tls-0-0-0-0-7052.pem" -C scchannel -n scchaincode -l golang -v 1.0 -c '{"Args":["init"]}' -P "OR('Supplier.peer','Carrier.peer')"
-
-
-
+peer chaincode instantiate -o orderer-cbpm:7050 --tls --cafile "/tmp/hyperledger/fabric/peer/cbpm/orderer/tls/tlscacerts/tls-0-0-0-0-7052.pem" -C scchannel -n scchaincode -l $CHAINCODE_LANG -v 1.0 -c '{"Args":[""]}' -P "OR('SupplierMSP.peer','CarrierMSP.peer')"
 
 ```
 
@@ -135,7 +144,6 @@ peer chaincode invoke -o orderer-cbpm:7050 --tls --cafile "/tmp/hyperledger/fabr
 
 peer chaincode invoke -o orderer-cbpm:7050 --tls --cafile "/tmp/hyperledger/fabric/peer/cbpm/orderer/tls/tlscacerts/tls-0-0-0-0-7052.pem" -C scchannel -n scchaincode -c '{"function": "initMarble","Args":["marble1","blue","35","tom"]}'
 
-# 不知道为啥，上面的没有写入数据库，导致下面的命令读不到
 
 peer chaincode query -C scchannel -n scchaincode -c '{"function": "queryMarbles","Args":["{\"selector\":{\"owner\":\"tom\"}}"]}'
 
@@ -143,39 +151,23 @@ peer chaincode query -C scchannel -n scchaincode -c '{"function": "queryMarbles"
 peer chaincode query -C scchannel -n scchaincode -c '{"Args":["readMarble","marble1"]}'
 ```
 
-
-
-### private-data-java-couchdb
-
-!!! 没有尝试
+#### go-asset-transfer-couchdb
 
 ```shell
-# supplier-peer1环境 MSPCONFIGPATH设置为admin的
-
-export CORE_PEER_MSPCONFIGPATH=/tmp/hyperledger/fabric/peer/supplier/admin/msp
-export CORE_PEER_ADDRESS=peer1-supplier:7051
-export CORE_PEER_LOCALMSPID=SupplierMSP
-
-peer chaincode install -n scchaincode -v 1.0 -l java -p /tmp/hyperledger/fabric/chaincode/java/test-java-private-data
-
-export CORE_PEER_ADDRESS=peer2-supplier:7051
-peer chaincode install -n scchaincode -v 1.0 -l java -p /tmp/hyperledger/fabric/chaincode/java/test-java-private-data
+peer chaincode instantiate -o orderer-cbpm:7050 --tls --cafile "/tmp/hyperledger/fabric/peer/cbpm/orderer/tls/tlscacerts/tls-0-0-0-0-7052.pem" -C scchannel -n scchaincode -l $CHAINCODE_LANG -v 1.1 -c '{"Args":["initLedger"]}' -P "OR('SupplierMSP.peer','CarrierMSP.peer')"
 
 
-export CORE_PEER_MSPCONFIGPATH=/tmp/hyperledger/fabric/peer/carrier/admin/msp
-export CORE_PEER_ADDRESS=peer1-carrier:7051
-export CORE_PEER_LOCALMSPID=CarrierMSP
-peer chaincode install -n scchaincode -v 1.0 -l java -p /tmp/hyperledger/fabric/chaincode/java/test-java-private-data
+peer chaincode query -C scchannel -n scchaincode -c '{"Args":["ReadAsset","asset1"]}'
 
 
-export CORE_PEER_ADDRESS=peer2-carrier:7051
+peer chaincode invoke -o orderer-cbpm:7050 --tls --cafile "/tmp/hyperledger/fabric/peer/cbpm/orderer/tls/tlscacerts/tls-0-0-0-0-7052.pem" -C scchannel -n scchaincode -c '{"Args":["CreateAsset","asset10","black","5","cynyard","10"]}'
 
-peer chaincode install -n scchaincode -v 1.0 -l java -p /tmp/hyperledger/fabric/chaincode/java/test-java-private-data
-
-
-
-
+peer chaincode query -C scchannel -n scchaincode -c '{"Args":["ReadAsset","asset10"]}'
 ```
+
+#### java-private-asset-coudhdb
+
+！！没有成功
 
 初始化链码
 
@@ -188,7 +180,7 @@ export CORE_PEER_TLS_KEY_FILE=/tmp/hyperledger/fabric/peer/supplier/peer1/tls/ke
 export CORE_PEER_LOCALMSPID=SupplierMSP
 export CORE_PEER_ADDRESS=peer1-supplier:7051
 
-peer chaincode instantiate -o orderer-cbpm:7050 --tls --cafile "/tmp/hyperledger/fabric/peer/cbpm/orderer/tls/tlscacerts/tls-0-0-0-0-7052.pem" --collections-config /tmp/hyperledger/fabric/chaincode/java/test-java-private-data/collections_config.json -C scchannel -n scchaincode -l java -v 1.0 -c '{"Args":[]}' -P "OR('SupplierMSP.peer','CarrierMSP.peer')"
+peer chaincode instantiate -o orderer-cbpm:7050 --tls --cafile "/tmp/hyperledger/fabric/peer/cbpm/orderer/tls/tlscacerts/tls-0-0-0-0-7052.pem" --collections-config $CHAINCODE/collections_config.json -C scchannel -n scchaincode -l $CHAINCODE_LANG -v 1.0 -c '{"Args":[]}' -P "OR('SupplierMSP.peer','CarrierMSP.peer')"
 
 ```
 
@@ -212,17 +204,22 @@ peer chaincode invoke -o localhost:7050 --ordererTLSHostnameOverride orderer-cbp
 
 
 
-
-
-
-
-如果报错`error starting container: Failed to generate platform-specific docker build: Error executing build: API error (404): network xxxx not found ""` 
-
-新开terminal 输入`docker network ls` 然后根据网络名修改`docker-compose.yml` 中的`CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE` 环境变量
-
-
-
 如果报错`Error: could not assemble transaction, err proposal response was not successful, error code 500, msg failed to execute transaction 8e95ab096404723808c9b0d2350db55dae5d81964f3b02176d10ac5639316e12: error sending: timeout expired while executing transaction`
 
-多试几次？
+对于gradle的项目，可以在宿主机执行`gradle build` 
 
+对于go的项目，可以先在宿主机执行`export GO111MODULE=auto && go mod vendor` 
+
+
+
+如果invoke成功执行了，但是查询发现没有数据增加到数据库中，检查-P参数的设置
+
+
+
+## 更新链码
+
+`peer chaincode install` 的命令，修改-v的参数
+
+
+
+`peer chaincode instantiate` 的命令，将该命令改为`peer chaincode upgrade` ，并且修改-v的参数

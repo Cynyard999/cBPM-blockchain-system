@@ -212,6 +212,7 @@ services:
       - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1-manufacturer:7051
       - CORE_PEER_GOSSIP_SKIPHANDSHAKE=true
     working_dir: /tmp/hyperledger/manufacturer/peer1
+    command: peer node start
     volumes:
       - /var/run:/host/var/run
       - ./manufacturer/peer1:/tmp/hyperledger/manufacturer/peer1
@@ -244,6 +245,7 @@ services:
       - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer2-manufacturer:7051
       - CORE_PEER_GOSSIP_SKIPHANDSHAKE=true
     working_dir: /tmp/hyperledger/manufacturer/peer2
+    command: peer node start
     volumes:
       - /var/run:/host/var/run
       - ./manufacturer/peer2:/tmp/hyperledger/manufacturer/peer2
@@ -277,6 +279,7 @@ services:
       - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1-supplier:7051
       - CORE_PEER_GOSSIP_SKIPHANDSHAKE=true
     working_dir: /tmp/hyperledger/supplier/peer1
+    command: peer node start
     volumes:
       - /var/run:/host/var/run
       - ./supplier/peer1:/tmp/hyperledger/supplier/peer1
@@ -309,6 +312,7 @@ services:
       - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer2-supplier:7051
       - CORE_PEER_GOSSIP_SKIPHANDSHAKE=true
     working_dir: /tmp/hyperledger/supplier/peer2
+    command: peer node start
     volumes:
       - /var/run:/host/var/run
       - ./supplier/peer2:/tmp/hyperledger/supplier/peer2
@@ -341,6 +345,7 @@ services:
       - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1-carrier:7051
       - CORE_PEER_GOSSIP_SKIPHANDSHAKE=true
     working_dir: /tmp/hyperledger/carrier/peer1
+    command: peer node start
     volumes:
       - /var/run:/host/var/run
       - ./carrier/peer1:/tmp/hyperledger/carrier/peer1
@@ -373,6 +378,7 @@ services:
       - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer2-carrier:7051
       - CORE_PEER_GOSSIP_SKIPHANDSHAKE=true
     working_dir: /tmp/hyperledger/carrier/peer2
+    command: peer node start
     volumes:
       - /var/run:/host/var/run
       - ./carrier/peer2:/tmp/hyperledger/carrier/peer2
@@ -405,6 +411,7 @@ services:
       - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1-middleman:7051
       - CORE_PEER_GOSSIP_SKIPHANDSHAKE=true
     working_dir: /tmp/hperledger/middleman/peer1
+    command: peer node start
     volumes:
       - /var/run:/host/var/run
       - ./middleman/peer1:/tmp/hyperledger/middleman/peer1
@@ -437,6 +444,7 @@ services:
       - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer2-middleman:7051
       - CORE_PEER_GOSSIP_SKIPHANDSHAKE=true
     working_dir: /tmp/hyperledger/middleman/peer2
+    command: peer node start
     volumes:
       - /var/run:/host/var/run
       - ./middleman/peer2:/tmp/hyperledger/middleman/peer2
