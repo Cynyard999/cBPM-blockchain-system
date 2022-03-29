@@ -1,0 +1,18 @@
+[
+ {
+   "name": "collectionMarbles",
+   "policy": "OR('SupplierMSP.member', 'CarrierMSP.member')",
+   "requiredPeerCount": 0,
+   "maxPeerCount": 3,
+   "blockToLive":1000000,
+   "memberOnlyRead": true
+},
+ {
+   "name": "collectionMarblePrivateDetails",
+   "policy": "OR('SupplierMSP.member')",
+   "requiredPeerCount": 0,
+   "maxPeerCount": 3,
+   "blockToLive":3,
+   "memberOnlyRead": true
+ }
+]
