@@ -219,6 +219,8 @@ services:
       - fabric-ca
     depends_on:
       - couchdb1
+    ports:
+      - 8051:7051
 
   peer2-manufacturer:
     container_name: peer2-manufacturer
@@ -251,6 +253,8 @@ services:
       - fabric-ca
     depends_on:
       - couchdb1
+    ports:
+      - 8151:7051
 
 
   peer1-supplier:
@@ -284,6 +288,8 @@ services:
       - fabric-ca
     depends_on:
       - couchdb1
+    ports:
+      - 8251:7051
 
   peer2-supplier:
     container_name: peer2-supplier
@@ -316,6 +322,8 @@ services:
       - fabric-ca
     depends_on:
       - couchdb1
+    ports:
+      - 8351:7051
 
   peer1-carrier:
     container_name: peer1-carrier
@@ -348,6 +356,8 @@ services:
       - fabric-ca
     depends_on:
       - couchdb1
+    ports:
+      - 8451:7051
 
   peer2-carrier:
     container_name: peer2-carrier
@@ -380,6 +390,8 @@ services:
       - fabric-ca
     depends_on:
       - couchdb1
+    ports:
+      - 8551:7051
 
   peer1-middleman:
     container_name: peer1-middleman
@@ -412,6 +424,8 @@ services:
       - fabric-ca
     depends_on:
       - couchdb1
+    ports:
+      - 8651:7051
 
   peer2-middleman:
     container_name: peer2-middleman
@@ -444,6 +458,8 @@ services:
       - fabric-ca
     depends_on:
       - couchdb1
+    ports:
+      - 8751:7051
 
   cli:
     container_name: cli
