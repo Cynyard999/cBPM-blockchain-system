@@ -70,15 +70,15 @@ public class ApiController {
         for (int i = 0; i < argArray.size(); i++) {
             args[i] = argArray.getJSONObject(i).toString();
         }
-        byte[] queryAResultBefore = contract.evaluateTransaction(functionName, args);
-        return new String(queryAResultBefore, StandardCharsets.UTF_8);
+        byte[] queryResult = contract.evaluateTransaction(functionName, args);
+        return new String(queryResult, StandardCharsets.UTF_8);
     }
 
 
     @GetMapping("/ReadAsset")
     public String readAsset(String assetId) throws ContractException {
-        byte[] queryAResultBefore = contract.evaluateTransaction("ReadAsset", assetId);
-        return new String(queryAResultBefore, StandardCharsets.UTF_8);
+        byte[] queryResult = contract.evaluateTransaction("ReadAsset", assetId);
+        return new String(queryResult, StandardCharsets.UTF_8);
     }
 
     @GetMapping("/CreateAsset")
@@ -88,8 +88,7 @@ public class ApiController {
                 .setEndorsingPeers(
                         network.getChannel().getPeers(EnumSet.of(Peer.PeerRole.ENDORSING_PEER)))
                 .submit(assetId, color, size, owner, value);
-        String txId = new String(invokeResult, StandardCharsets.UTF_8);
-        return txId;
+        return new String(invokeResult, StandardCharsets.UTF_8);
     }
 
     @GetMapping("/DeleteAsset")
@@ -99,8 +98,7 @@ public class ApiController {
                 .setEndorsingPeers(
                         network.getChannel().getPeers(EnumSet.of(Peer.PeerRole.ENDORSING_PEER)))
                 .submit(assetId);
-        String txId = new String(invokeResult, StandardCharsets.UTF_8);
-        return txId;
+        return new String(invokeResult, StandardCharsets.UTF_8);
     }
 
     @GetMapping("/TransferAsset")
@@ -110,8 +108,7 @@ public class ApiController {
                 .setEndorsingPeers(
                         network.getChannel().getPeers(EnumSet.of(Peer.PeerRole.ENDORSING_PEER)))
                 .submit(assetId, newOwner);
-        String txId = new String(invokeResult, StandardCharsets.UTF_8);
-        return txId;
+        return new String(invokeResult, StandardCharsets.UTF_8);
     }
 }
 
