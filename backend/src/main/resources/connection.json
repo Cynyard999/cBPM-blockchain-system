@@ -1,0 +1,293 @@
+{
+    "name": "fabric-ca",
+    "version": "3.7",
+    "client": {
+        "organization": "CarrierOrg",
+        "connection": {
+            "timeout": {
+                "peer": {
+                    "endorser": "300"
+                },
+                "orderer": "300"
+            }
+        }
+    },
+    "channels": {
+        "scchannel": {
+            "orderers": [
+                "orderer-cbpm"
+            ],
+            "peers": {
+                "peer1-supplier": {
+                    "endorsingPeer": true,
+                    "chaincodeQuery": true,
+                    "ledgerQuery": true,
+                    "eventSource": true
+                },
+                "peer2-supplier": {
+                    "endorsingPeer": true,
+                    "chaincodeQuery": true,
+                    "ledgerQuery": true,
+                    "eventSource": true
+                },
+                "peer1-carrier": {
+                    "endorsingPeer": true,
+                    "chaincodeQuery": true,
+                    "ledgerQuery": true,
+                    "eventSource": true
+                },
+                "peer2-carrier": {
+                    "endorsingPeer": true,
+                    "chaincodeQuery": true,
+                    "ledgerQuery": true,
+                    "eventSource": true
+                }
+            }
+        }
+    },
+    "organizations": {
+
+        "SupplierOrg": {
+            "mspid": "SupplierMSP",
+            "peers": [
+                "peer1-supplier",
+                "peer2-supplier"
+            ],
+            "certificateAuthorities": [
+                "supplier-ca"
+            ],
+            "adminPrivateKeyPEM": {
+                "path": "src/main/resources/network/supplier/admin/msp/keystore/de6aa9502e7f1e0b8a0c63a944b23369a9a4c5bbee1f733eb35813b856722a75_sk"
+            },
+            "signedCertPEM": {
+                "path": "src/main/resources/network/supplier/admin/msp/signcerts/cert.pem"
+            }
+        },
+        "CarrierOrg": {
+            "mspid": "CarrierMSP",
+            "peers": [
+                "peer1-carrier",
+                "peer2-carrier"
+            ],
+            "certificateAuthorities": [
+                "carrier-ca"
+            ],
+            "adminPrivateKeyPEM": {
+                "path": "src/main/resources/network/carrier/admin/msp/keystore/dcc207270b08198610b72b52d575f505016d9f4a7064698dcab8b1c62bb194fb_sk"
+            },
+            "signedCertPEM": {
+                "path": "src/main/resources/network/carrier/admin/msp/signcerts/cert.pem"
+            }
+        },
+        "ManufacturerOrg": {
+            "mspid": "ManufactureMSP",
+            "peers": [
+                "peer1-manufacturer",
+                "peer2-manufacturer"
+            ],
+            "certificateAuthorities": [
+                "manufacturer-ca"
+            ],
+            "adminPrivateKeyPEM": {
+                "path": "src/main/resources/network/manufacturer/admin/msp/keystore/e5abb5b7e2b642fe701aa1a83240356bf2e9da102972090f58caa1dec24cc37b_sk"
+            },
+            "signedCertPEM": {
+                "path": "src/main/resources/network/manufacturer/admin/msp/signcerts/cert.pem"
+            }
+        },
+        "MiddlemanOrg": {
+            "mspid": "MiddlemanMSP",
+            "peers": [
+                "peer1-middleman",
+                "peer2-middleman"
+            ],
+            "certificateAuthorities": [
+                "middleman-ca"
+            ],
+            "adminPrivateKeyPEM": {
+                "path": "src/main/resources/network/middleman/admin/msp/keystore/a7a2977d548b73b111c632d2691c865c95788641e6c0cf610379bcf86465b1ab_sk"
+            },
+            "signedCertPEM": {
+                "path": "src/main/resources/network/middleman/admin/msp/signcerts/cert.pem"
+            }
+        }
+    },
+
+    "orderers": {
+        "orderer-cbpm": {
+            "url": "grpcs://0.0.0.0:7050",
+            "mspid": "OrdererMSP",
+            "grpcOptions": {
+                "ssl-target-name-override": "orderer-cbpm",
+                "hostnameOverride": "orderer-cbpm"
+            },
+            "tlsCACerts": {
+                "path": "src/main/resources/network/cbpm/orderer/tls/tlscacerts/tls-0-0-0-0-7052.pem"
+            },
+            "adminPrivateKeyPEM": {
+                "path": "src/main/resources/network/cbpm/admin/msp/keystore/private_sk"
+            },
+            "signedCertPEM": {
+                "path": "src/main/resources/network/cbpm/admin/msp/signcerts/cert.pem"
+            }
+        }
+    },
+    "peers": {
+        "peer1-supplier": {
+            "url": "grpcs://0.0.0.0:8251",
+            "grpcOptions": {
+                "ssl-target-name-override": "peer1-supplier",
+                "hostnameOverride": "peer1-supplier",
+                "request-timeout": 120001
+            },
+            "tlsCACerts": {
+                "path": "src/main/resources/network/supplier/peer1/tls/tlscacerts/tls-0-0-0-0-7052.pem"
+            }
+        },
+        "peer2-supplier": {
+            "url": "grpcs://0.0.0.0:8351",
+            "grpcOptions": {
+                "ssl-target-name-override": "peer2-supplier",
+                "hostnameOverride": "peer2-supplier",
+                "request-timeout": 120001
+            },
+            "tlsCACerts": {
+                "path": "src/main/resources/network/supplier/peer2/tls/tlscacerts/tls-0-0-0-0-7052.pem"
+            }
+        },
+        "peer1-carrier": {
+            "url": "grpcs://0.0.0.0:8451",
+            "grpcOptions": {
+                "ssl-target-name-override": "peer1-carrier",
+                "hostnameOverride": "peer1-carrier",
+                "request-timeout": 120001
+            },
+            "tlsCACerts": {
+                "path": "src/main/resources/network/carrier/peer1/tls/tlscacerts/tls-0-0-0-0-7052.pem"
+            }
+        },
+        "peer2-carrier": {
+            "url": "grpcs://0.0.0.0:8551",
+            "grpcOptions": {
+                "ssl-target-name-override": "peer2-carrier",
+                "hostnameOverride": "peer2-carrier",
+                "request-timeout": 120001
+            },
+            "tlsCACerts": {
+                "path": "src/main/resources/network/carrier/peer2/tls/tlscacerts/tls-0-0-0-0-7052.pem"
+
+            }
+        },
+        "peer1-manufacturer": {
+            "url": "grpcs://0.0.0.0:8051",
+            "grpcOptions": {
+                "ssl-target-name-override": "peer1-manufacturer",
+                "hostnameOverride": "peer1-manufacturer",
+                "request-timeout": 120001
+            },
+            "tlsCACerts": {
+                "path": "src/main/resources/network/manufacturer/peer1/tls/tlscacerts/tls-0-0-0-0-7052.pem"
+
+            }
+        },
+        "peer2-manufacturer": {
+            "url": "grpcs://0.0.0.0:8151",
+            "grpcOptions": {
+                "ssl-target-name-override": "peer2-manufacturer",
+                "hostnameOverride": "peer2-manufacturer",
+                "request-timeout": 120001
+            },
+            "tlsCACerts": {
+                "path": "src/main/resources/network/manufacturer/peer2/tls/tlscacerts/tls-0-0-0-0-7052.pem"
+
+            }
+        },
+        "peer1-middleman": {
+            "url": "grpcs://0.0.0.0:8651",
+            "grpcOptions": {
+                "ssl-target-name-override": "peer1-middleman",
+                "hostnameOverride": "peer1-middleman",
+                "request-timeout": 120001
+            },
+            "tlsCACerts": {
+                "path": "src/main/resources/network/middleman/peer1/tls/tlscacerts/tls-0-0-0-0-7052.pem"
+
+            }
+        },
+        "peer2-middleman": {
+            "url": "grpcs://0.0.0.0:8751",
+            "grpcOptions": {
+                "ssl-target-name-override": "peer2-middleman",
+                "hostnameOverride": "peer2-middleman",
+                "request-timeout": 120001
+            },
+            "tlsCACerts": {
+                "path": "src/main/resources/network/middleman/peer2/tls/tlscacerts/tls-0-0-0-0-7052.pem"
+
+            }
+        }
+    },
+    "certificateAuthorities": {
+        "supplier-ca": {
+            "url": "https://0.0.0.0:7055",
+            "grpcOptions": {
+                "verify": true
+            },
+            "tlsCACerts": {
+                "path": "src/main/resources/network/supplier/ca-cert.pem"
+            },
+            "registrar": [
+                {
+                    "enrollId": "supplier-ca-admin",
+                    "enrollSecret": "supplier-adminpw"
+                }
+            ]
+        },
+        "carrier-ca": {
+            "url": "https://0.0.0.0:7056",
+            "grpcOptions": {
+                "verify": true
+            },
+            "tlsCACerts": {
+                "path": "src/main/resources/network/carrier/ca-cert.pem"
+            },
+            "registrar": [
+                {
+                    "enrollId": "carrier-ca-admin",
+                    "enrollSecret": "carrier-adminpw"
+                }
+            ]
+        },
+        "manufacturer-ca": {
+            "url": "https://0.0.0.0:7054",
+            "grpcOptions": {
+                "verify": true
+            },
+            "tlsCACerts": {
+                "path": "src/main/resources/network/manufacturer/ca-cert.pem"
+            },
+            "registrar": [
+                {
+                    "enrollId": "manufacturer-ca-admin",
+                    "enrollSecret": "manufacturer-adminpw"
+                }
+            ]
+        },
+        "middleman-ca": {
+            "url": "https://0.0.0.0:7057",
+            "grpcOptions": {
+                "verify": true
+            },
+            "tlsCACerts": {
+                "path": "src/main/resources/network/middleman/ca-cert.pem"
+            },
+            "registrar": [
+                {
+                    "enrollId": "middleman-ca-admin",
+                    "enrollSecret": "middleman-adminpw"
+                }
+            ]
+        }
+    }
+
+}

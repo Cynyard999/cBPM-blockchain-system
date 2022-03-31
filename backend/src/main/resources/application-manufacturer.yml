@@ -1,0 +1,27 @@
+server:
+  port: 9001
+
+spring:
+  application:
+    name: my-fabric-application-java
+
+fabric:
+  # wallet文件夹路径(自动创建)
+  walletDirectory: wallet
+  # 网络配置文件路径
+  networkConfigPath: src/main/resources/connection.json
+  # 用户证书路径
+  certificatePath: src/main/resources/network/manufacturer/admin/msp/signcerts/cert.pem
+
+  # 用户私钥路径
+  privateKeyPath: src/main/resources/network/manufacturer/admin/msp/keystore/private_sk
+  # 访问的组织名
+  mspid: ManufacturerMSP
+  # 用户名
+  username: manufacturer-ca-admin
+
+  # 通道名字
+  channelName: scchannel
+
+  # 链码名字
+  contractName: assettransfer
