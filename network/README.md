@@ -219,6 +219,12 @@ peer chaincode query -C scchannel -n $CHAINCODE_NAME -c '{"function": "queryMarb
 peer chaincode query -C scchannel -n $CHAINCODE_NAME -c '{"Args":["readMarble","marble1"]}'
 ```
 
+
+
+
+
+
+
 #### go-asset-transfer-couchdb
 
 ```shell
@@ -242,10 +248,15 @@ peer chaincode query -C scchannel -n $CHAINCODE_NAME -c '{"Args":["ReadAsset","a
 
 peer chaincode invoke -o orderer-cbpm:7050 --tls --cafile "/tmp/hyperledger/fabric/peer/cbpm/orderer/tls/tlscacerts/tls-0-0-0-0-7052.pem" -C scchannel -n $CHAINCODE_NAME -c '{"Args":["CreateAsset","asset10","black","5","cynyard","10"]}'
 
+
 peer chaincode query -C scchannel -n $CHAINCODE_NAME -c '{"Args":["ReadAsset","asset10"]}'
 
 
 ```
+
+
+
+
 
 
 
