@@ -1,10 +1,5 @@
-# backendf-cBPM-blockchain-system
+### Read.me
 
-系统后端，基于SpringBoot
+Springboot+fabric-gateway-java连接网络
 
-
-
-TODO
-
-
-
+与前端交互
