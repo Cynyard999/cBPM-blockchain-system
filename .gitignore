@@ -2,6 +2,12 @@
 # Created by https://www.toptal.com/developers/gitignore/api/go,goland,intellij,java,gradle,maven,vue,webstorm,macos
 # Edit at https://www.toptal.com/developers/gitignore?templates=go,goland,intellij,java,gradle,maven,vue,webstorm,macos
 
+network/channel-artifacts/*.block
+!network/channel-artifacts/genesis.block
+
+go.sum
+
+
 ### Go ###
 # If you prefer the allow list template instead of the deny list, see community template:
 # https://github.com/github/gitignore/blob/main/community/Golang/Go.AllowList.gitignore
@@ -20,7 +26,7 @@
 *.out
 
 # Dependency directories (remove the comment below to include it)
-# vendor/
+vendor/
 
 # Go workspace file
 go.work
