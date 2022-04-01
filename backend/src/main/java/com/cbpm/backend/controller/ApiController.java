@@ -38,14 +38,16 @@ public class ApiController {
      */
     @PostMapping("/invoke")
     public String invokeFunc(@RequestBody JSONObject jsonObject) throws Exception {
+        System.out.println(jsonObject.toString());
         String functionName = jsonObject.getString("function");
-        if (StringUtils.isNoneEmpty(functionName)) {
+        System.out.println(functionName);
+        if (StringUtils.isBlank(functionName)) {
             return "no function name";
         }
         JSONArray argArray = jsonObject.getJSONArray("args");
         String[] args = new String[argArray.size()];
         for (int i = 0; i < argArray.size(); i++) {
-            args[i] = argArray.getJSONObject(i).toString();
+            args[i] = argArray.getString(i);
         }
         byte[] invokeResult = contract.createTransaction(functionName).setEndorsingPeers(
                 network.getChannel().getPeers(EnumSet.of(Peer.PeerRole.ENDORSING_PEER)))

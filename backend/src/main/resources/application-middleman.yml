@@ -26,4 +26,4 @@ fabric:
   channelName: scchannel
 
   # 链码名字
-  contractName: assettransfer
+  contractName: scchaincode

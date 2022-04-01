@@ -85,21 +85,23 @@ TODO：
 
 ### 选择链码
 
-链码描述-链码路径-链码语言
+链码路径-链码语言
 
-- go-marbles-couchdb : test-go : golang
-- go-asset-transfer-couchdb: test-go-asset-transfer : golang
-- go-marbles-private-couchdb: test-go-private-data : golang
-- go-secured-transfer-couchdb: test-go-secured-transfer: golang ！！！不能使用，版本过高，该链码使用了` implicit private data namespace reserved for organization-specific private data.` 
+- chaincode-supplier-carrier: golang
+
+- test-go : golang
+- test-go-asset-transfer : golang
+- test-go-private-data : golang
+- test-go-secured-transfer: golang ！！！不能使用，版本过高，该链码使用了` implicit private data namespace reserved for organization-specific private data.` 
 
 ### 安装链码
 
 ```shell
 # 输入想要安装的链码路径以及语言版本
-export CHAINCODE=test-go-asset-transfer
+export CHAINCODE=chaincode-supplier-carrier
 export CHAINCODE_LANG=golang
-export CHAINCODE_VERSION=1.1
-export CHAINCODE_NAME=assettransfer
+export CHAINCODE_VERSION=1.0
+export CHAINCODE_NAME=scchaincode
 
 export CORE_PEER_MSPCONFIGPATH=/tmp/hyperledger/fabric/peer/supplier/admin/msp
 export CORE_PEER_ADDRESS=peer1-supplier:7051
@@ -144,7 +146,17 @@ peer chaincode install -n $CHAINCODE_NAME -v $CHAINCODE_VERSION  -p $CHAINCODE -
 
 
 
-#### go-marbles-private-couchdb
+#### chaincode-supplier-carrier
+
+```shell
+peer chaincode instantiate -o orderer-cbpm:7050 --tls --cafile "/tmp/hyperledger/fabric/peer/cbpm/orderer/tls/tlscacerts/tls-0-0-0-0-7052.pem" -C scchannel -n $CHAINCODE_NAME -l $CHAINCODE_LANG -v $CHAINCODE_VERSION -c '{"Args":[""]}' -P "OR('SupplierMSP.peer','CarrierMSP.peer')"
+
+
+```
+
+
+
+#### test-go-private-data
 
 ```shell
 export CORE_PEER_MSPCONFIGPATH=/tmp/hyperledger/fabric/peer/supplier/admin/msp
@@ -225,7 +237,7 @@ peer chaincode query -C scchannel -n $CHAINCODE_NAME -c '{"Args":["readMarble","
 
 
 
-#### go-asset-transfer-couchdb
+#### test-go
 
 ```shell
 export CORE_PEER_MSPCONFIGPATH=/tmp/hyperledger/fabric/peer/supplier/admin/msp
