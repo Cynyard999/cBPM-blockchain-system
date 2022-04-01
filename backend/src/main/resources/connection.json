@@ -112,7 +112,6 @@
             }
         }
     },
-
     "orderers": {
         "orderer-cbpm": {
             "url": "grpcs://0.0.0.0:7050",

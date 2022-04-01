@@ -17,96 +17,106 @@ import java.security.InvalidKeyException;
 import java.security.PrivateKey;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.util.HashMap;
 
 
 @Slf4j
 @Configuration
 public class GatewayConfig {
+
+    /**
+     * 存放各个org对应的网关
+     */
+   public HashMap<String,Gateway> gatewayHashMap=new HashMap<>();
+
+    /**
+     * network路径
+     */
+    private final String networkPath="src/main/resources/network/";
     /**
      * wallet文件夹路径
      */
-    @Value("${fabric.walletDirectory}")
-    private String walletDirectory;
+    private final String walletDirectory="wallet";
     /**
      * 网络配置文件路径
      */
-    @Value("${fabric.networkConfigPath}")
-    private String networkConfigPath;
+
+    private final String networkConfigPath="src/main/resources/connection.json";
     /**
-     * 用户证书路径
+     * 四种组织名称
      */
-    @Value("${fabric.certificatePath}")
-    private String certificatePath;
+   private final String[] orgs={"carrier","supplier","manufacturer","middleman"};
+
     /**
-     * 用户私钥路径
+     * 四种组织msp
      */
-    @Value("${fabric.privateKeyPath}")
-    private String privateKeyPath;
-    /**
-     * 访问的组织名
-     */
-    @Value("${fabric.mspid}")
-    private String mspid;
+    private final String[] orgMSPs={"CarrierMSP","SupplierMSP","ManufacturerMSP","MiddlemanMSP"};
+
     /**
      * 用户名
      */
-    @Value("${fabric.username}")
-    private String username;
-    /**
-     * 通道名字
-     */
-    @Value("${fabric.channelName}")
-    private String channelName;
-    /**
-     * 链码名字
-     */
-    @Value("${fabric.contractName}")
-    private String contractName;
+    private final String[] orgAdminNames={"carrier-ca-admin","supplier-ca-admin","manufacturer-ca-admin","middleman-ca-admin"};
 
     /**
-     * 连接网关
+     * 用户证书路径后缀
+     */
+    private final String certificatePathSuffix="/admin/msp/signcerts/cert.pem";
+    /**
+     * 用户私钥路径后缀
+     */
+
+    private String privateKeyPathSuufix="/admin/msp/keystore/private_sk";
+
+
+
+    /**
+     * 配置网关
      */
     @Bean
-    public Gateway connectGateway() throws IOException, InvalidKeyException, CertificateException {
-        //使用org1中的user1初始化一个网关wallet账户用于连接网络
+    public HashMap<String,Gateway> connectGateway() throws IOException, InvalidKeyException, CertificateException {
+        HashMap<String,Gateway> gateways=new HashMap<>();
+        //初始化网关wallet账户用于连接网络
         Wallet wallet = Wallets.newFileSystemWallet(Paths.get(this.walletDirectory));
-        X509Certificate certificate = readX509Certificate(Paths.get(this.certificatePath));
+        //初始化时将所有组织的admin用户认证信息都存进wallet中，以便后面直接调用
+        for(int i=0;i<orgs.length;i++) {
+            //获取证书
+            X509Certificate certificate = readX509Certificate(Paths.get(this.networkPath +orgs[i]+this.certificatePathSuffix));
+            //获取私钥
+            PrivateKey privateKey = getPrivateKey(Paths.get(this.networkPath+orgs[i]+this.privateKeyPathSuufix));
+            //存进wallet
+            wallet.put(orgAdminNames[i], Identities.newX509Identity(orgMSPs[i], certificate, privateKey));
 
-        PrivateKey privateKey = getPrivateKey(Paths.get(this.privateKeyPath));
-        wallet.put(username, Identities.newX509Identity(this.mspid, certificate, privateKey));
-
-        //根据connection.json 获取Fabric网络连接对象
-        Gateway.Builder builder = Gateway.createBuilder()
-                .identity(wallet, username)
-                .networkConfig(Paths.get(this.networkConfigPath));
-
-        //连接网关
-//        System.out.println("builder success");
-        return builder.connect();
+            //根据connection.json 获取Fabric网络连接对象
+            Gateway.Builder builder = Gateway.createBuilder()
+                    .identity(wallet, orgAdminNames[i])
+                    .networkConfig(Paths.get(this.networkConfigPath));
+            //把所有组织的连接的gateway存起来，以便后面直接调用
+            this.gatewayHashMap.put(orgs[i],builder.connect());
+            gateways.put(orgs[i],builder.connect());
+        }
+        return gateways;
     }
 
     /**
-     * 获取通道
-     */
-    @Bean
-    public Network network(Gateway gateway) {
-        return gateway.getNetwork(this.channelName);
-    }
-
-    /**
-     * 获取合约
-     */
-    @Bean
-    public Contract contract(Network network) {
-        return network.getContract(this.contractName);
-    }
-
+    * @description: 获取证书
+     * @param certificatePath
+    * @return: java.security.cert.X509Certificate
+    * @author: Polaris
+    * @date: 2022/4/1
+    */
     private static X509Certificate readX509Certificate(final Path certificatePath) throws IOException, CertificateException {
         try (Reader certificateReader = Files.newBufferedReader(certificatePath, StandardCharsets.UTF_8)) {
             return Identities.readX509Certificate(certificateReader);
         }
     }
 
+    /**
+    * @description: 获取私钥
+     * @param privateKeyPath
+    * @return: java.security.PrivateKey
+    * @author: Polaris
+    * @date: 2022/4/1
+    */
     private static PrivateKey getPrivateKey(final Path privateKeyPath) throws IOException, InvalidKeyException {
         try (Reader privateKeyReader = Files.newBufferedReader(privateKeyPath, StandardCharsets.UTF_8)) {
             return Identities.readPrivateKey(privateKeyReader);
