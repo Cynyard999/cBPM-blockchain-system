@@ -1,6 +1,7 @@
 package com.cbpm.backend.controller;
 
 import com.cbpm.backend.serviceImpl.ApiImpl;
+import com.cbpm.backend.vo.ResponseVo;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import com.alibaba.fastjson.JSONObject;
@@ -20,7 +21,7 @@ public class ApiController {
      * @return java.lang.String
      */
     @PostMapping("/invoke")
-    public String invokeFunc(@RequestBody JSONObject jsonObject) throws Exception {
+    public ResponseVo invokeFunc(@RequestBody JSONObject jsonObject) throws Exception {
         return apiImpl.invoke(jsonObject);
     }
 
@@ -32,7 +33,7 @@ public class ApiController {
      * @return java.lang.String
      */
     @PostMapping("/query")
-    public String queryFunc(@RequestBody JSONObject jsonObject) throws Exception {
+    public ResponseVo queryFunc(@RequestBody JSONObject jsonObject) throws Exception {
         return apiImpl.query(jsonObject);
     }
 }

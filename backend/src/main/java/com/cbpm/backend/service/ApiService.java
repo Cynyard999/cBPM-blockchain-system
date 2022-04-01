@@ -1,6 +1,7 @@
 package com.cbpm.backend.service;
 
 import com.alibaba.fastjson.JSONObject;
+import com.cbpm.backend.vo.ResponseVo;
 import org.hyperledger.fabric.gateway.ContractException;
 
 public interface ApiService {
@@ -12,7 +13,7 @@ public interface ApiService {
     * @author: Polaris
     * @date: 2022/4/1
     */
-    String query(JSONObject jsonObject) throws ContractException;
+    ResponseVo query(JSONObject jsonObject) throws ContractException;
 
     /**
     * @description: interface for controller
@@ -21,6 +22,6 @@ public interface ApiService {
     * @author: Polaris
     * @date: 2022/4/1
     */
-    String invoke(JSONObject jsonObject);
+    ResponseVo invoke(JSONObject jsonObject);
 
 }
