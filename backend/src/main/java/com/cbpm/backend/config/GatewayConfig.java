@@ -81,7 +81,7 @@ public class GatewayConfig {
                 .networkConfig(Paths.get(this.networkConfigPath));
 
         //连接网关
-        System.out.println("builder success");
+//        System.out.println("builder success");
         return builder.connect();
     }
 

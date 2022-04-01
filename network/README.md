@@ -154,6 +154,9 @@ peer chaincode instantiate -o orderer-cbpm:7050 --tls --cafile "/tmp/hyperledger
 
 peer chaincode invoke -o orderer-cbpm:7050 --tls --cafile "/tmp/hyperledger/fabric/peer/cbpm/orderer/tls/tlscacerts/tls-0-0-0-0-7052.pem" -C scchannel -n $CHAINCODE_NAME -c '{"Args":["createDeliveryOrder", "trade1","asset1","100","placeA","placeB"]}'
 
+
+peer chaincode invoke -o orderer-cbpm:7050 --tls --cafile "/tmp/hyperledger/fabric/peer/cbpm/orderer/tls/tlscacerts/tls-0-0-0-0-7052.pem" -C scchannel -n $CHAINCODE_NAME -c '{"Args":["DeleteDeliveryOrder", "trade1"]}'
+
 ```
 
 

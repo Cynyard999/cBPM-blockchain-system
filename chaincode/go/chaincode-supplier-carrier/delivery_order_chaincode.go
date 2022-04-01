@@ -54,8 +54,8 @@ type PaginatedQueryResult struct {
 //queryAllDeliveryOrder
 
 // CreateAsset initializes a new asset in the ledger
-func (t *SimpleChaincode) createDeliveryOrder(ctx contractapi.TransactionContextInterface, tradeID string, assetID string, quantity int, startPlace string, endPlace string) error {
-	exists, err := t.deliveryOrderExists(ctx, tradeID)
+func (t *SimpleChaincode) CreateDeliveryOrder(ctx contractapi.TransactionContextInterface, tradeID string, assetID string, quantity int, startPlace string, endPlace string) error {
+	exists, err := t.DeliveryOrderExists(ctx, tradeID)
 	if err != nil {
 		return fmt.Errorf("failed to get delivery order for trade %s: %v", tradeID, err)
 	}
@@ -100,7 +100,7 @@ func (t *SimpleChaincode) createDeliveryOrder(ctx contractapi.TransactionContext
 }
 
 func (t *SimpleChaincode) DeleteDeliveryOrder(ctx contractapi.TransactionContextInterface, tradeID string) error {
-	deliveryOrder, err := t.getDeliveryOrder(ctx, tradeID)
+	deliveryOrder, err := t.GetDeliveryOrder(ctx, tradeID)
 	if err != nil {
 		return err
 	}
@@ -118,8 +118,8 @@ func (t *SimpleChaincode) DeleteDeliveryOrder(ctx contractapi.TransactionContext
 	return ctx.GetStub().DelState(tradeIDOrderIDIndexKey)
 }
 
-func (t *SimpleChaincode) pickDeliveryOrder(ctx contractapi.TransactionContextInterface, tradeID string) error {
-	deliveryOrder, err := t.getDeliveryOrder(ctx, tradeID)
+func (t *SimpleChaincode) PickDeliveryOrder(ctx contractapi.TransactionContextInterface, tradeID string) error {
+	deliveryOrder, err := t.GetDeliveryOrder(ctx, tradeID)
 	if err != nil {
 		return err
 	}
@@ -139,8 +139,8 @@ func (t *SimpleChaincode) pickDeliveryOrder(ctx contractapi.TransactionContextIn
 	return ctx.GetStub().PutState(tradeID, deliveryOrderBytes)
 }
 
-func (t *SimpleChaincode) updateDeliveryOrderStatus(ctx contractapi.TransactionContextInterface, tradeID string, status int) error {
-	deliveryOrder, err := t.getDeliveryOrder(ctx, tradeID)
+func (t *SimpleChaincode) UpdateDeliveryOrderStatus(ctx contractapi.TransactionContextInterface, tradeID string, status int) error {
+	deliveryOrder, err := t.GetDeliveryOrder(ctx, tradeID)
 	if err != nil {
 		return err
 	}
@@ -163,7 +163,7 @@ func (t *SimpleChaincode) updateDeliveryOrderStatus(ctx contractapi.TransactionC
 	return ctx.GetStub().PutState(tradeID, deliveryOrderBytes)
 }
 
-func (t *SimpleChaincode) getDeliveryOrder(ctx contractapi.TransactionContextInterface, tradeID string) (*DeliveryOrder, error) {
+func (t *SimpleChaincode) GetDeliveryOrder(ctx contractapi.TransactionContextInterface, tradeID string) (*DeliveryOrder, error) {
 	deliveryOrderBytes, err := ctx.GetStub().GetState(tradeID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get delivery order for trade %s: %v", tradeID, err)
@@ -181,7 +181,7 @@ func (t *SimpleChaincode) getDeliveryOrder(ctx contractapi.TransactionContextInt
 	return &deliveryOrder, nil
 }
 
-func (t *SimpleChaincode) queryDeliveryOrders(ctx contractapi.TransactionContextInterface, queryString string) ([]*DeliveryOrder, error) {
+func (t *SimpleChaincode) QueryDeliveryOrders(ctx contractapi.TransactionContextInterface, queryString string) ([]*DeliveryOrder, error) {
 	return getQueryResultForQueryString(ctx, queryString)
 }
 
@@ -311,7 +311,7 @@ func (t *SimpleChaincode) GetOrderHistory(ctx contractapi.TransactionContextInte
 	return records, nil
 }
 
-func (t *SimpleChaincode) deliveryOrderExists(ctx contractapi.TransactionContextInterface, tradeID string) (bool, error) {
+func (t *SimpleChaincode) DeliveryOrderExists(ctx contractapi.TransactionContextInterface, tradeID string) (bool, error) {
 	deliveryOrderBytes, err := ctx.GetStub().GetState(tradeID)
 	if err != nil {
 		return false, fmt.Errorf("failed to read delivery order for trade %s from world state. %v", tradeID, err)
