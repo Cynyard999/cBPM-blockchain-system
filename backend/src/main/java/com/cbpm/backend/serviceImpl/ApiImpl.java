@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.concurrent.TimeoutException;
@@ -47,6 +48,7 @@ public class ApiImpl implements ApiService {
             }
             //调用contract对应function
             byte[] queryResult = contract.evaluateTransaction(functionName, args);
+            System.out.println(functionName+" "+ Arrays.deepToString(args)+" "+"success");
             return new String(queryResult, StandardCharsets.UTF_8);
         }catch (ContractException e){
             String exception=e.toString();
@@ -81,6 +83,7 @@ public class ApiImpl implements ApiService {
         byte[] invokeResult = contract.createTransaction(functionName).setEndorsingPeers(
                 network.getChannel().getPeers(EnumSet.of(Peer.PeerRole.ENDORSING_PEER)))
                 .submit(args);
+            System.out.println(functionName+" "+Arrays.deepToString(args)+" "+"success");
             return new String(invokeResult, StandardCharsets.UTF_8);
         }catch (ContractException e){
             String exception=e.toString();

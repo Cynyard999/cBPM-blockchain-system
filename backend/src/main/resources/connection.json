@@ -57,10 +57,10 @@
                 "supplier-ca"
             ],
             "adminPrivateKeyPEM": {
-                "path": "src/main/resources/network/supplier/admin/msp/keystore/de6aa9502e7f1e0b8a0c63a944b23369a9a4c5bbee1f733eb35813b856722a75_sk"
+                "path": "../network/supplier/admin/msp/keystore/private_sk"
             },
             "signedCertPEM": {
-                "path": "src/main/resources/network/supplier/admin/msp/signcerts/cert.pem"
+                "path": "../network/supplier/admin/msp/signcerts/cert.pem"
             }
         },
         "CarrierOrg": {
@@ -73,10 +73,10 @@
                 "carrier-ca"
             ],
             "adminPrivateKeyPEM": {
-                "path": "src/main/resources/network/carrier/admin/msp/keystore/dcc207270b08198610b72b52d575f505016d9f4a7064698dcab8b1c62bb194fb_sk"
+                "path": "../network/carrier/admin/msp/keystore/private_sk"
             },
             "signedCertPEM": {
-                "path": "src/main/resources/network/carrier/admin/msp/signcerts/cert.pem"
+                "path": "../network/carrier/admin/msp/signcerts/cert.pem"
             }
         },
         "ManufacturerOrg": {
@@ -89,10 +89,10 @@
                 "manufacturer-ca"
             ],
             "adminPrivateKeyPEM": {
-                "path": "src/main/resources/network/manufacturer/admin/msp/keystore/e5abb5b7e2b642fe701aa1a83240356bf2e9da102972090f58caa1dec24cc37b_sk"
+                "path": "../network/manufacturer/admin/msp/keystore/private_sk"
             },
             "signedCertPEM": {
-                "path": "src/main/resources/network/manufacturer/admin/msp/signcerts/cert.pem"
+                "path": "../network/manufacturer/admin/msp/signcerts/cert.pem"
             }
         },
         "MiddlemanOrg": {
@@ -105,10 +105,10 @@
                 "middleman-ca"
             ],
             "adminPrivateKeyPEM": {
-                "path": "src/main/resources/network/middleman/admin/msp/keystore/a7a2977d548b73b111c632d2691c865c95788641e6c0cf610379bcf86465b1ab_sk"
+                "path": "../network/middleman/admin/msp/keystore/private_sk"
             },
             "signedCertPEM": {
-                "path": "src/main/resources/network/middleman/admin/msp/signcerts/cert.pem"
+                "path": "../network/middleman/admin/msp/signcerts/cert.pem"
             }
         }
     },
@@ -121,13 +121,13 @@
                 "hostnameOverride": "orderer-cbpm"
             },
             "tlsCACerts": {
-                "path": "src/main/resources/network/cbpm/orderer/tls/tlscacerts/tls-0-0-0-0-7052.pem"
+                "path": "../network/cbpm/orderer/tls/tlscacerts/tls-0-0-0-0-7052.pem"
             },
             "adminPrivateKeyPEM": {
-                "path": "src/main/resources/network/cbpm/admin/msp/keystore/private_sk"
+                "path": "../network/cbpm/admin/msp/keystore/private_sk"
             },
             "signedCertPEM": {
-                "path": "src/main/resources/network/cbpm/admin/msp/signcerts/cert.pem"
+                "path": "../network/cbpm/admin/msp/signcerts/cert.pem"
             }
         }
     },
@@ -140,7 +140,7 @@
                 "request-timeout": 120001
             },
             "tlsCACerts": {
-                "path": "src/main/resources/network/supplier/peer1/tls/tlscacerts/tls-0-0-0-0-7052.pem"
+                "path": "../network/supplier/peer1/tls/tlscacerts/tls-0-0-0-0-7052.pem"
             }
         },
         "peer2-supplier": {
@@ -151,7 +151,7 @@
                 "request-timeout": 120001
             },
             "tlsCACerts": {
-                "path": "src/main/resources/network/supplier/peer2/tls/tlscacerts/tls-0-0-0-0-7052.pem"
+                "path": "../network/supplier/peer2/tls/tlscacerts/tls-0-0-0-0-7052.pem"
             }
         },
         "peer1-carrier": {
@@ -162,7 +162,7 @@
                 "request-timeout": 120001
             },
             "tlsCACerts": {
-                "path": "src/main/resources/network/carrier/peer1/tls/tlscacerts/tls-0-0-0-0-7052.pem"
+                "path": "../network/carrier/peer1/tls/tlscacerts/tls-0-0-0-0-7052.pem"
             }
         },
         "peer2-carrier": {
@@ -173,7 +173,7 @@
                 "request-timeout": 120001
             },
             "tlsCACerts": {
-                "path": "src/main/resources/network/carrier/peer2/tls/tlscacerts/tls-0-0-0-0-7052.pem"
+                "path": "../network/carrier/peer2/tls/tlscacerts/tls-0-0-0-0-7052.pem"
 
             }
         },
@@ -185,7 +185,7 @@
                 "request-timeout": 120001
             },
             "tlsCACerts": {
-                "path": "src/main/resources/network/manufacturer/peer1/tls/tlscacerts/tls-0-0-0-0-7052.pem"
+                "path": "../network/manufacturer/peer1/tls/tlscacerts/tls-0-0-0-0-7052.pem"
 
             }
         },
@@ -197,7 +197,7 @@
                 "request-timeout": 120001
             },
             "tlsCACerts": {
-                "path": "src/main/resources/network/manufacturer/peer2/tls/tlscacerts/tls-0-0-0-0-7052.pem"
+                "path": "../network/manufacturer/peer2/tls/tlscacerts/tls-0-0-0-0-7052.pem"
 
             }
         },
@@ -209,7 +209,7 @@
                 "request-timeout": 120001
             },
             "tlsCACerts": {
-                "path": "src/main/resources/network/middleman/peer1/tls/tlscacerts/tls-0-0-0-0-7052.pem"
+                "path": "../network/middleman/peer1/tls/tlscacerts/tls-0-0-0-0-7052.pem"
 
             }
         },
@@ -221,7 +221,7 @@
                 "request-timeout": 120001
             },
             "tlsCACerts": {
-                "path": "src/main/resources/network/middleman/peer2/tls/tlscacerts/tls-0-0-0-0-7052.pem"
+                "path": "../network/middleman/peer2/tls/tlscacerts/tls-0-0-0-0-7052.pem"
 
             }
         }
@@ -233,7 +233,7 @@
                 "verify": true
             },
             "tlsCACerts": {
-                "path": "src/main/resources/network/supplier/ca-cert.pem"
+                "path": "../network/supplier/ca-cert.pem"
             },
             "registrar": [
                 {
@@ -248,7 +248,7 @@
                 "verify": true
             },
             "tlsCACerts": {
-                "path": "src/main/resources/network/carrier/ca-cert.pem"
+                "path": "../network/carrier/ca-cert.pem"
             },
             "registrar": [
                 {
@@ -263,7 +263,7 @@
                 "verify": true
             },
             "tlsCACerts": {
-                "path": "src/main/resources/network/manufacturer/ca-cert.pem"
+                "path": "../network/manufacturer/ca-cert.pem"
             },
             "registrar": [
                 {
@@ -278,7 +278,7 @@
                 "verify": true
             },
             "tlsCACerts": {
-                "path": "src/main/resources/network/middleman/ca-cert.pem"
+                "path": "../network/middleman/ca-cert.pem"
             },
             "registrar": [
                 {

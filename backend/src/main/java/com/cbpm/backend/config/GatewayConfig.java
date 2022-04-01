@@ -32,7 +32,7 @@ public class GatewayConfig {
     /**
      * network路径
      */
-    private final String networkPath="src/main/resources/network/";
+    private final String networkPath="../network/";
     /**
      * wallet文件夹路径
      */
