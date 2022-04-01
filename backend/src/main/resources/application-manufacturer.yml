@@ -24,4 +24,4 @@ fabric:
   channelName: scchannel
 
   # 链码名字
-  contractName: scchaincode
+  contractName: deliveryorder
