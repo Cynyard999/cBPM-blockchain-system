@@ -16,8 +16,8 @@ import (
 
 const index = "tradeID~orderID"
 
-// SimpleChaincode implements the fabric-contract-api-go programming model
-type SimpleChaincode struct {
+// CBPMChaincode implements the fabric-contract-api-go programming model
+type CBPMChaincode struct {
 	contractapi.Contract
 }
 
@@ -49,12 +49,8 @@ type PaginatedQueryResult struct {
 	Bookmark            string           `json:"bookmark"`
 }
 
-//deleteDeliveryOrder // Status为0的时候才能删除
-//queryDeliveryOrder
-//queryAllDeliveryOrder
-
 // CreateAsset initializes a new asset in the ledger
-func (t *SimpleChaincode) CreateDeliveryOrder(ctx contractapi.TransactionContextInterface, tradeID string, assetID string, quantity int, startPlace string, endPlace string) error {
+func (t *CBPMChaincode) CreateDeliveryOrder(ctx contractapi.TransactionContextInterface, tradeID string, assetID string, quantity int, startPlace string, endPlace string) error {
 	exists, err := t.DeliveryOrderExists(ctx, tradeID)
 	if err != nil {
 		return fmt.Errorf("failed to get delivery order for trade %s: %v", tradeID, err)
@@ -99,7 +95,7 @@ func (t *SimpleChaincode) CreateDeliveryOrder(ctx contractapi.TransactionContext
 	return ctx.GetStub().PutState(colorNameIndexKey, value)
 }
 
-func (t *SimpleChaincode) DeleteDeliveryOrder(ctx contractapi.TransactionContextInterface, tradeID string) error {
+func (t *CBPMChaincode) DeleteDeliveryOrder(ctx contractapi.TransactionContextInterface, tradeID string) error {
 	deliveryOrder, err := t.GetDeliveryOrder(ctx, tradeID)
 	if err != nil {
 		return err
@@ -118,7 +114,7 @@ func (t *SimpleChaincode) DeleteDeliveryOrder(ctx contractapi.TransactionContext
 	return ctx.GetStub().DelState(tradeIDOrderIDIndexKey)
 }
 
-func (t *SimpleChaincode) PickDeliveryOrder(ctx contractapi.TransactionContextInterface, tradeID string) error {
+func (t *CBPMChaincode) PickDeliveryOrder(ctx contractapi.TransactionContextInterface, tradeID string) error {
 	deliveryOrder, err := t.GetDeliveryOrder(ctx, tradeID)
 	if err != nil {
 		return err
@@ -139,7 +135,7 @@ func (t *SimpleChaincode) PickDeliveryOrder(ctx contractapi.TransactionContextIn
 	return ctx.GetStub().PutState(tradeID, deliveryOrderBytes)
 }
 
-func (t *SimpleChaincode) UpdateDeliveryOrderStatus(ctx contractapi.TransactionContextInterface, tradeID string, status int) error {
+func (t *CBPMChaincode) UpdateDeliveryOrderStatus(ctx contractapi.TransactionContextInterface, tradeID string, status int) error {
 	deliveryOrder, err := t.GetDeliveryOrder(ctx, tradeID)
 	if err != nil {
 		return err
@@ -153,7 +149,7 @@ func (t *SimpleChaincode) UpdateDeliveryOrderStatus(ctx contractapi.TransactionC
 	}
 	// 只能由运输方来修改状态
 	if deliveryOrder.HandleOrg != clientOrgID {
-		return fmt.Errorf("unauthorized handler #{clientOrgID}")
+		return fmt.Errorf("unauthorized handler #{clientOrgID} for trade #{}")
 	}
 	deliveryOrder.Status = status
 	deliveryOrderBytes, err := json.Marshal(deliveryOrder)
@@ -163,7 +159,7 @@ func (t *SimpleChaincode) UpdateDeliveryOrderStatus(ctx contractapi.TransactionC
 	return ctx.GetStub().PutState(tradeID, deliveryOrderBytes)
 }
 
-func (t *SimpleChaincode) GetDeliveryOrder(ctx contractapi.TransactionContextInterface, tradeID string) (*DeliveryOrder, error) {
+func (t *CBPMChaincode) GetDeliveryOrder(ctx contractapi.TransactionContextInterface, tradeID string) (*DeliveryOrder, error) {
 	deliveryOrderBytes, err := ctx.GetStub().GetState(tradeID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get delivery order for trade %s: %v", tradeID, err)
@@ -181,7 +177,7 @@ func (t *SimpleChaincode) GetDeliveryOrder(ctx contractapi.TransactionContextInt
 	return &deliveryOrder, nil
 }
 
-func (t *SimpleChaincode) QueryDeliveryOrders(ctx contractapi.TransactionContextInterface, queryString string) ([]*DeliveryOrder, error) {
+func (t *CBPMChaincode) QueryDeliveryOrders(ctx contractapi.TransactionContextInterface, queryString string) ([]*DeliveryOrder, error) {
 	return getQueryResultForQueryString(ctx, queryString)
 }
 
@@ -241,7 +237,7 @@ func getQueryResultForQueryStringWithPagination(ctx contractapi.TransactionConte
 // The number of fetched records will be equal to or lesser than the page size.
 // Paginated range queries are only valid for read only transactions.
 // Example: Pagination with Range Query
-func (t *SimpleChaincode) GetDeliveryOrdersByRangeWithPagination(ctx contractapi.TransactionContextInterface, startKey string, endKey string, pageSize int, bookmark string) ([]*DeliveryOrder, error) {
+func (t *CBPMChaincode) GetDeliveryOrdersByRangeWithPagination(ctx contractapi.TransactionContextInterface, startKey string, endKey string, pageSize int, bookmark string) ([]*DeliveryOrder, error) {
 
 	resultsIterator, _, err := ctx.GetStub().GetStateByRangeWithPagination(startKey, endKey, int32(pageSize), bookmark)
 	if err != nil {
@@ -260,13 +256,13 @@ func (t *SimpleChaincode) GetDeliveryOrdersByRangeWithPagination(ctx contractapi
 // Only available on state databases that support rich query (e.g. CouchDB)
 // Paginated queries are only valid for read only transactions.
 // Example: Pagination with Ad hoc Rich Query
-func (t *SimpleChaincode) QueryOrdersWithPagination(ctx contractapi.TransactionContextInterface, queryString string, pageSize int, bookmark string) (*PaginatedQueryResult, error) {
+func (t *CBPMChaincode) QueryOrdersWithPagination(ctx contractapi.TransactionContextInterface, queryString string, pageSize int, bookmark string) (*PaginatedQueryResult, error) {
 
 	return getQueryResultForQueryStringWithPagination(ctx, queryString, int32(pageSize), bookmark)
 }
 
 // GetOrderHistory returns the chain of custody for an asset since issuance.
-func (t *SimpleChaincode) GetOrderHistory(ctx contractapi.TransactionContextInterface, tradeID string) ([]HistoryQueryResult, error) {
+func (t *CBPMChaincode) GetOrderHistory(ctx contractapi.TransactionContextInterface, tradeID string) ([]HistoryQueryResult, error) {
 	log.Printf("GetOrderHistory for trade ID %v", tradeID)
 
 	resultsIterator, err := ctx.GetStub().GetHistoryForKey(tradeID)
@@ -311,7 +307,7 @@ func (t *SimpleChaincode) GetOrderHistory(ctx contractapi.TransactionContextInte
 	return records, nil
 }
 
-func (t *SimpleChaincode) DeliveryOrderExists(ctx contractapi.TransactionContextInterface, tradeID string) (bool, error) {
+func (t *CBPMChaincode) DeliveryOrderExists(ctx contractapi.TransactionContextInterface, tradeID string) (bool, error) {
 	deliveryOrderBytes, err := ctx.GetStub().GetState(tradeID)
 	if err != nil {
 		return false, fmt.Errorf("failed to read delivery order for trade %s from world state. %v", tradeID, err)
@@ -352,7 +348,7 @@ func verifyClientOrgMatchesPeerOrg(clientOrgID string) error {
 }
 
 func main() {
-	chaincode, err := contractapi.NewChaincode(&SimpleChaincode{})
+	chaincode, err := contractapi.NewChaincode(&CBPMChaincode{})
 	if err != nil {
 		log.Panicf("Error creating scchaincode: %v", err)
 	}

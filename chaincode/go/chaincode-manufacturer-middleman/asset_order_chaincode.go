@@ -63,7 +63,7 @@ func (t *CBPMChaincode) CreateAsset(ctx contractapi.TransactionContextInterface)
 	}
 	transientAssetJSON, ok := transMap["asset"]
 	if !ok {
-		return fmt.Errorf("marble not found in the transient map")
+		return fmt.Errorf("asset not found in the transient map")
 	}
 	type assetTransientInput struct {
 		AssetID           string  `json:"assetID"`
@@ -116,29 +116,52 @@ func (t *CBPMChaincode) CreateAsset(ctx contractapi.TransactionContextInterface)
 	// === Save marble to state ===
 	err = ctx.GetStub().PutState(asset.AssetID, assetJSONasBytes)
 	if err != nil {
-		return fmt.Errorf("failed to put Asset: %s", err.Error())
+		return fmt.Errorf("failed to create Asset: %s", err.Error())
 	}
 	return nil
 }
-
-func (t *CBPMChaincode) AssetExists(ctx contractapi.TransactionContextInterface, assetID string) (bool, error) {
-	assetBytes, err := ctx.GetStub().GetState(assetID)
+func (t *CBPMChaincode) UpdateAsset(ctx contractapi.TransactionContextInterface, assetID string, assetName string, desc string, assetPrice float32) error {
+	asset, err := t.GetAsset(ctx, assetID)
 	if err != nil {
-		return false, fmt.Errorf("failed to check whether asset %s exists: %v", assetID, err)
+		return err
 	}
-	return assetBytes != nil, nil
+	clientOrgID, err := getClientOrgID(ctx, false)
+	if err != nil {
+		return err
+	}
+	if asset.OwnerOrg != clientOrgID {
+		return fmt.Errorf("failed to create Asset: unauthorized updater %s", clientOrgID)
+	}
+	asset.AssetPrice = assetPrice
+	asset.AssetName = assetName
+	asset.PublicDescription = desc
+	newAssetBytes, err := json.Marshal(asset)
+	if err != nil {
+		return err
+	}
+	return ctx.GetStub().PutState(assetID, newAssetBytes)
 }
 
-func (t *CBPMChaincode) UpdateAsset(ctx contractapi.TransactionContextInterface) {
-
+func (t *CBPMChaincode) DeleteAsset(ctx contractapi.TransactionContextInterface, assetID string) error {
+	return ctx.GetStub().DelState(assetID)
 }
 
-func (t *CBPMChaincode) DeleteAsset(ctx contractapi.TransactionContextInterface) {
+func (t *CBPMChaincode) GetAsset(ctx contractapi.TransactionContextInterface, assetID string) (*Asset, error) {
+	assetJson, err := ctx.GetStub().GetState(assetID)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get assetJson: %v", err)
+	}
+	if assetJson == nil {
+		return nil, fmt.Errorf("failed to get assetJson: %s does not exist", assetID)
+	}
 
-}
+	var asset Asset
+	err = json.Unmarshal(assetJson, &asset)
+	if err != nil {
+		return nil, err
+	}
 
-func (t *CBPMChaincode) GetAsset(ctx contractapi.TransactionContextInterface) {
-
+	return &asset, nil
 }
 
 func (t *CBPMChaincode) GetAllAssets(ctx contractapi.TransactionContextInterface) {
@@ -175,6 +198,14 @@ func (t *CBPMChaincode) FinishOrder(ctx contractapi.TransactionContextInterface)
 
 func (t *CBPMChaincode) ConfirmFinishOrder(ctx contractapi.TransactionContextInterface) {
 
+}
+
+func (t *CBPMChaincode) AssetExists(ctx contractapi.TransactionContextInterface, assetID string) (bool, error) {
+	assetBytes, err := ctx.GetStub().GetState(assetID)
+	if err != nil {
+		return false, fmt.Errorf("failed to check whether asset %s exists: %v", assetID, err)
+	}
+	return assetBytes != nil, nil
 }
 
 func getClientOrgID(ctx contractapi.TransactionContextInterface, verifyOrg bool) (string, error) {
