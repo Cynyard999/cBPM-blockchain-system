@@ -195,6 +195,22 @@ Profiles:
                 Organizations:
                     - *SupplierOrg
                     - *CarrierOrg
+            MaMiConsortium:
+                Organizations:
+                    - *ManufacturerOrg
+                    - *MiddlemanOrg
+            MiSConsortium:
+                Organizations:
+                    - *MiddlemanOrg
+                    - *SupplierOrg   
+            MiCConsortium:
+                Organizations:
+                    - *MiddlemanOrg
+                    - *CarrierOrg 
+            CMaConsortium:
+                Organizations:
+                    - *CarrierOrg
+                    - *ManufacturerOrg
     SCChannel:
         <<: *ChannelDefaults
         Consortium: SCConsortium
@@ -203,4 +219,41 @@ Profiles:
             Organizations:
                 - *SupplierOrg
                 - *CarrierOrg
+            Capabilities: *ApplicationCapabilities
+
+    MaMiChannel:
+        <<: *ChannelDefaults
+        Consortium: MaMiConsortium
+        Application:
+            <<: *ApplicationDefaults
+            Organizations:
+                - *ManufacturerOrg
+                - *MiddlemanOrg
+            Capabilities: *ApplicationCapabilities
+    MiSChannel:
+        <<: *ChannelDefaults
+        Consortium: MiSConsortium
+        Application:
+            <<: *ApplicationDefaults
+            Organizations:
+                - *MiddlemanOrg
+                - *SupplierOrg
+            Capabilities: *ApplicationCapabilities
+    MiCChannel:
+        <<: *ChannelDefaults
+        Consortium: MiCConsortium
+        Application:
+            <<: *ApplicationDefaults
+            Organizations:
+                - *MiddlemanOrg
+                - *CarrierOrg
+            Capabilities: *ApplicationCapabilities
+    CMaChannel:
+        <<: *ChannelDefaults
+        Consortium: CMaConsortium
+        Application:
+            <<: *ApplicationDefaults
+            Organizations:
+                - *CarrierOrg
+                - *ManufacturerOrg
             Capabilities: *ApplicationCapabilities

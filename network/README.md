@@ -98,7 +98,7 @@ TODO：
 
 ```shell
 # 输入想要安装的链码路径以及语言版本
-export CHAINCODE=chaincode-supplier-carrier
+export CHAINCODE=test-go-private-data
 export CHAINCODE_LANG=golang
 export CHAINCODE_VERSION=1.0
 export CHAINCODE_NAME=scchaincode
@@ -193,6 +193,10 @@ export CORE_PEER_MSPCONFIGPATH=/tmp/hyperledger/fabric/peer/carrier/admin/msp
 export CORE_PEER_TLS_ROOTCERT_FILE=/tmp/hyperledger/fabric/peer/carrier/peer1/tls/tlscacerts/tls-0-0-0-0-7052.pem
 export CORE_PEER_LOCALMSPID=CarrierMSP
 export CORE_PEER_ADDRESS=peer1-carrier:7051
+
+export MARBLE=$(echo -n "{\"name\":\"marble3\",\"color\":\"red\",\"size\":50,\"owner\":\"tom\",\"price\":222}" | base64 | tr -d \\n)
+
+peer chaincode invoke -o orderer-cbpm:7050 --tls --cafile "/tmp/hyperledger/fabric/peer/cbpm/orderer/tls/tlscacerts/tls-0-0-0-0-7052.pem" -C scchannel -n $CHAINCODE_NAME -c '{"Args":["InitMarble"]}' --transient "{\"marble\":\"$MARBLE\"}"
 
 peer chaincode query -C scchannel -n $CHAINCODE_NAME -c '{"Args":["readMarble","marble1"]}'
 
