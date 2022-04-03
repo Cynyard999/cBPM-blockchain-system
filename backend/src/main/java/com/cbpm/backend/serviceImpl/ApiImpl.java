@@ -38,9 +38,6 @@ public class ApiImpl implements ApiService {
             //根据contractName获取channel上的contract
             Contract contract = network.getContract(contractName);
             String functionName = jsonObject.getString("function");
-            if (StringUtils.isEmpty(functionName)) {
-                return ResponseVo.buildFailure("no function name");
-            }
             //提取参数
             JSONArray argArray = jsonObject.getJSONArray("args");
             String[] args = new String[argArray.size()];
@@ -50,12 +47,21 @@ public class ApiImpl implements ApiService {
             //调用contract对应function
             byte[] queryResult = contract.evaluateTransaction(functionName, args);
             System.out.println(functionName+" "+ Arrays.deepToString(args)+" "+"success");
-            return ResponseVo.buildSuccess(new String(queryResult, StandardCharsets.UTF_8));
+            return ResponseVo.buildSuccess(JSONObject.parseObject(new String(queryResult, StandardCharsets.UTF_8)));
         }catch (ContractException e){
             String exception=e.toString();
             System.out.println(exception);
             return ResponseVo.buildFailure(exception.split(":")[1]);
-        }catch (GatewayRuntimeException e){
+        }catch (NullPointerException e){
+            System.out.println(e.toString());
+            return ResponseVo.buildFailure("orgType is null or invalid orgType");
+        }catch (IllegalArgumentException e){
+            String exception=e.toString();
+            System.out.println(exception);
+            String[] temps=exception.split(":");
+            return ResponseVo.buildFailure(temps[temps.length-1]);
+        }
+        catch (GatewayRuntimeException e){
             System.out.println(e.toString());
             String [] errors=e.toString().split(":");
             return ResponseVo.buildFailure(errors[errors.length-1]);
@@ -73,9 +79,7 @@ public class ApiImpl implements ApiService {
             Network network = gateway.getNetwork(channelName);
             Contract contract = network.getContract(contractName);
             String functionName = jsonObject.getString("function");
-            if (StringUtils.isEmpty(functionName)) {
-                return ResponseVo.buildFailure("no function name");
-            }
+
             JSONArray argArray = jsonObject.getJSONArray("args");
             String[] args = new String[argArray.size()];
             for (int i = 0; i < argArray.size(); i++) {
@@ -85,12 +89,19 @@ public class ApiImpl implements ApiService {
                 network.getChannel().getPeers(EnumSet.of(Peer.PeerRole.ENDORSING_PEER)))
                 .submit(args);
             System.out.println(functionName+" "+Arrays.deepToString(args)+" "+"success");
-            return ResponseVo.buildSuccess(new String(invokeResult, StandardCharsets.UTF_8));
+            return ResponseVo.buildSuccess(JSONObject.parseObject(new String(invokeResult, StandardCharsets.UTF_8)));
         }catch (ContractException e){
             String exception=e.toString();
             System.out.println(exception);
             return ResponseVo.buildFailure(exception.split(":")[1]);
-        }catch (GatewayRuntimeException e){
+        }catch (IllegalArgumentException e){
+            String exception=e.toString();
+            String[] temps=exception.split(":");
+            return ResponseVo.buildFailure(temps[temps.length-1]);
+        }catch (NullPointerException e){
+            System.out.println(e.toString());
+            return ResponseVo.buildFailure("orgType is null or invalid orgType");
+        } catch (GatewayRuntimeException e){
             System.out.println(e.toString());
             String [] errors=e.toString().split(":");
             return ResponseVo.buildFailure(errors[errors.length-1]);
