@@ -1,0 +1,14 @@
+
+server:
+  port: 8080
+#windows环境
+spring:
+  application:
+    name: backend
+
+backend:
+  # 网络配置文件路径
+  networkConfigPath: src/main/resources/connection.json
+  #network path
+  networkPath: ../network/
+

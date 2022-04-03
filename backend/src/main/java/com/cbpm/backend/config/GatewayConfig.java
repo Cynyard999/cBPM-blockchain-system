@@ -32,16 +32,19 @@ public class GatewayConfig {
     /**
      * network路径
      */
-    private final String networkPath="../network/";
+    @Value("${backend.networkPath}")
+    private  String networkPath;
     /**
      * wallet文件夹路径
      */
+
     private final String walletDirectory="wallet";
     /**
      * 网络配置文件路径
      */
 
-    private final String networkConfigPath="src/main/resources/connection.json";
+    @Value("${backend.networkConfigPath}")
+    private  String networkConfigPath;
     /**
      * 四种组织名称
      */
