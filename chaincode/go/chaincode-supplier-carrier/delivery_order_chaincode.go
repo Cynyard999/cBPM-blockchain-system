@@ -14,17 +14,14 @@ import (
 	"time"
 )
 
-const index = "tradeID~orderID"
-
 // CBPMChaincode implements the fabric-contract-api-go programming model
 type CBPMChaincode struct {
 	contractapi.Contract
 }
 
 type DeliveryOrder struct {
-	ObjectType string `json:"docType"`
+	ObjectType string `json:"objectType"`
 	TradeID    string `json:"tradeID"` // 生产商下单时生成的ID，用于表明一次流程
-	OrderID    string `json:"orderID"` // 自动生成
 	AssetID    string `json:"assetID"`
 	Quantity   int    `json:"quantity"`
 	StartPlace string `json:"startPlace"`
@@ -49,7 +46,6 @@ type PaginatedQueryResult struct {
 	Bookmark            string           `json:"bookmark"`
 }
 
-// CreateAsset initializes a new asset in the ledger
 func (t *CBPMChaincode) CreateDeliveryOrder(ctx contractapi.TransactionContextInterface, tradeID string, assetID string, quantity int, startPlace string, endPlace string) error {
 	exists, err := t.DeliveryOrderExists(ctx, tradeID)
 	if err != nil {
@@ -65,9 +61,8 @@ func (t *CBPMChaincode) CreateDeliveryOrder(ctx contractapi.TransactionContextIn
 	}
 
 	deliveryOrder := &DeliveryOrder{
-		ObjectType: "deliveryOrder",
+		ObjectType: "DeliveryOrder",
 		TradeID:    tradeID,
-		OrderID:    "order_" + tradeID,
 		AssetID:    assetID,
 		Quantity:   quantity,
 		StartPlace: startPlace,
@@ -82,36 +77,18 @@ func (t *CBPMChaincode) CreateDeliveryOrder(ctx contractapi.TransactionContextIn
 		return err
 	}
 
-	err = ctx.GetStub().PutState(tradeID, deliveryOrderBytes)
-	if err != nil {
-		return err
-	}
-	colorNameIndexKey, err := ctx.GetStub().CreateCompositeKey(index, []string{deliveryOrder.TradeID, deliveryOrder.OrderID})
-	if err != nil {
-		return err
-	}
-	//  Note - passing a 'nil' value will effectively delete the key from state, therefore we pass null character as value
-	value := []byte{0x00}
-	return ctx.GetStub().PutState(colorNameIndexKey, value)
+	return ctx.GetStub().PutState(tradeID, deliveryOrderBytes)
 }
 
 func (t *CBPMChaincode) DeleteDeliveryOrder(ctx contractapi.TransactionContextInterface, tradeID string) error {
-	deliveryOrder, err := t.GetDeliveryOrder(ctx, tradeID)
+	exist, err := t.DeliveryOrderExists(ctx, tradeID)
 	if err != nil {
 		return err
 	}
-
-	err = ctx.GetStub().DelState(tradeID)
-	if err != nil {
-		return fmt.Errorf("failed to delete delivery order for trade %s: %v", tradeID, err)
+	if !exist {
+		return fmt.Errorf("failed to delete delivery order for trade %s: delivery order does not exist", tradeID)
 	}
-
-	tradeIDOrderIDIndexKey, err := ctx.GetStub().CreateCompositeKey(index, []string{deliveryOrder.TradeID, deliveryOrder.OrderID})
-	if err != nil {
-		return err
-	}
-	// Delete index entry
-	return ctx.GetStub().DelState(tradeIDOrderIDIndexKey)
+	return ctx.GetStub().DelState(tradeID)
 }
 
 func (t *CBPMChaincode) PickDeliveryOrder(ctx contractapi.TransactionContextInterface, tradeID string) error {
@@ -303,7 +280,6 @@ func (t *CBPMChaincode) GetOrderHistory(ctx contractapi.TransactionContextInterf
 		}
 		records = append(records, record)
 	}
-
 	return records, nil
 }
 
@@ -320,7 +296,9 @@ func getClientOrgID(ctx contractapi.TransactionContextInterface, verifyOrg bool)
 	if err != nil {
 		return "", fmt.Errorf("failed getting client's orgID: %v", err)
 	}
-
+	if clientOrgID == "" {
+		return "", fmt.Errorf("client ID is not set")
+	}
 	if verifyOrg {
 		err = verifyClientOrgMatchesPeerOrg(clientOrgID)
 		if err != nil {

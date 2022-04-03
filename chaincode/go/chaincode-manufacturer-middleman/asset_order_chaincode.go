@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/gofrs/uuid"
 	"github.com/hyperledger/fabric-chaincode-go/shim"
 	"github.com/hyperledger/fabric-contract-api-go/contractapi"
 	"log"
@@ -14,7 +15,7 @@ type CBPMChaincode struct {
 }
 
 type Asset struct {
-	ObjectType        string  `json:"docType"`
+	ObjectType        string  `json:"objectType"`
 	AssetID           string  `json:"assetID"`
 	AssetName         string  `json:"assetName"`
 	AssetPrice        float32 `json:"assetPrice"`
@@ -22,15 +23,19 @@ type Asset struct {
 	PublicDescription string  `json:"publicDescription"`
 }
 
+type QueryAssetResult struct {
+	Key    string `json:"Key"`
+	Record *Asset
+}
+
 type Order struct {
-	ObjectType string  `json:"docType"` // 固定
+	ObjectType string  `json:"objectType"`
 	TradeID    string  `json:"tradeID"`
-	OrderID    string  `json:"orderID"` // 自动生成
 	AssetID    string  `json:"assetID"`
 	AssetName  string  `json:"assetName"`
 	AssetPrice float32 `json:"assetPrice"`
 	Quantity   int     `json:"quantity"`
-	TotalPrice int     `json:"totalPrice"` // 自动生成
+	TotalPrice float32 `json:"totalPrice"` // 自动生成
 	Address    string  `json:"address"`
 	Status     int     `json:"status"`     // 0: 未开始 1: 中间商开始处理 2: 中间商确认已完成 3: 生产商确认已完成
 	CreateTime string  `json:"createTime"` // 自动生成
@@ -38,6 +43,11 @@ type Order struct {
 	OwnerOrg   string  `json:"ownerOrg"`   // 限制修改的权限
 	HandlerOrg string  `json:"handlerOrg"` // 限制修改的权限
 	Note       string  `json:"note"`
+}
+
+type QueryOrderResult struct {
+	Key    string `json:"Key"`
+	Record *Order
 }
 
 // HistoryQueryResult structure used for returning result of history query
@@ -149,10 +159,10 @@ func (t *CBPMChaincode) DeleteAsset(ctx contractapi.TransactionContextInterface,
 func (t *CBPMChaincode) GetAsset(ctx contractapi.TransactionContextInterface, assetID string) (*Asset, error) {
 	assetJson, err := ctx.GetStub().GetState(assetID)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get assetJson: %v", err)
+		return nil, fmt.Errorf("failed to get asset: %v", err)
 	}
 	if assetJson == nil {
-		return nil, fmt.Errorf("failed to get assetJson: %s does not exist", assetID)
+		return nil, fmt.Errorf("failed to get asset: %s does not exist", assetID)
 	}
 
 	var asset Asset
@@ -164,40 +174,23 @@ func (t *CBPMChaincode) GetAsset(ctx contractapi.TransactionContextInterface, as
 	return &asset, nil
 }
 
-func (t *CBPMChaincode) GetAllAssets(ctx contractapi.TransactionContextInterface) {
+func (t *CBPMChaincode) GetAllAssets(ctx contractapi.TransactionContextInterface) ([]Asset, error) {
 
+	queryString := "{\"selector\":{\"docType\":\"Asset\"}}"
+
+	queryResults, err := t.getAssetQueryResultForQueryString(ctx, queryString)
+	if err != nil {
+		return nil, err
+	}
+	return queryResults, nil
 }
 
-func (t *CBPMChaincode) QueryAssets(ctx contractapi.TransactionContextInterface) {
-
-}
-
-func (t *CBPMChaincode) PlaceOrder(ctx contractapi.TransactionContextInterface) {
-
-}
-
-func (t *CBPMChaincode) GetOrder(ctx contractapi.TransactionContextInterface) {
-
-}
-
-func (t *CBPMChaincode) GetAllOrders(ctx contractapi.TransactionContextInterface) {
-
-}
-
-func (t *CBPMChaincode) DeleteOrder(ctx contractapi.TransactionContextInterface) {
-
-}
-
-func (t *CBPMChaincode) HandleOrder(ctx contractapi.TransactionContextInterface) {
-
-}
-
-func (t *CBPMChaincode) FinishOrder(ctx contractapi.TransactionContextInterface) {
-
-}
-
-func (t *CBPMChaincode) ConfirmFinishOrder(ctx contractapi.TransactionContextInterface) {
-
+func (t *CBPMChaincode) QueryAssets(ctx contractapi.TransactionContextInterface, queryString string) ([]Asset, error) {
+	queryResults, err := t.getAssetQueryResultForQueryString(ctx, queryString)
+	if err != nil {
+		return nil, err
+	}
+	return queryResults, nil
 }
 
 func (t *CBPMChaincode) AssetExists(ctx contractapi.TransactionContextInterface, assetID string) (bool, error) {
@@ -208,10 +201,224 @@ func (t *CBPMChaincode) AssetExists(ctx contractapi.TransactionContextInterface,
 	return assetBytes != nil, nil
 }
 
+func (t *CBPMChaincode) PlaceOrder(ctx contractapi.TransactionContextInterface) (string, error) {
+	transMap, err := ctx.GetStub().GetTransient()
+	if err != nil {
+		return "", fmt.Errorf("Error getting transient: " + err.Error())
+	}
+	transientOrderJSON, ok := transMap["order"]
+	if !ok {
+		return "", fmt.Errorf("order not found in the transient map")
+	}
+	type orderTransientInput struct {
+		AssetID  string `json:"assetID"`
+		Quantity int    `json:"quantity"`
+		Address  string `json:"address"`
+		Note     string `json:"note"`
+	}
+	var orderInput orderTransientInput
+	err = json.Unmarshal(transientOrderJSON, &orderInput)
+	if err != nil {
+		return "", fmt.Errorf("failed to unmarshal JSON: %s", err.Error())
+	}
+	// check input
+	if len(orderInput.AssetID) == 0 {
+		return "", fmt.Errorf("asset ID must be a non-empty string")
+	}
+	if len(orderInput.Address) == 0 {
+		return "", fmt.Errorf("order address must be a non-empty string")
+	}
+	if orderInput.Quantity <= 0 {
+		return "", fmt.Errorf("asset quantity field must be a positive number")
+	}
+	asset, err := t.GetAsset(ctx, orderInput.AssetID)
+	if err != nil {
+		return "", err
+	}
+	clientOrgID, err := getClientOrgID(ctx, false)
+	if err != nil {
+		return "", fmt.Errorf("failed to get verified OrgID: %v", err)
+	}
+	newTradeID, err := uuid.NewV4()
+	if err != nil {
+		return "", fmt.Errorf("failed to generate Trade ID: %v", err)
+	}
+
+	// create order
+	order := &Order{
+		ObjectType: "Order",
+		TradeID:    newTradeID.String(),
+		AssetID:    orderInput.AssetID,
+		AssetName:  asset.AssetName,
+		AssetPrice: asset.AssetPrice,
+		Quantity:   orderInput.Quantity,
+		TotalPrice: asset.AssetPrice * (float32(orderInput.Quantity)),
+		Address:    orderInput.Address,
+		Status:     0,
+		CreateTime: time.Now().Format("2006-01-02 15:04:05"),
+		UpdateTime: time.Now().Format("2006-01-02 15:04:05"),
+		HandlerOrg: "",
+		OwnerOrg:   clientOrgID,
+		Note:       orderInput.Note,
+	}
+	orderJSONasBytes, err := json.Marshal(order)
+	err = ctx.GetStub().PutState(order.TradeID, orderJSONasBytes)
+	if err != nil {
+		return "", fmt.Errorf("failed to create Order: %s", err.Error())
+	}
+	return newTradeID.String(), nil
+}
+
+func (t *CBPMChaincode) GetOrder(ctx contractapi.TransactionContextInterface, tradeID string) (*Order, error) {
+	queryString := fmt.Sprintf("{\"selector\":{\"docType\":\"Order\",\"tradeID\":\"%s\"}}", tradeID)
+	queryResults, err := t.getOrderQueryResultForQueryString(ctx, queryString)
+	if err != nil {
+		return nil, err
+	}
+	if len(queryResults) == 0 {
+		return nil, fmt.Errorf("failed to get order for tradeID: %s does not exist", tradeID)
+	}
+	return &queryResults[0], nil
+}
+
+func (t *CBPMChaincode) GetAllOrders(ctx contractapi.TransactionContextInterface) ([]Order, error) {
+	queryString := "{\"selector\":{\"docType\":\"Order\"}}"
+
+	queryResults, err := t.getOrderQueryResultForQueryString(ctx, queryString)
+	if err != nil {
+		return nil, err
+	}
+	return queryResults, nil
+}
+
+func (t *CBPMChaincode) QueryOrders(ctx contractapi.TransactionContextInterface, queryString string) ([]Order, error) {
+	queryResults, err := t.getOrderQueryResultForQueryString(ctx, queryString)
+	if err != nil {
+		return nil, err
+	}
+	return queryResults, nil
+}
+
+func (t *CBPMChaincode) DeleteOrder(ctx contractapi.TransactionContextInterface, tradeID string) error {
+	exists, err := t.OrderExists(ctx, tradeID)
+	if err != nil {
+		return err
+	}
+	if !exists {
+		return fmt.Errorf("fail to delete order: order for trade #{tradeID} does not exist")
+	}
+	return ctx.GetStub().DelState(tradeID)
+}
+
+func (t *CBPMChaincode) HandleOrder(ctx contractapi.TransactionContextInterface, tradeID string) error {
+	order, err := t.GetOrder(ctx, tradeID)
+	if err != nil {
+		return err
+	}
+	if order.Status != 0 {
+		return fmt.Errorf("fail to handle order: order(status: %d) for trade #{tradeID} has been handled", order.Status)
+	}
+	if order.HandlerOrg != "" {
+		return fmt.Errorf("fail to handle order: order for trade #{tradeID} has been handled by some org")
+	}
+	clientOrgID, err := getClientOrgID(ctx, false)
+	if err != nil {
+		return fmt.Errorf("failed to get client OrgID: %v", err)
+	}
+	if order.OwnerOrg == clientOrgID {
+		return fmt.Errorf("failed to handle order: cannot handle by owner")
+	}
+	order.HandlerOrg = clientOrgID
+	order.Status = 1
+	order.UpdateTime = time.Now().Format("2006-01-02 15:04:05")
+	orderBytes, err := json.Marshal(order)
+	if err != nil {
+		return fmt.Errorf("failed to handle order: %v", err)
+	}
+	return ctx.GetStub().PutState(tradeID, orderBytes)
+}
+
+func (t *CBPMChaincode) FinishOrder(ctx contractapi.TransactionContextInterface, tradeID string) error {
+	order, err := t.GetOrder(ctx, tradeID)
+	if err != nil {
+		return fmt.Errorf("failed to finish order: %v", err)
+	}
+	if order.Status == 0 {
+		return fmt.Errorf("fail to finish order: order for trade #{tradeID} has not been handled")
+	}
+	if order.Status == 1 {
+		return fmt.Errorf("fail to finish order: order for trade #{tradeID} has been finished")
+	}
+	if order.HandlerOrg == "" {
+		return fmt.Errorf("fail to finish order: no handler is specified")
+	}
+	clientOrgID, err := getClientOrgID(ctx, false)
+	if err != nil {
+		return fmt.Errorf("failed to get client OrgID: %v", err)
+	}
+	if order.OwnerOrg == clientOrgID {
+		return fmt.Errorf("failed to finish order: cannot finish by owner")
+	}
+	if order.HandlerOrg != clientOrgID {
+		return fmt.Errorf("failed to finish order: cannot finish by other org: %s", clientOrgID)
+	}
+	order.Status = 2
+	order.UpdateTime = time.Now().Format("2006-01-02 15:04:05")
+	orderBytes, err := json.Marshal(order)
+	if err != nil {
+		return fmt.Errorf("failed to finish order: %v", err)
+	}
+	return ctx.GetStub().PutState(tradeID, orderBytes)
+}
+
+func (t *CBPMChaincode) ConfirmFinishOrder(ctx contractapi.TransactionContextInterface, tradeID string) error {
+	order, err := t.GetOrder(ctx, tradeID)
+	if err != nil {
+		return fmt.Errorf("failed to confirm finish order: %v", err)
+	}
+	if order.Status == 0 {
+		return fmt.Errorf("fail to confirm finish order: order for trade #{tradeID} has not been handled")
+	}
+	if order.Status == 2 {
+		return fmt.Errorf("fail to confirm finish order: order for trade #{tradeID} has been confirmed finished")
+	}
+	if order.HandlerOrg == "" {
+		return fmt.Errorf("fail to confirm finish order: no handler is specified")
+	}
+	clientOrgID, err := getClientOrgID(ctx, false)
+	if err != nil {
+		return fmt.Errorf("fail to confirm finish order: %v", err)
+	}
+	if order.OwnerOrg != clientOrgID {
+		return fmt.Errorf("failed to confirm finish order: only owner can comfirm finish order")
+	}
+	order.Status = 3
+	order.UpdateTime = time.Now().Format("2006-01-02 15:04:05")
+	orderBytes, err := json.Marshal(order)
+	if err != nil {
+		return fmt.Errorf("failed to confirm finish order: %v", err)
+	}
+	return ctx.GetStub().PutState(tradeID, orderBytes)
+}
+
+func (t *CBPMChaincode) OrderExists(ctx contractapi.TransactionContextInterface, tradeID string) (bool, error) {
+	queryString := fmt.Sprintf("{\"selector\":{\"docType\":\"Order\",\"tradeID\":\"%s\"}}", tradeID)
+	queryResults, err := t.getOrderQueryResultForQueryString(ctx, queryString)
+	if err != nil {
+		return false, fmt.Errorf("failed to check whether order for trade %s exists: %v", tradeID, err)
+	}
+	if len(queryResults) == 0 {
+		return false, nil
+	}
+	return true, nil
+}
 func getClientOrgID(ctx contractapi.TransactionContextInterface, verifyOrg bool) (string, error) {
 	clientOrgID, err := ctx.GetClientIdentity().GetMSPID()
 	if err != nil {
 		return "", fmt.Errorf("failed getting client's orgID: %v", err)
+	}
+	if clientOrgID == "" {
+		return "", fmt.Errorf("client ID is not set")
 	}
 
 	if verifyOrg {
@@ -238,6 +445,52 @@ func verifyClientOrgMatchesPeerOrg(clientOrgID string) error {
 		)
 	}
 	return nil
+}
+
+func (s *CBPMChaincode) getAssetQueryResultForQueryString(ctx contractapi.TransactionContextInterface, queryString string) ([]Asset, error) {
+
+	resultsIterator, err := ctx.GetStub().GetQueryResult(queryString)
+	if err != nil {
+		return nil, err
+	}
+	defer resultsIterator.Close()
+	results := []Asset{}
+	for resultsIterator.HasNext() {
+		response, err := resultsIterator.Next()
+		if err != nil {
+			return nil, err
+		}
+		newAsset := new(Asset)
+		err = json.Unmarshal(response.Value, newAsset)
+		if err != nil {
+			return nil, err
+		}
+		results = append(results, *newAsset)
+	}
+	return results, nil
+}
+
+func (s *CBPMChaincode) getOrderQueryResultForQueryString(ctx contractapi.TransactionContextInterface, queryString string) ([]Order, error) {
+
+	resultsIterator, err := ctx.GetStub().GetQueryResult(queryString)
+	if err != nil {
+		return nil, err
+	}
+	defer resultsIterator.Close()
+	results := []Order{}
+	for resultsIterator.HasNext() {
+		response, err := resultsIterator.Next()
+		if err != nil {
+			return nil, err
+		}
+		newOrder := new(Order)
+		err = json.Unmarshal(response.Value, newOrder)
+		if err != nil {
+			return nil, err
+		}
+		results = append(results, *newOrder)
+	}
+	return results, nil
 }
 
 func main() {
