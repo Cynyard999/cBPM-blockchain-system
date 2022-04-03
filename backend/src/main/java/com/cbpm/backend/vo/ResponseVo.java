@@ -59,6 +59,23 @@ public class ResponseVo {
         return  responseVo;
     }
 
+    public static ResponseVo buildFailure(Object content){
+        ResponseVo responseVo=new ResponseVo(false);
+        responseVo.setContent(content);
+        return responseVo;
+    }
+
+    public static ResponseVo buildFailure(String [] exceptions){
+        ResponseVo responseVo=new ResponseVo(false);
+        String str="";
+        for(int i=1;i<exceptions.length;i++){
+            str=str+exceptions[i];
+        }
+        responseVo.setMessage(str);
+        return responseVo;
+    }
+
+
     public void setSuccessful(boolean successful) {
         this.successful = successful;
     }

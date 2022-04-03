@@ -2,20 +2,20 @@ package com.cbpm.backend.serviceImpl;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import com.alibaba.fastjson.TypeReference;
 import com.cbpm.backend.config.GatewayConfig;
 import com.cbpm.backend.service.ApiService;
 import com.cbpm.backend.vo.ResponseVo;
-import org.apache.commons.lang3.StringUtils;
+
 import org.hyperledger.fabric.gateway.*;
 import org.hyperledger.fabric.sdk.Peer;
 import org.hyperledger.fabric.sdk.exception.ProposalException;
 import org.springframework.stereotype.Service;
 
+
 import javax.annotation.Resource;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
-import java.util.EnumSet;
-import java.util.HashMap;
+import java.util.*;
 import java.util.concurrent.TimeoutException;
 
 @Service
@@ -51,7 +51,7 @@ public class ApiImpl implements ApiService {
         }catch (ContractException e){
             String exception=e.toString();
             System.out.println(exception);
-            return ResponseVo.buildFailure(exception.split(":")[1]);
+            return ResponseVo.buildFailure(exception.split(":"));
         }catch (NullPointerException e){
             System.out.println(e.toString());
             return ResponseVo.buildFailure("orgType is null or invalid orgType");
@@ -59,7 +59,7 @@ public class ApiImpl implements ApiService {
             String exception=e.toString();
             System.out.println(exception);
             String[] temps=exception.split(":");
-            return ResponseVo.buildFailure(temps[temps.length-1]);
+            return ResponseVo.buildFailure(temps);
         }
         catch (GatewayRuntimeException e){
             System.out.println(e.toString());
@@ -79,13 +79,28 @@ public class ApiImpl implements ApiService {
             Network network = gateway.getNetwork(channelName);
             Contract contract = network.getContract(contractName);
             String functionName = jsonObject.getString("function");
-
+            String[] args;
+            JSONObject transientDetail=jsonObject.getJSONObject("transient");
+            //处理incoke含有transient得情况
+            if(transientDetail!=null){
+                Map<String,byte[]> argsMap=new HashMap<>();
+                String str=transientDetail.toJSONString().replace("\"","\"");
+                str=str.substring(str.indexOf(":")+1,str.length()-1);
+                argsMap.put("marble",str.getBytes());
+                byte[] invokeResult = contract.createTransaction(functionName).setEndorsingPeers(
+                                    network.getChannel().getPeers(EnumSet.of(Peer.PeerRole.ENDORSING_PEER)))
+                                    .setTransient(argsMap)
+                                    .submit();
+                System.out.println("transient"+" "+functionName+" "+str+" "+"success");
+                return ResponseVo.buildSuccess(JSONObject.parseObject(new String(invokeResult, StandardCharsets.UTF_8)));
+            }
+            //无transient情况
             JSONArray argArray = jsonObject.getJSONArray("args");
-            String[] args = new String[argArray.size()];
+            args = new String[argArray.size()];
             for (int i = 0; i < argArray.size(); i++) {
                 args[i] = argArray.getString(i);
             }
-        byte[] invokeResult = contract.createTransaction(functionName).setEndorsingPeers(
+            byte[] invokeResult = contract.createTransaction(functionName).setEndorsingPeers(
                 network.getChannel().getPeers(EnumSet.of(Peer.PeerRole.ENDORSING_PEER)))
                 .submit(args);
             System.out.println(functionName+" "+Arrays.deepToString(args)+" "+"success");
