@@ -768,6 +768,22 @@ Profiles:
                 Organizations:
                     - *SupplierOrg
                     - *CarrierOrg
+            MaMiConsortium:
+                Organizations:
+                    - *ManufacturerOrg
+                    - *MiddlemanOrg
+            MiSConsortium:
+                Organizations:
+                    - *MiddlemanOrg
+                    - *SupplierOrg   
+            MiCConsortium:
+                Organizations:
+                    - *MiddlemanOrg
+                    - *CarrierOrg 
+            CMaConsortium:
+                Organizations:
+                    - *CarrierOrg
+                    - *ManufacturerOrg
     SCChannel:
         <<: *ChannelDefaults
         Consortium: SCConsortium
@@ -776,6 +792,52 @@ Profiles:
             Organizations:
                 - *SupplierOrg
                 - *CarrierOrg
+            Capabilities: *ApplicationCapabilities
+    SCChannel:
+        <<: *ChannelDefaults
+        Consortium: SCConsortium
+        Application:
+            <<: *ApplicationDefaults
+            Organizations:
+                - *SupplierOrg
+                - *CarrierOrg
+            Capabilities: *ApplicationCapabilities
+
+    MaMiChannel:
+        <<: *ChannelDefaults
+        Consortium: MaMiConsortium
+        Application:
+            <<: *ApplicationDefaults
+            Organizations:
+                - *ManufacturerOrg
+                - *MiddlemanOrg
+            Capabilities: *ApplicationCapabilities
+    MiSChannel:
+        <<: *ChannelDefaults
+        Consortium: MiSConsortium
+        Application:
+            <<: *ApplicationDefaults
+            Organizations:
+                - *MiddlemanOrg
+                - *SupplierOrg
+            Capabilities: *ApplicationCapabilities
+    MiCChannel:
+        <<: *ChannelDefaults
+        Consortium: MiCConsortium
+        Application:
+            <<: *ApplicationDefaults
+            Organizations:
+                - *MiddlemanOrg
+                - *CarrierOrg
+            Capabilities: *ApplicationCapabilities
+    CMaChannel:
+        <<: *ChannelDefaults
+        Consortium: CMaConsortium
+        Application:
+            <<: *ApplicationDefaults
+            Organizations:
+                - *CarrierOrg
+                - *ManufacturerOrg
             Capabilities: *ApplicationCapabilities
 ```
 
@@ -794,6 +856,10 @@ configtxgen -profile CBPMOrdererGenesis -outputBlock ./channel-artifacts/genesis
 
 ```shell
 configtxgen -profile SCChannel -outputCreateChannelTx ./channel-artifacts/scchannel.tx -channelID scchannel
+configtxgen -profile MaMiChannel -outputCreateChannelTx ./channel-artifacts/mamichannel.tx -channelID mamichannel
+configtxgen -profile MiSChannel -outputCreateChannelTx ./channel-artifacts/mischannel.tx -channelID mischannel
+configtxgen -profile MiCChannel -outputCreateChannelTx ./channel-artifacts/micchannel.tx -channelID micchannel
+configtxgen -profile CMaChannel -outputCreateChannelTx ./channel-artifacts/cmachannel.tx -channelID cmachannel
 ```
 
 配置config.yml
