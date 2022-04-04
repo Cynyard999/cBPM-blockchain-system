@@ -28,6 +28,7 @@ type DeliveryOrder struct {
 	Status     int    `json:"status"` // 0: 未处理 1：开始运输 2: 运输商已完成
 	OwnerOrg   string `json:"ownerOrg"`
 	HandlerOrg string `json:"handlerOrg"`
+	Note       string `json:"note"`
 }
 
 // HistoryQueryResult structure used for returning result of history query
@@ -92,6 +93,7 @@ func (t *CBPMChaincode) CreateDeliveryOrder(ctx contractapi.TransactionContextIn
 		Status:     0,
 		OwnerOrg:   clientOrgID,
 		HandlerOrg: "",
+		Note:       orderInput.Note,
 	}
 
 	deliveryOrderBytes, err := json.Marshal(deliveryOrder)
