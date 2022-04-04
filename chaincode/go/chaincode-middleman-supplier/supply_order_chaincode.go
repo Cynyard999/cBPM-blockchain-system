@@ -19,24 +19,26 @@ type Asset struct {
 	AssetID           string  `json:"assetID"`
 	AssetName         string  `json:"assetName"`
 	AssetPrice        float32 `json:"assetPrice"`
+	ShippingAddress   string  `json:"shippingAddress"`
 	OwnerOrg          string  `json:"ownerOrg"` // 供货商的Org
 	PublicDescription string  `json:"publicDescription"`
 }
 
 type SupplyOrder struct {
-	ObjectType string  `json:"objectType"`
-	TradeID    string  `json:"tradeID"`
-	AssetID    string  `json:"assetID"`
-	AssetName  string  `json:"assetName"`
-	AssetPrice float32 `json:"assetPrice"`
-	Quantity   int     `json:"quantity"`
-	TotalPrice float32 `json:"totalPrice"` // 自动生成
-	Status     int     `json:"status"`     // 0: 未开始 1: 中间商开始处理 2: 中间商确认已完成 3: 生产商确认已完成
-	CreateTime string  `json:"createTime"` // 自动生成
-	UpdateTime string  `json:"updateTime"` // 自动生成
-	OwnerOrg   string  `json:"ownerOrg"`   // 限制修改的权限
-	HandlerOrg string  `json:"handlerOrg"` // 限制修改的权限
-	Note       string  `json:"note"`
+	ObjectType      string  `json:"objectType"`
+	TradeID         string  `json:"tradeID"`
+	AssetID         string  `json:"assetID"`
+	AssetName       string  `json:"assetName"`
+	AssetPrice      float32 `json:"assetPrice"`
+	ShippingAddress string  `json:"shippingAddress"`
+	Quantity        int     `json:"quantity"`
+	TotalPrice      float32 `json:"totalPrice"` // 自动生成
+	Status          int     `json:"status"`     // 0: 未开始 1: 中间商开始处理 2: 中间商确认已完成 3: 生产商确认已完成
+	CreateTime      string  `json:"createTime"` // 自动生成
+	UpdateTime      string  `json:"updateTime"` // 自动生成
+	OwnerOrg        string  `json:"ownerOrg"`   // 限制修改的权限
+	HandlerOrg      string  `json:"handlerOrg"` // 限制修改的权限
+	Note            string  `json:"note"`
 }
 
 // HistoryQueryResult structure used for returning result of history query
@@ -66,12 +68,16 @@ func (t *CBPMChaincode) CreateAsset(ctx contractapi.TransactionContextInterface)
 	type assetTransientInput struct {
 		AssetName         string  `json:"assetName"`
 		AssetPrice        float32 `json:"assetPrice"`
+		ShippingAddress   string  `json:"shippingAddress"`
 		PublicDescription string  `json:"publicDescription"`
 	}
 	var assetInput assetTransientInput
 	err = json.Unmarshal(transientAssetJSON, &assetInput)
 	if err != nil {
 		return fmt.Errorf("fail to create asset: fail to unmarshal JSON: %s", err.Error())
+	}
+	if len(assetInput.ShippingAddress) == 0 {
+		return fmt.Errorf("fail to create asset: shipping address must be a non-empty string")
 	}
 	if len(assetInput.AssetName) == 0 {
 		return fmt.Errorf("fail to create asset: asset name must be a non-empty string")
@@ -96,6 +102,7 @@ func (t *CBPMChaincode) CreateAsset(ctx contractapi.TransactionContextInterface)
 		AssetID:           assetID,
 		AssetName:         assetInput.AssetName,
 		AssetPrice:        assetInput.AssetPrice,
+		ShippingAddress:   assetInput.ShippingAddress,
 		OwnerOrg:          clientOrgID,
 		PublicDescription: assetInput.PublicDescription,
 	}
@@ -110,7 +117,7 @@ func (t *CBPMChaincode) CreateAsset(ctx contractapi.TransactionContextInterface)
 	}
 	return nil
 }
-func (t *CBPMChaincode) UpdateAsset(ctx contractapi.TransactionContextInterface, assetID string, assetName string, desc string, assetPrice float32) error {
+func (t *CBPMChaincode) UpdateAsset(ctx contractapi.TransactionContextInterface, assetID string, assetName string, assetPrice float32, shippingAddress string, desc string) error {
 	asset, err := t.GetAsset(ctx, assetID)
 	if err != nil {
 		return fmt.Errorf("fail to update asset: %v", err)
@@ -122,6 +129,7 @@ func (t *CBPMChaincode) UpdateAsset(ctx contractapi.TransactionContextInterface,
 	if asset.OwnerOrg != clientOrgID {
 		return fmt.Errorf("fail to update Asset: unauthorized updater %s", clientOrgID)
 	}
+	asset.ShippingAddress = shippingAddress
 	asset.AssetPrice = assetPrice
 	asset.AssetName = assetName
 	asset.PublicDescription = desc
@@ -147,10 +155,10 @@ func (t *CBPMChaincode) GetAsset(ctx contractapi.TransactionContextInterface, as
 	queryString := fmt.Sprintf("{\"selector\":{\"docType\":\"Asset\",\"tradeID\":\"%s\"}}", assetID)
 	queryResults, err := t.getAssetQueryResultForQueryString(ctx, queryString)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get asset: %v", err)
+		return nil, fmt.Errorf("fail to get asset: %v", err)
 	}
 	if len(queryResults) == 0 {
-		return nil, fmt.Errorf("failed to get asset: %s does not exist", assetID)
+		return nil, fmt.Errorf("fail to get asset: %s does not exist", assetID)
 	}
 	return &queryResults[0], nil
 }
@@ -178,7 +186,7 @@ func (t *CBPMChaincode) AssetExists(ctx contractapi.TransactionContextInterface,
 	queryString := fmt.Sprintf("{\"selector\":{\"docType\":\"Asset\",\"assetID\":\"%s\"}}", assetID)
 	queryResults, err := t.getAssetQueryResultForQueryString(ctx, queryString)
 	if err != nil {
-		return false, fmt.Errorf("failed to check whether asset exists: %v", err)
+		return false, fmt.Errorf("fail to check whether asset exists: %v", err)
 	}
 	if len(queryResults) == 0 {
 		return false, nil
@@ -233,19 +241,20 @@ func (t *CBPMChaincode) CreateSupplyOrder(ctx contractapi.TransactionContextInte
 	}
 	// create order
 	order := &SupplyOrder{
-		ObjectType: "SupplyOrder",
-		TradeID:    orderInput.TradeID,
-		AssetID:    orderInput.AssetID,
-		AssetName:  asset.AssetName,
-		AssetPrice: asset.AssetPrice,
-		Quantity:   orderInput.Quantity,
-		TotalPrice: asset.AssetPrice * (float32(orderInput.Quantity)),
-		Status:     0,
-		CreateTime: time.Now().Format("2006-01-02 15:04:05"),
-		UpdateTime: time.Now().Format("2006-01-02 15:04:05"),
-		HandlerOrg: "",
-		OwnerOrg:   clientOrgID,
-		Note:       orderInput.Note,
+		ObjectType:      "SupplyOrder",
+		TradeID:         orderInput.TradeID,
+		AssetID:         orderInput.AssetID,
+		AssetName:       asset.AssetName,
+		AssetPrice:      asset.AssetPrice,
+		ShippingAddress: asset.ShippingAddress,
+		Quantity:        orderInput.Quantity,
+		TotalPrice:      asset.AssetPrice * (float32(orderInput.Quantity)),
+		Status:          0,
+		CreateTime:      time.Now().Format("2006-01-02 15:04:05"),
+		UpdateTime:      time.Now().Format("2006-01-02 15:04:05"),
+		HandlerOrg:      "",
+		OwnerOrg:        clientOrgID,
+		Note:            orderInput.Note,
 	}
 	orderJSONasBytes, err := json.Marshal(order)
 	err = ctx.GetStub().PutState(order.TradeID, orderJSONasBytes)
@@ -312,7 +321,7 @@ func (t *CBPMChaincode) HandleSupplyOrder(ctx contractapi.TransactionContextInte
 		return fmt.Errorf("fail to handle supply order: %v", err)
 	}
 	if order.OwnerOrg == clientOrgID {
-		return fmt.Errorf("fail to handle supply order: cannot handle by owner")
+		return fmt.Errorf("fail to handle supply order: cannot handle as owner")
 	}
 	order.HandlerOrg = clientOrgID
 	order.Status = 1
@@ -327,7 +336,7 @@ func (t *CBPMChaincode) HandleSupplyOrder(ctx contractapi.TransactionContextInte
 func (t *CBPMChaincode) FinishSupplyOrder(ctx contractapi.TransactionContextInterface, tradeID string) error {
 	order, err := t.GetSupplyOrder(ctx, tradeID)
 	if err != nil {
-		return fmt.Errorf("failed to finish supply order: %v", err)
+		return fmt.Errorf("fail to finish supply order: %v", err)
 	}
 	if order.Status == 0 {
 		return fmt.Errorf("fail to finish supply order: order for trade #{tradeID} has not been handled")
@@ -340,19 +349,19 @@ func (t *CBPMChaincode) FinishSupplyOrder(ctx contractapi.TransactionContextInte
 	}
 	clientOrgID, err := getClientOrgID(ctx, false)
 	if err != nil {
-		return fmt.Errorf("failed to finish supply order: %v", err)
+		return fmt.Errorf("fail to finish supply order: %v", err)
 	}
 	if order.OwnerOrg == clientOrgID {
-		return fmt.Errorf("failed to finish supply order: cannot finish by owner")
+		return fmt.Errorf("fail to finish supply order: cannot finish as owner")
 	}
 	if order.HandlerOrg != clientOrgID {
-		return fmt.Errorf("failed to finish supply order: cannot finish by other org: %s", clientOrgID)
+		return fmt.Errorf("fail to finish supply order: cannot finish by other org: %s", clientOrgID)
 	}
 	order.Status = 2
 	order.UpdateTime = time.Now().Format("2006-01-02 15:04:05")
 	orderBytes, err := json.Marshal(order)
 	if err != nil {
-		return fmt.Errorf("failed to finish supply order: %v", err)
+		return fmt.Errorf("fail to finish supply order: %v", err)
 	}
 	return ctx.GetStub().PutState(tradeID, orderBytes)
 }
@@ -360,7 +369,7 @@ func (t *CBPMChaincode) FinishSupplyOrder(ctx contractapi.TransactionContextInte
 func (t *CBPMChaincode) ConfirmFinishSupplyOrder(ctx contractapi.TransactionContextInterface, tradeID string) error {
 	order, err := t.GetSupplyOrder(ctx, tradeID)
 	if err != nil {
-		return fmt.Errorf("failed to confirm finish supply order: %v", err)
+		return fmt.Errorf("fail to confirm finish supply order: %v", err)
 	}
 	if order.Status == 0 {
 		return fmt.Errorf("fail to confirm finish supply order: order for trade #{tradeID} has not been handled")
@@ -376,13 +385,13 @@ func (t *CBPMChaincode) ConfirmFinishSupplyOrder(ctx contractapi.TransactionCont
 		return fmt.Errorf("fail to confirm finish supply order: %v", err)
 	}
 	if order.OwnerOrg != clientOrgID {
-		return fmt.Errorf("failed to confirm finish supply order: only owner can comfirm finish order")
+		return fmt.Errorf("fail to confirm finish supply order: only owner can comfirm finish order")
 	}
 	order.Status = 3
 	order.UpdateTime = time.Now().Format("2006-01-02 15:04:05")
 	orderBytes, err := json.Marshal(order)
 	if err != nil {
-		return fmt.Errorf("failed to confirm finish supply order: %v", err)
+		return fmt.Errorf("fail to confirm finish supply order: %v", err)
 	}
 	return ctx.GetStub().PutState(tradeID, orderBytes)
 }

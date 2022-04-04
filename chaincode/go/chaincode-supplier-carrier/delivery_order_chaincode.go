@@ -22,13 +22,10 @@ type CBPMChaincode struct {
 type DeliveryOrder struct {
 	ObjectType string `json:"objectType"`
 	TradeID    string `json:"tradeID"` // 生产商下单时生成的ID，用于表明一次流程
-	AssetID    string `json:"assetID"`
-	Quantity   int    `json:"quantity"`
-	StartPlace string `json:"startPlace"`
-	EndPlace   string `json:"endPlace"`
+	AssetName  string `json:"assetName"`
 	CreateTime string `json:"createTime"`
 	UpdateTime string `json:"updateTime"`
-	Status     int    `json:"status"` // 0: 未处理 1：开始运输 2: 运输商已完成 3: 确认完成
+	Status     int    `json:"status"` // 0: 未处理 1：开始运输 2: 运输商已完成
 	OwnerOrg   string `json:"ownerOrg"`
 	HandlerOrg string `json:"handlerOrg"`
 }
@@ -48,27 +45,48 @@ type PaginatedQueryResult struct {
 	Bookmark            string           `json:"bookmark"`
 }
 
-func (t *CBPMChaincode) CreateDeliveryOrder(ctx contractapi.TransactionContextInterface, tradeID string, assetID string, quantity int, startPlace string, endPlace string) error {
-	exists, err := t.DeliveryOrderExists(ctx, tradeID)
+func (t *CBPMChaincode) CreateDeliveryOrder(ctx contractapi.TransactionContextInterface) error {
+	transMap, err := ctx.GetStub().GetTransient()
 	if err != nil {
-		return fmt.Errorf("failed to get delivery order for trade %s: %v", tradeID, err)
+		return fmt.Errorf("Error getting transient: " + err.Error())
+	}
+	transientOrderJSON, ok := transMap["order"]
+	if !ok {
+		return fmt.Errorf("order not found in the transient map")
+	}
+	type orderTransientInput struct {
+		TradeID   string `json:"tradeID"`
+		AssetName string `json:"assetName"`
+		Note      string `json:"note"`
+	}
+	var orderInput orderTransientInput
+	err = json.Unmarshal(transientOrderJSON, &orderInput)
+	if err != nil {
+		return fmt.Errorf("fail to unmarshal JSON: %s", err.Error())
+	}
+	if len(orderInput.TradeID) == 0 {
+		return fmt.Errorf("trade ID must be a non-empty string")
+	}
+	if len(orderInput.AssetName) == 0 {
+		return fmt.Errorf("asset name must be a non-empty string")
+	}
+	exists, err := t.DeliveryOrderExists(ctx, orderInput.TradeID)
+	if err != nil {
+		return fmt.Errorf("fail to create delivery order: %v", err)
 	}
 	if exists {
-		return fmt.Errorf("tradeID already exists: %s", tradeID)
+		return fmt.Errorf("fail to create delivery order: order for trade %s already exists", orderInput.TradeID)
 	}
 
 	clientOrgID, err := getClientOrgID(ctx, false)
 	if err != nil {
-		return fmt.Errorf("failed to get verified OrgID: %v", err)
+		return fmt.Errorf("fail to create delivery order: %v", err)
 	}
 
 	deliveryOrder := &DeliveryOrder{
-		ObjectType: "DeliveryOrder",
-		TradeID:    tradeID,
-		AssetID:    assetID,
-		Quantity:   quantity,
-		StartPlace: startPlace,
-		EndPlace:   endPlace,
+		ObjectType: "deliveryOrder",
+		TradeID:    orderInput.TradeID,
+		AssetName:  orderInput.AssetName,
 		CreateTime: time.Now().Format("2006-01-02 15:04:05"),
 		UpdateTime: time.Now().Format("2006-01-02 15:04:05"),
 		Status:     0,
@@ -80,8 +98,7 @@ func (t *CBPMChaincode) CreateDeliveryOrder(ctx contractapi.TransactionContextIn
 	if err != nil {
 		return err
 	}
-
-	return ctx.GetStub().PutState(tradeID, deliveryOrderBytes)
+	return ctx.GetStub().PutState(orderInput.TradeID, deliveryOrderBytes)
 }
 
 func (t *CBPMChaincode) DeleteDeliveryOrder(ctx contractapi.TransactionContextInterface, tradeID string) error {
@@ -98,27 +115,27 @@ func (t *CBPMChaincode) DeleteDeliveryOrder(ctx contractapi.TransactionContextIn
 func (t *CBPMChaincode) HandleDeliveryOrder(ctx contractapi.TransactionContextInterface, tradeID string) error {
 	deliveryOrder, err := t.GetDeliveryOrder(ctx, tradeID)
 	if err != nil {
-		return fmt.Errorf("failed to pick delivery order: %v", err)
+		return fmt.Errorf("fail to handle delivery order: %v", err)
 	}
 	if deliveryOrder.HandlerOrg != "" {
-		return fmt.Errorf("fail to pick delivery order: delivery order for trade #{tradeID} has been picked")
+		return fmt.Errorf("fail to handle delivery order: delivery order for trade #{tradeID} has been handled")
 	}
 	if deliveryOrder.Status != 0 {
-		return fmt.Errorf("fail to pick delivery order: delivery order(status: %d) for trade #{tradeID} has been picked", deliveryOrder.Status)
+		return fmt.Errorf("fail to handle delivery order: delivery order(status: %d) for trade #{tradeID} has been handled", deliveryOrder.Status)
 	}
 	clientOrgID, err := getClientOrgID(ctx, false)
 	if err != nil {
-		return fmt.Errorf("fail to pick delivery order: %v", err)
+		return fmt.Errorf("fail to handle delivery order: %v", err)
 	}
 	if deliveryOrder.OwnerOrg == clientOrgID {
-		return fmt.Errorf("fail to pick delivery order: cannot handle by owner")
+		return fmt.Errorf("fail to handle delivery order: cannot handle as owner")
 	}
 	deliveryOrder.HandlerOrg = clientOrgID
 	deliveryOrder.Status = 1
 	deliveryOrder.UpdateTime = time.Now().Format("2006-01-02 15:04:05")
 	deliveryOrderBytes, err := json.Marshal(deliveryOrder)
 	if err != nil {
-		return fmt.Errorf("failed to pick delivery order: %v", err)
+		return fmt.Errorf("fail to handle delivery order: %v", err)
 	}
 	return ctx.GetStub().PutState(tradeID, deliveryOrderBytes)
 }
@@ -129,7 +146,7 @@ func (t *CBPMChaincode) FinishDeliveryOrder(ctx contractapi.TransactionContextIn
 		return fmt.Errorf("fail to finish delivery order: %v", err)
 	}
 	if deliveryOrder.Status == 0 {
-		return fmt.Errorf("fail to finish delivery order: order for trade #{tradeID} has not been picked")
+		return fmt.Errorf("fail to finish delivery order: order for trade #{tradeID} has not been handled")
 	}
 	if deliveryOrder.Status == 1 {
 		return fmt.Errorf("fail to finish delivery order: order for trade #{tradeID} has been finished")
@@ -142,7 +159,7 @@ func (t *CBPMChaincode) FinishDeliveryOrder(ctx contractapi.TransactionContextIn
 		return fmt.Errorf("fail to finish delivery order: %v", err)
 	}
 	if deliveryOrder.OwnerOrg == clientOrgID {
-		return fmt.Errorf("fail to finish delivery order: cannot finish by owner")
+		return fmt.Errorf("fail to finish delivery order: cannot finish as owner")
 	}
 	// 只能由运输方来修改状态
 	if deliveryOrder.HandlerOrg != clientOrgID {
@@ -157,37 +174,37 @@ func (t *CBPMChaincode) FinishDeliveryOrder(ctx contractapi.TransactionContextIn
 	return ctx.GetStub().PutState(tradeID, deliveryOrderBytes)
 }
 
-func (t *CBPMChaincode) ConfirmFinishDeliveryOrder(ctx contractapi.TransactionContextInterface, tradeID string) error {
-	deliveryOrder, err := t.GetDeliveryOrder(ctx, tradeID)
-	if err != nil {
-		return fmt.Errorf("fail to confirm finish delivery order: %v", err)
-	}
-	if deliveryOrder.Status == 0 {
-		return fmt.Errorf("fail to confirm finish delivery order: order has not been handled")
-	}
-	if deliveryOrder.Status == 1 {
-		return fmt.Errorf("fail to confirm finish delivery order: order has not been finished")
-	}
-	if deliveryOrder.Status == 3 {
-		return fmt.Errorf("fail to confirm finish delivery order: order has been confirmed finished")
-	}
-	clientOrgID, err := getClientOrgID(ctx, false)
-	if err != nil {
-		return fmt.Errorf("fail to confirm finish delivery order: %v", err)
-
-	}
-	// 只能由运输方来修改状态
-	if deliveryOrder.HandlerOrg == clientOrgID {
-		return fmt.Errorf("fail to confirm finish delivery order: only owner can comfirm finish order")
-	}
-	deliveryOrder.Status = 3
-	deliveryOrder.UpdateTime = time.Now().Format("2006-01-02 15:04:05")
-	deliveryOrderBytes, err := json.Marshal(deliveryOrder)
-	if err != nil {
-		return fmt.Errorf("fail to confirm finish delivery order: %v", err)
-	}
-	return ctx.GetStub().PutState(tradeID, deliveryOrderBytes)
-}
+//func (t *CBPMChaincode) ConfirmFinishDeliveryOrder(ctx contractapi.TransactionContextInterface, tradeID string) error {
+//	deliveryOrder, err := t.GetDeliveryOrder(ctx, tradeID)
+//	if err != nil {
+//		return fmt.Errorf("fail to confirm finish delivery order: %v", err)
+//	}
+//	if deliveryOrder.Status == 0 {
+//		return fmt.Errorf("fail to confirm finish delivery order: order has not been handled")
+//	}
+//	if deliveryOrder.Status == 1 {
+//		return fmt.Errorf("fail to confirm finish delivery order: order has not been finished")
+//	}
+//	if deliveryOrder.Status == 3 {
+//		return fmt.Errorf("fail to confirm finish delivery order: order has been confirmed finished")
+//	}
+//	clientOrgID, err := getClientOrgID(ctx, false)
+//	if err != nil {
+//		return fmt.Errorf("fail to confirm finish delivery order: %v", err)
+//
+//	}
+//	// 只能由运输方来修改状态
+//	if deliveryOrder.HandlerOrg == clientOrgID {
+//		return fmt.Errorf("fail to confirm finish delivery order: only owner can comfirm finish order")
+//	}
+//	deliveryOrder.Status = 3
+//	deliveryOrder.UpdateTime = time.Now().Format("2006-01-02 15:04:05")
+//	deliveryOrderBytes, err := json.Marshal(deliveryOrder)
+//	if err != nil {
+//		return fmt.Errorf("fail to confirm finish delivery order: %v", err)
+//	}
+//	return ctx.GetStub().PutState(tradeID, deliveryOrderBytes)
+//}
 
 func (t *CBPMChaincode) GetDeliveryOrder(ctx contractapi.TransactionContextInterface, tradeID string) (*DeliveryOrder, error) {
 	deliveryOrderBytes, err := ctx.GetStub().GetState(tradeID)
@@ -344,7 +361,7 @@ func (t *CBPMChaincode) GetOrderHistory(ctx contractapi.TransactionContextInterf
 func (t *CBPMChaincode) DeliveryOrderExists(ctx contractapi.TransactionContextInterface, tradeID string) (bool, error) {
 	deliveryOrderBytes, err := ctx.GetStub().GetState(tradeID)
 	if err != nil {
-		return false, fmt.Errorf("failed to read delivery order for trade %s from world state. %v", tradeID, err)
+		return false, fmt.Errorf("fail to read delivery order for trade %s from world state. %v", tradeID, err)
 	}
 	return deliveryOrderBytes != nil, nil
 
@@ -352,7 +369,7 @@ func (t *CBPMChaincode) DeliveryOrderExists(ctx contractapi.TransactionContextIn
 func getClientOrgID(ctx contractapi.TransactionContextInterface, verifyOrg bool) (string, error) {
 	clientOrgID, err := ctx.GetClientIdentity().GetMSPID()
 	if err != nil {
-		return "", fmt.Errorf("failed getting client's orgID: %v", err)
+		return "", fmt.Errorf("fail getting client's orgID: %v", err)
 	}
 	if clientOrgID == "" {
 		return "", fmt.Errorf("client ID is not set")
@@ -371,7 +388,7 @@ func getClientOrgID(ctx contractapi.TransactionContextInterface, verifyOrg bool)
 func verifyClientOrgMatchesPeerOrg(clientOrgID string) error {
 	peerOrgID, err := shim.GetMSPID()
 	if err != nil {
-		return fmt.Errorf("failed getting peer's orgID: %v", err)
+		return fmt.Errorf("fail getting peer's orgID: %v", err)
 	}
 
 	if clientOrgID != peerOrgID {

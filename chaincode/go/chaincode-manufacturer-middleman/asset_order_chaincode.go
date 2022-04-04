@@ -19,6 +19,7 @@ type Asset struct {
 	AssetID           string  `json:"assetID"`
 	AssetName         string  `json:"assetName"`
 	AssetPrice        float32 `json:"assetPrice"`
+	ShippingAddress   string  `json:"shippingAddress"`
 	OwnerOrg          string  `json:"ownerOrg"` // 链码中生成，就是中间商的org
 	PublicDescription string  `json:"publicDescription"`
 }
@@ -29,20 +30,21 @@ type QueryAssetResult struct {
 }
 
 type Order struct {
-	ObjectType string  `json:"objectType"`
-	TradeID    string  `json:"tradeID"`
-	AssetID    string  `json:"assetID"`
-	AssetName  string  `json:"assetName"`
-	AssetPrice float32 `json:"assetPrice"`
-	Quantity   int     `json:"quantity"`
-	TotalPrice float32 `json:"totalPrice"` // 自动生成
-	Address    string  `json:"address"`
-	Status     int     `json:"status"`     // 0: 未开始 1: 中间商开始处理 2: 中间商确认已完成 3: 生产商确认已完成
-	CreateTime string  `json:"createTime"` // 自动生成
-	UpdateTime string  `json:"updateTime"` // 自动生成
-	OwnerOrg   string  `json:"ownerOrg"`   // 限制修改的权限
-	HandlerOrg string  `json:"handlerOrg"` // 限制修改的权限
-	Note       string  `json:"note"`
+	ObjectType       string  `json:"objectType"`
+	TradeID          string  `json:"tradeID"`
+	AssetID          string  `json:"assetID"`
+	AssetName        string  `json:"assetName"`
+	AssetPrice       float32 `json:"assetPrice"`
+	ShippingAddress  string  `json:"shippingAddress"`
+	Quantity         int     `json:"quantity"`
+	TotalPrice       float32 `json:"totalPrice"` // 自动生成
+	ReceivingAddress string  `json:"receivingAddress"`
+	Status           int     `json:"status"`     // 0: 未开始 1: 中间商开始处理 2: 中间商确认已完成 3: 生产商确认已完成
+	CreateTime       string  `json:"createTime"` // 自动生成
+	UpdateTime       string  `json:"updateTime"` // 自动生成
+	OwnerOrg         string  `json:"ownerOrg"`   // 限制修改的权限
+	HandlerOrg       string  `json:"handlerOrg"` // 限制修改的权限
+	Note             string  `json:"note"`
 }
 
 type QueryOrderResult struct {
@@ -79,12 +81,13 @@ func (t *CBPMChaincode) CreateAsset(ctx contractapi.TransactionContextInterface)
 		AssetID           string  `json:"assetID"`
 		AssetName         string  `json:"assetName"`
 		AssetPrice        float32 `json:"assetPrice"`
+		ShippingAddress   string  `json:"shippingAddress"`
 		PublicDescription string  `json:"publicDescription"`
 	}
 	var assetInput assetTransientInput
 	err = json.Unmarshal(transientAssetJSON, &assetInput)
 	if err != nil {
-		return fmt.Errorf("failed to unmarshal JSON: %s", err.Error())
+		return fmt.Errorf("fail to unmarshal JSON: %s", err.Error())
 	}
 	// check input
 	if len(assetInput.AssetID) == 0 {
@@ -93,20 +96,23 @@ func (t *CBPMChaincode) CreateAsset(ctx contractapi.TransactionContextInterface)
 	if len(assetInput.AssetName) == 0 {
 		return fmt.Errorf("asset name must be a non-empty string")
 	}
+	if len(assetInput.AssetName) == 0 {
+		return fmt.Errorf("shipping address must be a non-empty string")
+	}
 	if assetInput.AssetPrice <= 0 {
 		return fmt.Errorf("asset price field must be a positive number")
 	}
 	exists, err := t.AssetExists(ctx, assetInput.AssetID)
 	if err != nil {
-		return fmt.Errorf("failed to create Asset: %v", err)
+		return fmt.Errorf("fail to create Asset: %v", err)
 	}
 	if exists {
-		return fmt.Errorf("failed to create Asset: asset already exists")
+		return fmt.Errorf("fail to create Asset: asset already exists")
 	}
 
 	clientOrgID, err := getClientOrgID(ctx, false)
 	if err != nil {
-		return fmt.Errorf("failed to get verified OrgID: %v", err)
+		return fmt.Errorf("fail to get verified OrgID: %v", err)
 	}
 
 	// create asset
@@ -115,6 +121,7 @@ func (t *CBPMChaincode) CreateAsset(ctx contractapi.TransactionContextInterface)
 		AssetID:           assetInput.AssetID,
 		AssetName:         assetInput.AssetName,
 		AssetPrice:        assetInput.AssetPrice,
+		ShippingAddress:   assetInput.ShippingAddress,
 		OwnerOrg:          clientOrgID,
 		PublicDescription: assetInput.PublicDescription,
 	}
@@ -126,7 +133,7 @@ func (t *CBPMChaincode) CreateAsset(ctx contractapi.TransactionContextInterface)
 	// === Save marble to state ===
 	err = ctx.GetStub().PutState(asset.AssetID, assetJSONasBytes)
 	if err != nil {
-		return fmt.Errorf("failed to create Asset: %s", err.Error())
+		return fmt.Errorf("fail to create Asset: %s", err.Error())
 	}
 	return nil
 }
@@ -140,7 +147,7 @@ func (t *CBPMChaincode) UpdateAsset(ctx contractapi.TransactionContextInterface,
 		return err
 	}
 	if asset.OwnerOrg != clientOrgID {
-		return fmt.Errorf("failed to create Asset: unauthorized updater %s", clientOrgID)
+		return fmt.Errorf("fail to create Asset: unauthorized updater %s", clientOrgID)
 	}
 	asset.AssetPrice = assetPrice
 	asset.AssetName = assetName
@@ -167,10 +174,10 @@ func (t *CBPMChaincode) GetAsset(ctx contractapi.TransactionContextInterface, as
 	queryString := fmt.Sprintf("{\"selector\":{\"docType\":\"Asset\",\"tradeID\":\"%s\"}}", assetID)
 	queryResults, err := t.getAssetQueryResultForQueryString(ctx, queryString)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get asset: %v", err)
+		return nil, fmt.Errorf("fail to get asset: %v", err)
 	}
 	if len(queryResults) == 0 {
-		return nil, fmt.Errorf("failed to get asset: %s does not exist", assetID)
+		return nil, fmt.Errorf("fail to get asset: %s does not exist", assetID)
 	}
 	return &queryResults[0], nil
 }
@@ -206,7 +213,7 @@ func (t *CBPMChaincode) AssetExists(ctx contractapi.TransactionContextInterface,
 	return true, nil
 }
 
-func (t *CBPMChaincode) PlaceOrder(ctx contractapi.TransactionContextInterface) (string, error) {
+func (t *CBPMChaincode) CreateOrder(ctx contractapi.TransactionContextInterface) (string, error) {
 	transMap, err := ctx.GetStub().GetTransient()
 	if err != nil {
 		return "", fmt.Errorf("Error getting transient: " + err.Error())
@@ -216,10 +223,10 @@ func (t *CBPMChaincode) PlaceOrder(ctx contractapi.TransactionContextInterface) 
 		return "", fmt.Errorf("order not found in the transient map")
 	}
 	type orderTransientInput struct {
-		AssetID  string `json:"assetID"`
-		Quantity int    `json:"quantity"`
-		Address  string `json:"address"`
-		Note     string `json:"note"`
+		AssetID          string `json:"assetID"`
+		Quantity         int    `json:"quantity"`
+		ReceivingAddress string `json:"receivingAddress"`
+		Note             string `json:"note"`
 	}
 	var orderInput orderTransientInput
 	err = json.Unmarshal(transientOrderJSON, &orderInput)
@@ -230,7 +237,7 @@ func (t *CBPMChaincode) PlaceOrder(ctx contractapi.TransactionContextInterface) 
 	if len(orderInput.AssetID) == 0 {
 		return "", fmt.Errorf("asset ID must be a non-empty string")
 	}
-	if len(orderInput.Address) == 0 {
+	if len(orderInput.ReceivingAddress) == 0 {
 		return "", fmt.Errorf("order address must be a non-empty string")
 	}
 	if orderInput.Quantity <= 0 {
@@ -251,20 +258,21 @@ func (t *CBPMChaincode) PlaceOrder(ctx contractapi.TransactionContextInterface) 
 
 	// create order
 	order := &Order{
-		ObjectType: "Order",
-		TradeID:    newTradeID.String(),
-		AssetID:    orderInput.AssetID,
-		AssetName:  asset.AssetName,
-		AssetPrice: asset.AssetPrice,
-		Quantity:   orderInput.Quantity,
-		TotalPrice: asset.AssetPrice * (float32(orderInput.Quantity)),
-		Address:    orderInput.Address,
-		Status:     0,
-		CreateTime: time.Now().Format("2006-01-02 15:04:05"),
-		UpdateTime: time.Now().Format("2006-01-02 15:04:05"),
-		HandlerOrg: "",
-		OwnerOrg:   clientOrgID,
-		Note:       orderInput.Note,
+		ObjectType:       "Order",
+		TradeID:          newTradeID.String(),
+		AssetID:          orderInput.AssetID,
+		AssetName:        asset.AssetName,
+		AssetPrice:       asset.AssetPrice,
+		ShippingAddress:  asset.ShippingAddress,
+		Quantity:         orderInput.Quantity,
+		TotalPrice:       asset.AssetPrice * (float32(orderInput.Quantity)),
+		ReceivingAddress: orderInput.ReceivingAddress,
+		Status:           0,
+		CreateTime:       time.Now().Format("2006-01-02 15:04:05"),
+		UpdateTime:       time.Now().Format("2006-01-02 15:04:05"),
+		HandlerOrg:       "",
+		OwnerOrg:         clientOrgID,
+		Note:             orderInput.Note,
 	}
 	orderJSONasBytes, err := json.Marshal(order)
 	err = ctx.GetStub().PutState(order.TradeID, orderJSONasBytes)
@@ -331,7 +339,7 @@ func (t *CBPMChaincode) HandleOrder(ctx contractapi.TransactionContextInterface,
 		return fmt.Errorf("fail to handle order: %v", err)
 	}
 	if order.OwnerOrg == clientOrgID {
-		return fmt.Errorf("fail to handle order: cannot handle by owner")
+		return fmt.Errorf("fail to handle order: cannot handle as owner")
 	}
 	order.HandlerOrg = clientOrgID
 	order.Status = 1
@@ -362,7 +370,7 @@ func (t *CBPMChaincode) FinishOrder(ctx contractapi.TransactionContextInterface,
 		return fmt.Errorf("fail to finish order: %v", err)
 	}
 	if order.OwnerOrg == clientOrgID {
-		return fmt.Errorf("fail to finish order: cannot finish by owner")
+		return fmt.Errorf("fail to finish order: cannot finish as owner")
 	}
 	if order.HandlerOrg != clientOrgID {
 		return fmt.Errorf("fail to finish order: cannot finish by other org: %s", clientOrgID)
