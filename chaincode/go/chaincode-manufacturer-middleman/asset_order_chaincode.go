@@ -153,25 +153,26 @@ func (t *CBPMChaincode) UpdateAsset(ctx contractapi.TransactionContextInterface,
 }
 
 func (t *CBPMChaincode) DeleteAsset(ctx contractapi.TransactionContextInterface, assetID string) error {
+	exist, err := t.AssetExists(ctx, assetID)
+	if !exist {
+		return fmt.Errorf("fail to delete asset: asset does not exist")
+	}
+	if err != nil {
+		return fmt.Errorf("fail to delete asset: %v", err)
+	}
 	return ctx.GetStub().DelState(assetID)
 }
 
 func (t *CBPMChaincode) GetAsset(ctx contractapi.TransactionContextInterface, assetID string) (*Asset, error) {
-	assetJson, err := ctx.GetStub().GetState(assetID)
+	queryString := fmt.Sprintf("{\"selector\":{\"docType\":\"Asset\",\"tradeID\":\"%s\"}}", assetID)
+	queryResults, err := t.getAssetQueryResultForQueryString(ctx, queryString)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get asset: %v", err)
 	}
-	if assetJson == nil {
+	if len(queryResults) == 0 {
 		return nil, fmt.Errorf("failed to get asset: %s does not exist", assetID)
 	}
-
-	var asset Asset
-	err = json.Unmarshal(assetJson, &asset)
-	if err != nil {
-		return nil, err
-	}
-
-	return &asset, nil
+	return &queryResults[0], nil
 }
 
 func (t *CBPMChaincode) GetAllAssets(ctx contractapi.TransactionContextInterface) ([]Asset, error) {
@@ -194,11 +195,15 @@ func (t *CBPMChaincode) QueryAssets(ctx contractapi.TransactionContextInterface,
 }
 
 func (t *CBPMChaincode) AssetExists(ctx contractapi.TransactionContextInterface, assetID string) (bool, error) {
-	assetBytes, err := ctx.GetStub().GetState(assetID)
+	queryString := fmt.Sprintf("{\"selector\":{\"docType\":\"Asset\",\"assetID\":\"%s\"}}", assetID)
+	queryResults, err := t.getAssetQueryResultForQueryString(ctx, queryString)
 	if err != nil {
-		return false, fmt.Errorf("failed to check whether asset %s exists: %v", assetID, err)
+		return false, fmt.Errorf("fail to check whether asset exists: %v", err)
 	}
-	return assetBytes != nil, nil
+	if len(queryResults) == 0 {
+		return false, nil
+	}
+	return true, nil
 }
 
 func (t *CBPMChaincode) PlaceOrder(ctx contractapi.TransactionContextInterface) (string, error) {
@@ -219,7 +224,7 @@ func (t *CBPMChaincode) PlaceOrder(ctx contractapi.TransactionContextInterface) 
 	var orderInput orderTransientInput
 	err = json.Unmarshal(transientOrderJSON, &orderInput)
 	if err != nil {
-		return "", fmt.Errorf("failed to unmarshal JSON: %s", err.Error())
+		return "", fmt.Errorf("fail to unmarshal JSON: %s", err.Error())
 	}
 	// check input
 	if len(orderInput.AssetID) == 0 {
@@ -237,11 +242,11 @@ func (t *CBPMChaincode) PlaceOrder(ctx contractapi.TransactionContextInterface) 
 	}
 	clientOrgID, err := getClientOrgID(ctx, false)
 	if err != nil {
-		return "", fmt.Errorf("failed to get verified OrgID: %v", err)
+		return "", fmt.Errorf("fail to get verified OrgID: %v", err)
 	}
 	newTradeID, err := uuid.NewV4()
 	if err != nil {
-		return "", fmt.Errorf("failed to generate Trade ID: %v", err)
+		return "", fmt.Errorf("fail to generate Trade ID: %v", err)
 	}
 
 	// create order
@@ -264,7 +269,7 @@ func (t *CBPMChaincode) PlaceOrder(ctx contractapi.TransactionContextInterface) 
 	orderJSONasBytes, err := json.Marshal(order)
 	err = ctx.GetStub().PutState(order.TradeID, orderJSONasBytes)
 	if err != nil {
-		return "", fmt.Errorf("failed to create Order: %s", err.Error())
+		return "", fmt.Errorf("fail to create Order: %s", err.Error())
 	}
 	return newTradeID.String(), nil
 }
@@ -276,7 +281,7 @@ func (t *CBPMChaincode) GetOrder(ctx contractapi.TransactionContextInterface, tr
 		return nil, err
 	}
 	if len(queryResults) == 0 {
-		return nil, fmt.Errorf("failed to get order for tradeID: %s does not exist", tradeID)
+		return nil, fmt.Errorf("fail to get order for tradeID: %s does not exist", tradeID)
 	}
 	return &queryResults[0], nil
 }
@@ -313,7 +318,7 @@ func (t *CBPMChaincode) DeleteOrder(ctx contractapi.TransactionContextInterface,
 func (t *CBPMChaincode) HandleOrder(ctx contractapi.TransactionContextInterface, tradeID string) error {
 	order, err := t.GetOrder(ctx, tradeID)
 	if err != nil {
-		return err
+		return fmt.Errorf("fail to handle order: %v", err)
 	}
 	if order.Status != 0 {
 		return fmt.Errorf("fail to handle order: order(status: %d) for trade #{tradeID} has been handled", order.Status)
@@ -323,17 +328,17 @@ func (t *CBPMChaincode) HandleOrder(ctx contractapi.TransactionContextInterface,
 	}
 	clientOrgID, err := getClientOrgID(ctx, false)
 	if err != nil {
-		return fmt.Errorf("failed to get client OrgID: %v", err)
+		return fmt.Errorf("fail to handle order: %v", err)
 	}
 	if order.OwnerOrg == clientOrgID {
-		return fmt.Errorf("failed to handle order: cannot handle by owner")
+		return fmt.Errorf("fail to handle order: cannot handle by owner")
 	}
 	order.HandlerOrg = clientOrgID
 	order.Status = 1
 	order.UpdateTime = time.Now().Format("2006-01-02 15:04:05")
 	orderBytes, err := json.Marshal(order)
 	if err != nil {
-		return fmt.Errorf("failed to handle order: %v", err)
+		return fmt.Errorf("fail to handle order: %v", err)
 	}
 	return ctx.GetStub().PutState(tradeID, orderBytes)
 }
@@ -341,7 +346,7 @@ func (t *CBPMChaincode) HandleOrder(ctx contractapi.TransactionContextInterface,
 func (t *CBPMChaincode) FinishOrder(ctx contractapi.TransactionContextInterface, tradeID string) error {
 	order, err := t.GetOrder(ctx, tradeID)
 	if err != nil {
-		return fmt.Errorf("failed to finish order: %v", err)
+		return fmt.Errorf("fail to finish order: %v", err)
 	}
 	if order.Status == 0 {
 		return fmt.Errorf("fail to finish order: order for trade #{tradeID} has not been handled")
@@ -354,19 +359,19 @@ func (t *CBPMChaincode) FinishOrder(ctx contractapi.TransactionContextInterface,
 	}
 	clientOrgID, err := getClientOrgID(ctx, false)
 	if err != nil {
-		return fmt.Errorf("failed to get client OrgID: %v", err)
+		return fmt.Errorf("fail to finish order: %v", err)
 	}
 	if order.OwnerOrg == clientOrgID {
-		return fmt.Errorf("failed to finish order: cannot finish by owner")
+		return fmt.Errorf("fail to finish order: cannot finish by owner")
 	}
 	if order.HandlerOrg != clientOrgID {
-		return fmt.Errorf("failed to finish order: cannot finish by other org: %s", clientOrgID)
+		return fmt.Errorf("fail to finish order: cannot finish by other org: %s", clientOrgID)
 	}
 	order.Status = 2
 	order.UpdateTime = time.Now().Format("2006-01-02 15:04:05")
 	orderBytes, err := json.Marshal(order)
 	if err != nil {
-		return fmt.Errorf("failed to finish order: %v", err)
+		return fmt.Errorf("fail to finish order: %v", err)
 	}
 	return ctx.GetStub().PutState(tradeID, orderBytes)
 }
@@ -374,13 +379,16 @@ func (t *CBPMChaincode) FinishOrder(ctx contractapi.TransactionContextInterface,
 func (t *CBPMChaincode) ConfirmFinishOrder(ctx contractapi.TransactionContextInterface, tradeID string) error {
 	order, err := t.GetOrder(ctx, tradeID)
 	if err != nil {
-		return fmt.Errorf("failed to confirm finish order: %v", err)
+		return fmt.Errorf("fail to confirm finish order: %v", err)
 	}
 	if order.Status == 0 {
-		return fmt.Errorf("fail to confirm finish order: order for trade #{tradeID} has not been handled")
+		return fmt.Errorf("fail to confirm finish order: order has not been handled")
 	}
-	if order.Status == 2 {
-		return fmt.Errorf("fail to confirm finish order: order for trade #{tradeID} has been confirmed finished")
+	if order.Status == 1 {
+		return fmt.Errorf("fail to confirm finish order: order has not been finished")
+	}
+	if order.Status == 3 {
+		return fmt.Errorf("fail to confirm finish order: order has been confirmed finished")
 	}
 	if order.HandlerOrg == "" {
 		return fmt.Errorf("fail to confirm finish order: no handler is specified")
@@ -390,13 +398,13 @@ func (t *CBPMChaincode) ConfirmFinishOrder(ctx contractapi.TransactionContextInt
 		return fmt.Errorf("fail to confirm finish order: %v", err)
 	}
 	if order.OwnerOrg != clientOrgID {
-		return fmt.Errorf("failed to confirm finish order: only owner can comfirm finish order")
+		return fmt.Errorf("fail to confirm finish order: only owner can comfirm finish order")
 	}
 	order.Status = 3
 	order.UpdateTime = time.Now().Format("2006-01-02 15:04:05")
 	orderBytes, err := json.Marshal(order)
 	if err != nil {
-		return fmt.Errorf("failed to confirm finish order: %v", err)
+		return fmt.Errorf("fail to confirm finish order: %v", err)
 	}
 	return ctx.GetStub().PutState(tradeID, orderBytes)
 }
@@ -405,7 +413,7 @@ func (t *CBPMChaincode) OrderExists(ctx contractapi.TransactionContextInterface,
 	queryString := fmt.Sprintf("{\"selector\":{\"docType\":\"Order\",\"tradeID\":\"%s\"}}", tradeID)
 	queryResults, err := t.getOrderQueryResultForQueryString(ctx, queryString)
 	if err != nil {
-		return false, fmt.Errorf("failed to check whether order for trade %s exists: %v", tradeID, err)
+		return false, fmt.Errorf("fail to check whether order for trade %s exists: %v", tradeID, err)
 	}
 	if len(queryResults) == 0 {
 		return false, nil
@@ -415,7 +423,7 @@ func (t *CBPMChaincode) OrderExists(ctx contractapi.TransactionContextInterface,
 func getClientOrgID(ctx contractapi.TransactionContextInterface, verifyOrg bool) (string, error) {
 	clientOrgID, err := ctx.GetClientIdentity().GetMSPID()
 	if err != nil {
-		return "", fmt.Errorf("failed getting client's orgID: %v", err)
+		return "", fmt.Errorf("fail getting client's orgID: %v", err)
 	}
 	if clientOrgID == "" {
 		return "", fmt.Errorf("client ID is not set")
@@ -435,7 +443,7 @@ func getClientOrgID(ctx contractapi.TransactionContextInterface, verifyOrg bool)
 func verifyClientOrgMatchesPeerOrg(clientOrgID string) error {
 	peerOrgID, err := shim.GetMSPID()
 	if err != nil {
-		return fmt.Errorf("failed getting peer's orgID: %v", err)
+		return fmt.Errorf("fail getting peer's orgID: %v", err)
 	}
 
 	if clientOrgID != peerOrgID {
@@ -496,10 +504,10 @@ func (s *CBPMChaincode) getOrderQueryResultForQueryString(ctx contractapi.Transa
 func main() {
 	chaincode, err := contractapi.NewChaincode(&CBPMChaincode{})
 	if err != nil {
-		log.Panicf("Error creating mmchaincode: %v", err)
+		log.Panicf("Error creating mamichaincode: %v", err)
 	}
 
 	if err := chaincode.Start(); err != nil {
-		log.Panicf("Error starting mmchaincode: %v", err)
+		log.Panicf("Error starting mamichaincode: %v", err)
 	}
 }
