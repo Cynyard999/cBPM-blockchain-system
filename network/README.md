@@ -6,17 +6,31 @@
 
 
 
-# 启动网络
+# 启动cBPM网络
 
 ```shell
-docker-compose up -d 
+# 清除原先的网络
+./clean.sh
+# 建立fabric网络
+./start.sh
+# 进入容器
+docker exec -it cli /bin/bash
+# 在容器中
+# 创建channel
+./scripts/init-channel.sh
+# 部署链码
+./scripts/deploy-chaincode.sh
 ```
 
 
 
-# Create a supplier- carrier channel
 
-## 创建并进入通道
+
+# 测试网络
+
+## Create a supplier- carrier channel
+
+### 创建并进入通道
 
 启动cli并且进入
 
@@ -76,19 +90,11 @@ peer channel join -b /tmp/hyperledger/fabric/channel-artifacts/scchannel.block
 peer channel list
 ```
 
-## 安装测试链码
-
-TODO：
-
-1. 将最简单的java链码部署成功，并且成功调用
-2. 通道间流程定义好后，先写一个通道的智能合约
-
 ### 选择链码
 
 链码路径-链码语言
 
 - chaincode-supplier-carrier: golang
-
 - test-go : golang
 - test-go-asset-transfer : golang
 - test-go-private-data : golang
@@ -98,7 +104,7 @@ TODO：
 
 ```shell
 # 输入想要安装的链码路径以及语言版本
-export CHAINCODE=test-go-private-data
+export CHAINCODE=chaincode-supplier-carrier
 export CHAINCODE_LANG=golang
 export CHAINCODE_VERSION=1.0
 export CHAINCODE_NAME=scchaincode
@@ -150,13 +156,6 @@ peer chaincode install -n $CHAINCODE_NAME -v $CHAINCODE_VERSION  -p $CHAINCODE -
 
 ```shell
 peer chaincode instantiate -o orderer-cbpm:7050 --tls --cafile "/tmp/hyperledger/fabric/peer/cbpm/orderer/tls/tlscacerts/tls-0-0-0-0-7052.pem" -C scchannel -n $CHAINCODE_NAME -l $CHAINCODE_LANG -v $CHAINCODE_VERSION -c '{"Args":[""]}' -P "OR('SupplierMSP.peer','CarrierMSP.peer')"
-
-
-peer chaincode invoke -o orderer-cbpm:7050 --tls --cafile "/tmp/hyperledger/fabric/peer/cbpm/orderer/tls/tlscacerts/tls-0-0-0-0-7052.pem" -C scchannel -n $CHAINCODE_NAME -c '{"Args":["createDeliveryOrder", "trade1","asset1","100","placeA","placeB"]}'
-
-
-peer chaincode invoke -o orderer-cbpm:7050 --tls --cafile "/tmp/hyperledger/fabric/peer/cbpm/orderer/tls/tlscacerts/tls-0-0-0-0-7052.pem" -C scchannel -n $CHAINCODE_NAME -c '{"Args":["DeleteDeliveryOrder", "trade1"]}'
-
 ```
 
 
@@ -318,13 +317,7 @@ peer chaincode query -o orderer-cbpm:7050 --tls --cafile "/tmp/hyperledger/fabri
 
 ```
 
-
-
-
-
-
-
-## 更新链码
+### 更新链码
 
 `peer chaincode install` 的命令，修改-v的参数
 
