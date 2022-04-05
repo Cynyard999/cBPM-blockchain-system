@@ -1,7 +1,7 @@
 version: "3.7"
 
 networks:
-  fabric-ca:
+  cbpm-network:
 services:
   couchdb1:
     container_name: couchdb1
@@ -14,7 +14,7 @@ services:
     ports:
       - "5984:5984"
     networks:
-      - fabric-ca
+      - cbpm-network
 
    # couchdb2:
    #  container_name: couchdb
@@ -27,7 +27,7 @@ services:
    #  ports:
    #    - "6984:5984"
    #  networks:
-   #    - fabric-ca
+   #    - cbpm-network
 
    # couchdb3:
    #  container_name: couchdb
@@ -40,7 +40,7 @@ services:
    #  ports:
    #    - "7984:5984"
    #  networks:
-   #    - fabric-ca
+   #    - cbpm-network
 
    # couchdb4:
    #  container_name: couchdb
@@ -53,7 +53,7 @@ services:
    #  ports:
    #    - "8984:5984"
    #  networks:
-   #    - fabric-ca
+   #    - cbpm-network
 
   ca-tls:
     container_name: ca
@@ -69,7 +69,7 @@ services:
     volumes:
       - ./:/ca
     networks:
-      - fabric-ca
+      - cbpm-network
     ports:
       - 7052:7052
 
@@ -87,7 +87,7 @@ services:
     volumes:
       - ./:/ca
     networks:
-      - fabric-ca
+      - cbpm-network
     ports:
       - 7053:7053
 
@@ -105,7 +105,7 @@ services:
     volumes:
       - ./:/ca
     networks:
-      - fabric-ca
+      - cbpm-network
     ports:
       - 7054:7054
 
@@ -123,7 +123,7 @@ services:
     volumes:
       - ./:/ca
     networks:
-      - fabric-ca
+      - cbpm-network
     ports:
       - 7055:7055
 
@@ -141,7 +141,7 @@ services:
     volumes:
       - ./:/ca
     networks:
-      - fabric-ca
+      - cbpm-network
     ports:
       - 7056:7056
 
@@ -159,7 +159,7 @@ services:
     volumes:
       - ./:/ca
     networks:
-      - fabric-ca
+      - cbpm-network
     ports:
       - 7057:7057
 
@@ -185,7 +185,7 @@ services:
       - ./cbpm:/tmp/hyperledger/cbpm
       - ./channel-artifacts/genesis.block:/tmp/hyperledger/genesis.block
     networks:
-      - fabric-ca
+      - cbpm-network
     ports:
       - 7050:7050
 
@@ -202,7 +202,7 @@ services:
       - CORE_PEER_LOCALMSPID=ManufacturerMSP
       - CORE_PEER_MSPCONFIGPATH=/tmp/hyperledger/manufacturer/peer1/msp
       - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
-      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=network_fabric-ca
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=network_cbpm-network
       - CORE_PEER_TLS_ENABLED=true
       - CORE_PEER_TLS_CERT_FILE=/tmp/hyperledger/manufacturer/peer1/tls/signcerts/cert.pem
       - CORE_PEER_TLS_KEY_FILE=/tmp/hyperledger/manufacturer/peer1/tls/keystore/key.pem
@@ -217,7 +217,7 @@ services:
       - /var/run:/host/var/run
       - ./manufacturer/peer1:/tmp/hyperledger/manufacturer/peer1
     networks:
-      - fabric-ca
+      - cbpm-network
     depends_on:
       - couchdb1
     ports:
@@ -236,7 +236,7 @@ services:
       - CORE_PEER_LOCALMSPID=ManufacturerMSP
       - CORE_PEER_MSPCONFIGPATH=/tmp/hyperledger/manufacturer/peer2/msp
       - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
-      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=network_fabric-ca
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=network_cbpm-network
       - FABRIC_LOGGING_SPEC=debug
       - CORE_PEER_TLS_ENABLED=true
       - CORE_PEER_TLS_CERT_FILE=/tmp/hyperledger/manufacturer/peer2/tls/signcerts/cert.pem
@@ -252,7 +252,7 @@ services:
       - /var/run:/host/var/run
       - ./manufacturer/peer2:/tmp/hyperledger/manufacturer/peer2
     networks:
-      - fabric-ca
+      - cbpm-network
     depends_on:
       - couchdb1
     ports:
@@ -272,7 +272,7 @@ services:
       - CORE_PEER_LOCALMSPID=SupplierMSP
       - CORE_PEER_MSPCONFIGPATH=/tmp/hyperledger/supplier/peer1/msp
       - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
-      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=network_fabric-ca
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=network_cbpm-network
       - FABRIC_LOGGING_SPEC=debug
       - CORE_PEER_TLS_ENABLED=true
       - CORE_PEER_TLS_CERT_FILE=/tmp/hyperledger/supplier/peer1/tls/signcerts/cert.pem
@@ -288,7 +288,7 @@ services:
       - /var/run:/host/var/run
       - ./supplier/peer1:/tmp/hyperledger/supplier/peer1
     networks:
-      - fabric-ca
+      - cbpm-network
     depends_on:
       - couchdb1
     ports:
@@ -307,7 +307,7 @@ services:
       - CORE_PEER_LOCALMSPID=SupplierMSP
       - CORE_PEER_MSPCONFIGPATH=/tmp/hyperledger/supplier/peer2/msp
       - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
-      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=network_fabric-ca
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=network_cbpm-network
       - FABRIC_LOGGING_SPEC=debug
       - CORE_PEER_TLS_ENABLED=true
       - CORE_PEER_TLS_CERT_FILE=/tmp/hyperledger/supplier/peer2/tls/signcerts/cert.pem
@@ -323,7 +323,7 @@ services:
       - /var/run:/host/var/run
       - ./supplier/peer2:/tmp/hyperledger/supplier/peer2
     networks:
-      - fabric-ca
+      - cbpm-network
     depends_on:
       - couchdb1
     ports:
@@ -342,7 +342,7 @@ services:
       - CORE_PEER_LOCALMSPID=CarrierMSP
       - CORE_PEER_MSPCONFIGPATH=/tmp/hyperledger/carrier/peer1/msp
       - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
-      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=network_fabric-ca
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=network_cbpm-network
       - FABRIC_LOGGING_SPEC=debug
       - CORE_PEER_TLS_ENABLED=true
       - CORE_PEER_TLS_CERT_FILE=/tmp/hyperledger/carrier/peer1/tls/signcerts/cert.pem
@@ -358,7 +358,7 @@ services:
       - /var/run:/host/var/run
       - ./carrier/peer1:/tmp/hyperledger/carrier/peer1
     networks:
-      - fabric-ca
+      - cbpm-network
     depends_on:
       - couchdb1
     ports:
@@ -377,7 +377,7 @@ services:
       - CORE_PEER_LOCALMSPID=CarrierMSP
       - CORE_PEER_MSPCONFIGPATH=/tmp/hyperledger/carrier/peer2/msp
       - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
-      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=network_fabric-ca
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=network_cbpm-network
       - FABRIC_LOGGING_SPEC=debug
       - CORE_PEER_TLS_ENABLED=true
       - CORE_PEER_TLS_CERT_FILE=/tmp/hyperledger/carrier/peer2/tls/signcerts/cert.pem
@@ -393,7 +393,7 @@ services:
       - /var/run:/host/var/run
       - ./carrier/peer2:/tmp/hyperledger/carrier/peer2
     networks:
-      - fabric-ca
+      - cbpm-network
     depends_on:
       - couchdb1
     ports:
@@ -412,7 +412,7 @@ services:
       - CORE_PEER_LOCALMSPID=MiddlemanMSP
       - CORE_PEER_MSPCONFIGPATH=/tmp/hyperledger/middleman/peer1/msp
       - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
-      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=network_fabric-ca
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=network_cbpm-network
       - FABRIC_LOGGING_SPEC=debug
       - CORE_PEER_TLS_ENABLED=true
       - CORE_PEER_TLS_CERT_FILE=/tmp/hyperledger/middleman/peer1/tls/signcerts/cert.pem
@@ -428,7 +428,7 @@ services:
       - /var/run:/host/var/run
       - ./middleman/peer1:/tmp/hyperledger/middleman/peer1
     networks:
-      - fabric-ca
+      - cbpm-network
     depends_on:
       - couchdb1
     ports:
@@ -447,7 +447,7 @@ services:
       - CORE_PEER_LOCALMSPID=MiddlemanMSP
       - CORE_PEER_MSPCONFIGPATH=/tmp/hyperledger/middleman/peer2/msp
       - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
-      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=network_fabric-ca
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=network_cbpm-network
       - FABRIC_LOGGING_SPEC=debug
       - CORE_PEER_TLS_ENABLED=true
       - CORE_PEER_TLS_CERT_FILE=/tmp/hyperledger/middleman/peer2/tls/signcerts/cert.pem
@@ -463,7 +463,7 @@ services:
       - /var/run:/host/var/run
       - ./middleman/peer2:/tmp/hyperledger/middleman/peer2
     networks:
-      - fabric-ca
+      - cbpm-network
     depends_on:
       - couchdb1
     ports:
@@ -478,7 +478,7 @@ services:
       - GOPATH=/tmp/hyperledger/fabric/chaincode/go
       - GO111MODULE=auto
       - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
-      - FABRIC_LOGGING_SPEC=DEBUG
+      - FABRIC_LOGGING_SPEC=INFO
       - CORE_PEER_ID=cli
       # - CORE_PEER_ADDRESS=peer1-supplier:7051
       # - CORE_PEER_LOCALMSPID=SupplierMSP
@@ -494,13 +494,18 @@ services:
       - ./carrier:/tmp/hyperledger/fabric/peer/carrier
       - ./middleman:/tmp/hyperledger/fabric/peer/middleman
       - ./cbpm:/tmp/hyperledger/fabric/peer/cbpm
+      - ./scripts:/tmp/hyperledger/fabric/peer/scripts
       - ../chaincode/go:/tmp/hyperledger/fabric/chaincode/go/src
       - ../chaincode/java:/tmp/hyperledger/fabric/chaincode/java
     networks:
-      - fabric-ca
+      - cbpm-network
     depends_on:
       - peer1-manufacturer
+      - peer2-manufacturer
       - peer1-carrier
+      - peer2-carrier
       - peer1-supplier
+      - peer2-supplier
       - peer1-middleman
+      - peer2-middleman
 
