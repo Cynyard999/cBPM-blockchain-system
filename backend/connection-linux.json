@@ -160,7 +160,7 @@
                             "ledgerQuery": true,
                             "eventSource": true
                         },
-                        "peer2-sipplier": {
+                        "peer2-supplier": {
                             "endorsingPeer": true,
                             "chaincodeQuery": true,
                             "ledgerQuery": true,
