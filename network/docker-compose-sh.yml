@@ -470,7 +470,7 @@ services:
       - GOPATH=/tmp/hyperledger/fabric/chaincode/go
       - GO111MODULE=auto
       - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
-      - FABRIC_LOGGING_SPEC=DEBUG
+      - FABRIC_LOGGING_SPEC=INFO
       - CORE_PEER_ID=cli
       # - CORE_PEER_ADDRESS=peer1-supplier:7051
       # - CORE_PEER_LOCALMSPID=SupplierMSP
