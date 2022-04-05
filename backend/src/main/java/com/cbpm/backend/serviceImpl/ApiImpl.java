@@ -84,9 +84,12 @@ public class ApiImpl implements ApiService {
             //处理incoke含有transient得情况
             if(transientDetail!=null){
                 Map<String,byte[]> argsMap=new HashMap<>();
-                String str=transientDetail.toJSONString().replace("\"","\"");
+                String str=transientDetail.toJSONString();
+                String transientKey=str.substring(2,str.indexOf(":")-1);
+                System.out.println("transient key: "+transientKey);
                 str=str.substring(str.indexOf(":")+1,str.length()-1);
-                argsMap.put("marble",str.getBytes());
+                System.out.println("transient value: "+str);
+                argsMap.put(transientKey,str.getBytes());
                 byte[] invokeResult = contract.createTransaction(functionName).setEndorsingPeers(
                                     network.getChannel().getPeers(EnumSet.of(Peer.PeerRole.ENDORSING_PEER)))
                                     .setTransient(argsMap)
