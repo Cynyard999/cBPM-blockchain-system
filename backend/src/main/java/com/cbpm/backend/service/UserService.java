@@ -11,4 +11,6 @@ import com.cbpm.backend.vo.ResponseVo;
 */
 public interface UserService {
     ResponseVo register(JSONObject jsonObject);
+
+    ResponseVo login(JSONObject jsonObject);
 }

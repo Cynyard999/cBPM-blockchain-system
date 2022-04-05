@@ -30,6 +30,8 @@ import org.hyperledger.fabric_ca.sdk.exception.EnrollmentException;
 import org.hyperledger.fabric.gateway.Identities;
 import org.hyperledger.fabric.gateway.Identity;
 import org.hyperledger.fabric.gateway.X509Identity;
+
+import java.awt.geom.RectangularShape;
 import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
@@ -160,6 +162,29 @@ public class UserImpl implements UserService {
         }
 
 
+    }
+
+
+    @Override
+    public ResponseVo login(JSONObject jsonObject){
+        String email=jsonObject.getString("email");
+        if(email.length()==0){
+            return ResponseVo.buildFailure("email must not be null.");
+        }
+
+        String password=jsonObject.getString("pwd");
+        if(password.length()==0){
+            return ResponseVo.buildFailure("password must not be null.");
+        }
+        UserVo userVo=userRepository.findByEmail(email);
+        if(userVo==null){
+            return ResponseVo.buildFailure("this email has not been registered,please register first.");
+        }
+        if(!userVo.getPassword().equals(password)){
+            return ResponseVo.buildFailure("wrong email or password.");
+        }else{
+            return ResponseVo.buildSuccess("login seccess");
+        }
     }
 
 

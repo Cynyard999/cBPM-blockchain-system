@@ -25,4 +25,9 @@ public class UserController {
     ResponseVo register(@RequestBody JSONObject jsonObject){
         return userImpl.register(jsonObject);
     }
+
+    @PostMapping("/login")
+    ResponseVo login(@RequestBody JSONObject jsonObject){
+        return userImpl.login(jsonObject);
+    }
 }
