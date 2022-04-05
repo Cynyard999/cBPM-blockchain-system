@@ -1,10 +1,13 @@
 package com.cbpm.backend.serviceImpl;
 
 import com.alibaba.fastjson.JSONObject;
+import com.cbpm.backend.dao.UserRepository;
 import com.cbpm.backend.sdk.EnrollmentImpl;
 import com.cbpm.backend.sdk.FabricUser;
 import com.cbpm.backend.service.UserService;
 import com.cbpm.backend.vo.ResponseVo;
+import com.cbpm.backend.vo.UserVo;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.bouncycastle.asn1.pkcs.PrivateKeyInfo;
@@ -50,6 +53,8 @@ public class UserImpl implements UserService {
     @Value("${backend.networkPath}")
     private  String networkPath;
 
+    @Autowired
+    private UserRepository userRepository;
 
     public HashMap<String,String> orgMSPHash=new HashMap<String,String>(){
         {
@@ -94,11 +99,17 @@ public class UserImpl implements UserService {
             if(wallet.get(orgType+"-"+userName)!=null){
                 return ResponseVo.buildFailure("user "+userName+" is already registered");
             }
-            userName=orgType+"-"+userName;
+
             String pwd=jsonObject.getString("pwd");
             if(pwd.length()==0){
                 return ResponseVo.buildFailure("password must not be null");
             }
+            String email=jsonObject.getString("email");
+            if(userRepository.findByEmail(email)!=null){
+                return ResponseVo.buildFailure(email+" has already been registered.");
+            }
+            UserVo userVo=new UserVo(userName,pwd,orgType,email);
+            userName=orgType+"-"+userName;
             //设置安全属性
             Security.addProvider(new org.bouncycastle.jce.provider.BouncyCastleProvider());
             Properties props = new Properties();
@@ -132,13 +143,16 @@ public class UserImpl implements UserService {
                 responseVo.setMessage("get wrong pwd from ca-server");
                 return responseVo;
             }else{
-                System.out.println("get right right from ca-server");
+                System.out.println("get right pwd from ca-server");
             }
             //向系统enroll，获取证书和私钥
             Enrollment enrollment = caClient.enroll(userName, enrollmentSecret);
             Identity newUser = Identities.newX509Identity(orgMSPHash.get(orgType), enrollment);
             //将新user存进wallet
             wallet.put(userName, newUser);
+
+            userRepository.save(userVo);
+            System.out.println(userVo.toString()+" saved to the repo");
             return ResponseVo.buildSuccess(userName+" "+"register success");
         }catch (Exception e){
             e.printStackTrace();

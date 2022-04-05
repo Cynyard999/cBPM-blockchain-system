@@ -1,3 +1,15 @@
 spring:
   profiles:
     active: dev
+
+  datasource:
+    url: jdbc:mysql://172.19.241.74:3306/blockChain
+    username: root
+    password: 123456
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    database: mysql
