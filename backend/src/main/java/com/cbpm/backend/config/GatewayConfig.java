@@ -58,7 +58,7 @@ public class GatewayConfig {
     /**
      * 用户名
      */
-    private final String[] orgAdminNames={"carrier-ca-admin","supplier-ca-admin","manufacturer-ca-admin","middleman-ca-admin"};
+    private final String[] orgAdminNames={"carrier-admin","supplier-admin","manufacturer-admin","middleman-admin"};
 
     /**
      * 用户证书路径后缀
@@ -70,7 +70,15 @@ public class GatewayConfig {
 
     private String privateKeyPathSuufix="/admin/msp/keystore/private_sk";
 
+    /**
+     * admin用户证书路径后缀
+     */
+    private final String certificatePathSuffixAdmin="/msp/signcerts/cert.pem";
+    /**
+     * 用户私钥路径后缀
+     */
 
+    private String privateKeyPathSuufixAdmin="/msp/keystore/private_sk";
 
     /**
      * 配置网关
@@ -88,6 +96,12 @@ public class GatewayConfig {
             PrivateKey privateKey = getPrivateKey(Paths.get(this.networkPath+orgs[i]+this.privateKeyPathSuufix));
             //存进wallet
             wallet.put(orgAdminNames[i], Identities.newX509Identity(orgMSPs[i], certificate, privateKey));
+            //配置org-ca-admin的身份
+            certificate = readX509Certificate(Paths.get(this.networkPath+orgs[i]+"/"+orgs[i]+"-ca-admin"+this.certificatePathSuffixAdmin));
+
+            privateKey = getPrivateKey(Paths.get(this.networkPath+orgs[i]+"/"+orgs[i]+"-ca-admin"+this.privateKeyPathSuufixAdmin));
+            //存进wallet
+            wallet.put(orgs[i]+"-ca-admin", Identities.newX509Identity(orgMSPs[i], certificate, privateKey));
 
             //根据connection.json 获取Fabric网络连接对象
             Gateway.Builder builder = Gateway.createBuilder()
