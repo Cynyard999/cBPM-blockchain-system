@@ -43,8 +43,133 @@
                     "eventSource": true
                 }
             }
+        },
+        "cmachannel": {
+            "orderers": [
+                "orderer-cbpm"
+            ],
+            "peers": {
+                "peer1-manufacturer": {
+                    "endorsingPeer": true,
+                    "chaincodeQuery": true,
+                    "ledgerQuery": true,
+                    "eventSource": true
+                },
+                "peer2-manufacturer": {
+                    "endorsingPeer": true,
+                    "chaincodeQuery": true,
+                    "ledgerQuery": true,
+                    "eventSource": true
+                },
+                "peer1-carrier": {
+                    "endorsingPeer": true,
+                    "chaincodeQuery": true,
+                    "ledgerQuery": true,
+                    "eventSource": true
+                },
+                "peer2-carrier": {
+                    "endorsingPeer": true,
+                    "chaincodeQuery": true,
+                    "ledgerQuery": true,
+                    "eventSource": true
+                }
+            }
+        },
+        "mamichannel": {
+            "orderers": [
+                "orderer-cbpm"
+            ],
+            "peers": {
+                "peer1-manufacturer": {
+                    "endorsingPeer": true,
+                    "chaincodeQuery": true,
+                    "ledgerQuery": true,
+                    "eventSource": true
+                },
+                "peer2-manufacturer": {
+                    "endorsingPeer": true,
+                    "chaincodeQuery": true,
+                    "ledgerQuery": true,
+                    "eventSource": true
+                },
+                "peer1-middleman": {
+                    "endorsingPeer": true,
+                    "chaincodeQuery": true,
+                    "ledgerQuery": true,
+                    "eventSource": true
+                },
+                "peer2-middleman": {
+                    "endorsingPeer": true,
+                    "chaincodeQuery": true,
+                    "ledgerQuery": true,
+                    "eventSource": true
+                }
+            }
+        },
+        "micchannel": {
+                    "orderers": [
+                        "orderer-cbpm"
+                    ],
+                    "peers": {
+                        "peer1-middleman": {
+                            "endorsingPeer": true,
+                            "chaincodeQuery": true,
+                            "ledgerQuery": true,
+                            "eventSource": true
+                        },
+                        "peer2-middleman": {
+                            "endorsingPeer": true,
+                            "chaincodeQuery": true,
+                            "ledgerQuery": true,
+                            "eventSource": true
+                        },
+                        "peer1-carrier": {
+                            "endorsingPeer": true,
+                            "chaincodeQuery": true,
+                            "ledgerQuery": true,
+                            "eventSource": true
+                        },
+                        "peer2-carrier": {
+                            "endorsingPeer": true,
+                            "chaincodeQuery": true,
+                            "ledgerQuery": true,
+                            "eventSource": true
+                        }
+                    }
+                },
+        "mischannel": {
+                    "orderers": [
+                        "orderer-cbpm"
+                    ],
+                    "peers": {
+                        "peer1-middleman": {
+                            "endorsingPeer": true,
+                            "chaincodeQuery": true,
+                            "ledgerQuery": true,
+                            "eventSource": true
+                        },
+                        "peer2-middleman": {
+                            "endorsingPeer": true,
+                            "chaincodeQuery": true,
+                            "ledgerQuery": true,
+                            "eventSource": true
+                        },
+                        "peer1-supplier": {
+                            "endorsingPeer": true,
+                            "chaincodeQuery": true,
+                            "ledgerQuery": true,
+                            "eventSource": true
+                        },
+                        "peer2-sipplier": {
+                            "endorsingPeer": true,
+                            "chaincodeQuery": true,
+                            "ledgerQuery": true,
+                            "eventSource": true
+                        }
+                    }
+                }
         }
-    },
+    ,
     "organizations": {
 
         "SupplierOrg": {
