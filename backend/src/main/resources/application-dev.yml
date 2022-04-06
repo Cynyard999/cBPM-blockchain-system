@@ -11,4 +11,5 @@ backend:
   networkConfigPath: src/main/resources/connection.json
   #network path
   networkPath: ../network/
-
+  #logPath
+  logPackagePath: src/main/logs/

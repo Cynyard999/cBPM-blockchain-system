@@ -96,4 +96,14 @@ public class ResponseVo {
     public void setResult(Object result) {
         this.result = result;
     }
+    @Override
+    public String toString(){
+        String res="";
+        if(this.success){
+            res+="success,";
+        }else {
+            res+="false,";
+        }
+        return res+"message:"+this.getMessage();
+    }
 }

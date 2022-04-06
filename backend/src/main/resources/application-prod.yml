@@ -10,3 +10,5 @@ backend:
   networkConfigPath: /home/steve/homework/cBPM-blockchain-system/backend/connection-linux.json
   #network path
   networkPath: /home/steve/homework/cBPM-blockchain-system/network/
+  #logPath
+  logPackagePath: /home/steve/homework/cBPM-blockchain-system/backend/src/main/logs/

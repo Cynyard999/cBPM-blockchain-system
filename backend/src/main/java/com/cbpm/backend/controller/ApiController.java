@@ -1,6 +1,7 @@
 package com.cbpm.backend.controller;
 
 import com.cbpm.backend.serviceImpl.ApiImpl;
+import com.cbpm.backend.util.LogWriter;
 import com.cbpm.backend.vo.ResponseVo;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
@@ -12,7 +13,8 @@ public class ApiController {
     @Resource
     ApiImpl apiImpl;
 
-
+    @Resource
+    LogWriter logWriter;
     /**
      * @param jsonObject
      * @return java.lang.String
@@ -22,7 +24,9 @@ public class ApiController {
      */
     @PostMapping("/invoke")
     public ResponseVo invokeFunc(@RequestBody JSONObject jsonObject) throws Exception {
-        return apiImpl.invoke(jsonObject);
+        ResponseVo responseVo=apiImpl.invoke(jsonObject);
+        logWriter.writeLog("Request: "+jsonObject.toJSONString()+"\n"+"Response: "+responseVo.toString());
+        return responseVo;
     }
 
     /**
@@ -34,7 +38,9 @@ public class ApiController {
      */
     @PostMapping("/query")
     public ResponseVo queryFunc(@RequestBody JSONObject jsonObject) throws Exception {
-        return apiImpl.query(jsonObject);
+        ResponseVo responseVo=apiImpl.query(jsonObject);
+        logWriter.writeLog("Request: "+jsonObject.toJSONString()+"\n"+"Response: "+responseVo.toString());
+        return responseVo;
     }
 }
 

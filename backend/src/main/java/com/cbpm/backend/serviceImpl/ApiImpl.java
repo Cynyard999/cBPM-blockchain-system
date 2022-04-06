@@ -15,13 +15,14 @@ import org.springframework.stereotype.Service;
 import javax.annotation.Resource;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.concurrent.TimeoutException;
 
 @Service
 public class ApiImpl implements ApiService {
 
     @Resource
     GatewayConfig gatewayConfig;
+
+
 
     @Override
     public ResponseVo query(JSONObject jsonObject) {
