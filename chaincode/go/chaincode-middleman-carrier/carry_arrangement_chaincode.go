@@ -250,7 +250,7 @@ func (t *CBPMChaincode) GetDeliveryArrangement(ctx contractapi.TransactionContex
 }
 
 func (t *CBPMChaincode) GetAllDeliveryArrangements(ctx contractapi.TransactionContextInterface) ([]*DeliveryArrangement, error) {
-	queryString := "{\"selector\":{\"docType\":\"DeliveryArrangement\"}}"
+	queryString := "{\"selector\":{\"objectType\":\"DeliveryArrangement\"}}"
 	return getQueryResultForQueryString(ctx, queryString)
 }
 

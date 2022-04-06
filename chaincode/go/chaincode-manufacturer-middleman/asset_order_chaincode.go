@@ -171,7 +171,7 @@ func (t *CBPMChaincode) DeleteAsset(ctx contractapi.TransactionContextInterface,
 }
 
 func (t *CBPMChaincode) GetAsset(ctx contractapi.TransactionContextInterface, assetID string) (*Asset, error) {
-	queryString := fmt.Sprintf("{\"selector\":{\"docType\":\"Asset\",\"assetID\":\"%s\"}}", assetID)
+	queryString := fmt.Sprintf("{\"selector\":{\"objectType\":\"Asset\",\"assetID\":\"%s\"}}", assetID)
 	queryResults, err := t.getAssetQueryResultForQueryString(ctx, queryString)
 	if err != nil {
 		return nil, fmt.Errorf("fail to get asset: %v", err)
@@ -184,7 +184,7 @@ func (t *CBPMChaincode) GetAsset(ctx contractapi.TransactionContextInterface, as
 
 func (t *CBPMChaincode) GetAllAssets(ctx contractapi.TransactionContextInterface) ([]*Asset, error) {
 
-	queryString := "{\"selector\":{\"docType\":\"Asset\"}}"
+	queryString := "{\"selector\":{\"objectType\":\"Asset\"}}"
 
 	queryResults, err := t.getAssetQueryResultForQueryString(ctx, queryString)
 	if err != nil {
@@ -202,7 +202,7 @@ func (t *CBPMChaincode) QueryAssets(ctx contractapi.TransactionContextInterface,
 }
 
 func (t *CBPMChaincode) AssetExists(ctx contractapi.TransactionContextInterface, assetID string) (bool, error) {
-	queryString := fmt.Sprintf("{\"selector\":{\"docType\":\"Asset\",\"assetID\":\"%s\"}}", assetID)
+	queryString := fmt.Sprintf("{\"selector\":{\"objectType\":\"Asset\",\"assetID\":\"%s\"}}", assetID)
 	queryResults, err := t.getAssetQueryResultForQueryString(ctx, queryString)
 	if err != nil {
 		return false, fmt.Errorf("fail to check whether asset exists: %v", err)
@@ -283,7 +283,7 @@ func (t *CBPMChaincode) CreateOrder(ctx contractapi.TransactionContextInterface)
 }
 
 func (t *CBPMChaincode) GetOrder(ctx contractapi.TransactionContextInterface, tradeID string) (*Order, error) {
-	queryString := fmt.Sprintf("{\"selector\":{\"docType\":\"Order\",\"tradeID\":\"%s\"}}", tradeID)
+	queryString := fmt.Sprintf("{\"selector\":{\"objectType\":\"Order\",\"tradeID\":\"%s\"}}", tradeID)
 	queryResults, err := t.getOrderQueryResultForQueryString(ctx, queryString)
 	if err != nil {
 		return nil, err
@@ -295,7 +295,7 @@ func (t *CBPMChaincode) GetOrder(ctx contractapi.TransactionContextInterface, tr
 }
 
 func (t *CBPMChaincode) GetAllOrders(ctx contractapi.TransactionContextInterface) ([]*Order, error) {
-	queryString := "{\"selector\":{\"docType\":\"Order\"}}"
+	queryString := "{\"selector\":{\"objectType\":\"Order\"}}"
 
 	queryResults, err := t.getOrderQueryResultForQueryString(ctx, queryString)
 	if err != nil {
@@ -418,7 +418,7 @@ func (t *CBPMChaincode) ConfirmFinishOrder(ctx contractapi.TransactionContextInt
 }
 
 func (t *CBPMChaincode) OrderExists(ctx contractapi.TransactionContextInterface, tradeID string) (bool, error) {
-	queryString := fmt.Sprintf("{\"selector\":{\"docType\":\"Order\",\"tradeID\":\"%s\"}}", tradeID)
+	queryString := fmt.Sprintf("{\"selector\":{\"objectType\":\"Order\",\"tradeID\":\"%s\"}}", tradeID)
 	queryResults, err := t.getOrderQueryResultForQueryString(ctx, queryString)
 	if err != nil {
 		return false, fmt.Errorf("fail to check whether order for trade %s exists: %v", tradeID, err)

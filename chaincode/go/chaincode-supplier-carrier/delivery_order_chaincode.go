@@ -227,7 +227,7 @@ func (t *CBPMChaincode) GetDeliveryOrder(ctx contractapi.TransactionContextInter
 }
 
 func (t *CBPMChaincode) GetAllDeliveryOrders(ctx contractapi.TransactionContextInterface) ([]*DeliveryOrder, error) {
-	queryString := "{\"selector\":{\"docType\":\"DeliveryOrder\"}}"
+	queryString := "{\"selector\":{\"objectType\":\"DeliveryOrder\"}}"
 	return getQueryResultForQueryString(ctx, queryString)
 }
 

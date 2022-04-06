@@ -24,6 +24,20 @@ docker exec -it cli /bin/bash
 
 
 
+# 更新网络
+
+```shell
+### 更新链码
+export CHANNEL=mischannel
+export CHAINCODE=chaincode-middleman-supplier
+export CHAINCODE_LANG=golang
+export CHAINCODE_VERSION=1.2
+export CHAINCODE_NAME=mischaincode
+
+./scripts/upgrade-chaincode.sh
+
+```
+
 
 
 # 测试网络
@@ -43,6 +57,10 @@ docker exec -it cli /bin/bash
 用supplier创建scchannel通道
 
 ```shell
+# 配置通道名
+export CHANNEL=scchannel
+
+
 # 配置supplier-peer1环境 MSPCONFIGPATH设置为admin的
 export CORE_PEER_MSPCONFIGPATH=/tmp/hyperledger/fabric/peer/supplier/admin/msp
 export CORE_PEER_TLS_ROOTCERT_FILE=/tmp/hyperledger/fabric/peer/supplier/peer1/tls/tlscacerts/tls-0-0-0-0-7052.pem
@@ -51,10 +69,10 @@ export CORE_PEER_TLS_KEY_FILE=/tmp/hyperledger/fabric/peer/supplier/peer1/tls/ke
 export CORE_PEER_LOCALMSPID=SupplierMSP
 
 
-peer channel create -c scchannel -f /tmp/hyperledger/fabric/channel-artifacts/scchannel.tx -o orderer-cbpm:7050 --outputBlock /tmp/hyperledger/fabric/channel-artifacts/scchannel.block --tls --cafile /tmp/hyperledger/fabric/peer/supplier/peer1/tls/tlscacerts/tls-0-0-0-0-7052.pem
+peer channel create -c $CHANNEL -f /tmp/hyperledger/fabric/channel-artifacts/$CHANNEL.tx -o orderer-cbpm:7050 --outputBlock /tmp/hyperledger/fabric/channel-artifacts/$CHANNEL.block --tls --cafile /tmp/hyperledger/fabric/peer/supplier/peer1/tls/tlscacerts/tls-0-0-0-0-7052.pem
 
 #### 或者
-peer channel create -c scchannel -f /tmp/hyperledger/fabric/channel-artifacts/scchannel.tx -o orderer-cbpm:7050 --outputBlock /tmp/hyperledger/fabric/channel-artifacts/scchannel.block --tls --cafile /tmp/hyperledger/fabric/peer/cbpm/orderer/tls/tlscacerts/tls-0-0-0-0-7052.pem
+peer channel create -c $CHANNEL -f /tmp/hyperledger/fabric/channel-artifacts/$CHANNEL.tx -o orderer-cbpm:7050 --outputBlock /tmp/hyperledger/fabric/channel-artifacts/$CHANNEL.block --tls --cafile /tmp/hyperledger/fabric/peer/cbpm/orderer/tls/tlscacerts/tls-0-0-0-0-7052.pem
 ```
 
 Supplier节点加入通道
@@ -62,9 +80,9 @@ Supplier节点加入通道
 ```shell
 # cli
 export CORE_PEER_ADDRESS=peer1-supplier:7051
-peer channel join -b /tmp/hyperledger/fabric/channel-artifacts/scchannel.block
+peer channel join -b /tmp/hyperledger/fabric/channel-artifacts/$CHANNEL.block
 export CORE_PEER_ADDRESS=peer2-supplier:7051
-peer channel join -b /tmp/hyperledger/fabric/channel-artifacts/scchannel.block
+peer channel join -b /tmp/hyperledger/fabric/channel-artifacts/$CHANNEL.block
 ```
 
 Carrier节点加入通道
@@ -79,9 +97,9 @@ export CORE_PEER_TLS_KEY_FILE=/tmp/hyperledger/fabric/peer/carrier/peer1/tls/key
 export CORE_PEER_LOCALMSPID=CarrierMSP
 
 export CORE_PEER_ADDRESS=peer1-carrier:7051
-peer channel join -b /tmp/hyperledger/fabric/channel-artifacts/scchannel.block
+peer channel join -b /tmp/hyperledger/fabric/channel-artifacts/$CHANNEL.block
 export CORE_PEER_ADDRESS=peer2-carrier:7051
-peer channel join -b /tmp/hyperledger/fabric/channel-artifacts/scchannel.block
+peer channel join -b /tmp/hyperledger/fabric/channel-artifacts/$CHANNEL.block
 ```
 
 检测（如果没有的话会报错
@@ -163,9 +181,9 @@ peer chaincode install -n $CHAINCODE_NAME -v $CHAINCODE_VERSION  -p $CHAINCODE -
 #### chaincode-supplier-carrier
 
 ```shell
-peer chaincode instantiate -o orderer-cbpm:7050 --tls --cafile "/tmp/hyperledger/fabric/peer/cbpm/orderer/tls/tlscacerts/tls-0-0-0-0-7052.pem" -C scchannel -n $CHAINCODE_NAME -l $CHAINCODE_LANG -v $CHAINCODE_VERSION -c '{"Args":[""]}' -P "OR('SupplierMSP.peer','CarrierMSP.peer')"
+peer chaincode instantiate -o orderer-cbpm:7050 --tls --cafile "/tmp/hyperledger/fabric/peer/cbpm/orderer/tls/tlscacerts/tls-0-0-0-0-7052.pem" -C $CHANNEL -n $CHAINCODE_NAME -l $CHAINCODE_LANG -v $CHAINCODE_VERSION -c '{"Args":[""]}' -P "OR('SupplierMSP.peer','CarrierMSP.peer')"
 
-peer chaincode upgrade -o orderer-cbpm:7050 --tls --cafile "/tmp/hyperledger/fabric/peer/cbpm/orderer/tls/tlscacerts/tls-0-0-0-0-7052.pem" -C scchannel -n $CHAINCODE_NAME -l $CHAINCODE_LANG -v $CHAINCODE_VERSION -c '{"Args":[""]}' -P "OR('SupplierMSP.peer','CarrierMSP.peer')"
+peer chaincode upgrade -o orderer-cbpm:7050 --tls --cafile "/tmp/hyperledger/fabric/peer/cbpm/orderer/tls/tlscacerts/tls-0-0-0-0-7052.pem" -C $CHANNEL -n $CHAINCODE_NAME -l $CHAINCODE_LANG -v $CHAINCODE_VERSION -c '{"Args":[""]}' -P "OR('SupplierMSP.peer','CarrierMSP.peer')"
 ```
 
 
@@ -178,22 +196,22 @@ export CORE_PEER_TLS_ROOTCERT_FILE=/tmp/hyperledger/fabric/peer/supplier/peer1/t
 export CORE_PEER_LOCALMSPID=SupplierMSP
 export CORE_PEER_ADDRESS=peer1-supplier:7051
 
-peer chaincode instantiate -o orderer-cbpm:7050 --tls --cafile "/tmp/hyperledger/fabric/peer/cbpm/orderer/tls/tlscacerts/tls-0-0-0-0-7052.pem" -C scchannel -n $CHAINCODE_NAME -l $CHAINCODE_LANG -v $CHAINCODE_VERSION -c '{"Args":[""]}' -P "OR('SupplierMSP.peer','CarrierMSP.peer')" --collections-config $GOPATH/src/$CHAINCODE/collections_config.json
+peer chaincode instantiate -o orderer-cbpm:7050 --tls --cafile "/tmp/hyperledger/fabric/peer/cbpm/orderer/tls/tlscacerts/tls-0-0-0-0-7052.pem" -C $CHANNEL -n $CHAINCODE_NAME -l $CHAINCODE_LANG -v $CHAINCODE_VERSION -c '{"Args":[""]}' -P "OR('SupplierMSP.peer','CarrierMSP.peer')" --collections-config $GOPATH/src/$CHAINCODE/collections_config.json
 
 export MARBLE=$(echo -n "{\"name\":\"marble1\",\"color\":\"blue\",\"size\":35,\"owner\":\"tom\",\"price\":99}" | base64 | tr -d \\n)
 
 
-peer chaincode invoke -o orderer-cbpm:7050 --tls --cafile "/tmp/hyperledger/fabric/peer/cbpm/orderer/tls/tlscacerts/tls-0-0-0-0-7052.pem" -C scchannel -n $CHAINCODE_NAME -c '{"Args":["InitMarble"]}' --transient "{\"marble\":\"$MARBLE\"}"
+peer chaincode invoke -o orderer-cbpm:7050 --tls --cafile "/tmp/hyperledger/fabric/peer/cbpm/orderer/tls/tlscacerts/tls-0-0-0-0-7052.pem" -C $CHANNEL -n $CHAINCODE_NAME -c '{"Args":["InitMarble"]}' --transient "{\"marble\":\"$MARBLE\"}"
 
 export MARBLE=$(echo -n "{\"name\":\"marble2\",\"color\":\"red\",\"size\":50,\"owner\":\"tom\",\"price\":102}" | base64 | tr -d \\n)
 
-peer chaincode invoke -o orderer-cbpm:7050 --tls --cafile "/tmp/hyperledger/fabric/peer/cbpm/orderer/tls/tlscacerts/tls-0-0-0-0-7052.pem" -C scchannel -n $CHAINCODE_NAME -c '{"Args":["InitMarble"]}' --transient "{\"marble\":\"$MARBLE\"}"
+peer chaincode invoke -o orderer-cbpm:7050 --tls --cafile "/tmp/hyperledger/fabric/peer/cbpm/orderer/tls/tlscacerts/tls-0-0-0-0-7052.pem" -C $CHANNEL -n $CHAINCODE_NAME -c '{"Args":["InitMarble"]}' --transient "{\"marble\":\"$MARBLE\"}"
 
 
-peer chaincode query -C scchannel -n $CHAINCODE_NAME -c '{"Args":["readMarble","marble1"]}'
+peer chaincode query -C $CHANNEL -n $CHAINCODE_NAME -c '{"Args":["readMarble","marble1"]}'
 
 
-peer chaincode query -C scchannel -n $CHAINCODE_NAME -c '{"Args":["readMarblePrivateDetails","marble1"]}'
+peer chaincode query -C $CHANNEL -n $CHAINCODE_NAME -c '{"Args":["readMarblePrivateDetails","marble1"]}'
 
 
 
@@ -205,18 +223,18 @@ export CORE_PEER_ADDRESS=peer1-carrier:7051
 
 export MARBLE=$(echo -n "{\"name\":\"marble3\",\"color\":\"red\",\"size\":50,\"owner\":\"tom\",\"price\":222}" | base64 | tr -d \\n)
 
-peer chaincode invoke -o orderer-cbpm:7050 --tls --cafile "/tmp/hyperledger/fabric/peer/cbpm/orderer/tls/tlscacerts/tls-0-0-0-0-7052.pem" -C scchannel -n $CHAINCODE_NAME -c '{"Args":["InitMarble"]}' --transient "{\"marble\":\"$MARBLE\"}"
+peer chaincode invoke -o orderer-cbpm:7050 --tls --cafile "/tmp/hyperledger/fabric/peer/cbpm/orderer/tls/tlscacerts/tls-0-0-0-0-7052.pem" -C $CHANNEL -n $CHAINCODE_NAME -c '{"Args":["InitMarble"]}' --transient "{\"marble\":\"$MARBLE\"}"
 
-peer chaincode query -C scchannel -n $CHAINCODE_NAME -c '{"Args":["readMarble","marble1"]}'
+peer chaincode query -C $CHANNEL -n $CHAINCODE_NAME -c '{"Args":["readMarble","marble1"]}'
 
 
-peer chaincode query -C scchannel -n $CHAINCODE_NAME -c '{"Args":["readMarblePrivateDetails","marble1"]}'
+peer chaincode query -C $CHANNEL -n $CHAINCODE_NAME -c '{"Args":["readMarblePrivateDetails","marble1"]}'
 
-peer chaincode query -C scchannel -n $CHAINCODE_NAME -c '{"Args":["GetMarbleHash","collectionMarbles","marble1"]}'
+peer chaincode query -C $CHANNEL -n $CHAINCODE_NAME -c '{"Args":["GetMarbleHash","collectionMarbles","marble1"]}'
 
-peer chaincode query -C scchannel -n $CHAINCODE_NAME -c '{"Args":["QueryMarblesByOwner","tom"]}'
+peer chaincode query -C $CHANNEL -n $CHAINCODE_NAME -c '{"Args":["QueryMarblesByOwner","tom"]}'
 
-peer chaincode query -C scchannel -n $CHAINCODE_NAME -c '{"Args":["QueryMarbles","{\"selector\":{\"owner\":\"tom\"}}"]}'
+peer chaincode query -C $CHANNEL -n $CHAINCODE_NAME -c '{"Args":["QueryMarbles","{\"selector\":{\"owner\":\"tom\"}}"]}'
 
 ```
 
@@ -231,22 +249,22 @@ export CORE_PEER_LOCALMSPID=SupplierMSP
 export CORE_PEER_ADDRESS=peer1-supplier:7051
 
 
-peer chaincode instantiate -o orderer-cbpm:7050 --tls --cafile "/tmp/hyperledger/fabric/peer/cbpm/orderer/tls/tlscacerts/tls-0-0-0-0-7052.pem" -C scchannel -n $CHAINCODE_NAME -l $CHAINCODE_LANG -v $CHAINCODE_VERSION -c '{"Args":[""]}' -P "OR('SupplierMSP.peer','CarrierMSP.peer')"
+peer chaincode instantiate -o orderer-cbpm:7050 --tls --cafile "/tmp/hyperledger/fabric/peer/cbpm/orderer/tls/tlscacerts/tls-0-0-0-0-7052.pem" -C $CHANNEL -n $CHAINCODE_NAME -l $CHAINCODE_LANG -v $CHAINCODE_VERSION -c '{"Args":[""]}' -P "OR('SupplierMSP.peer','CarrierMSP.peer')"
 
 ```
 
 调用查询
 
 ```shell
-peer chaincode invoke -o orderer-cbpm:7050 --tls --cafile "/tmp/hyperledger/fabric/peer/cbpm/orderer/tls/tlscacerts/tls-0-0-0-0-7052.pem" -C scchannel -n $CHAINCODE_NAME -c '{"Args":["initMarble","marble1","blue","35","tom"]}'
+peer chaincode invoke -o orderer-cbpm:7050 --tls --cafile "/tmp/hyperledger/fabric/peer/cbpm/orderer/tls/tlscacerts/tls-0-0-0-0-7052.pem" -C $CHANNEL -n $CHAINCODE_NAME -c '{"Args":["initMarble","marble1","blue","35","tom"]}'
 
-peer chaincode invoke -o orderer-cbpm:7050 --tls --cafile "/tmp/hyperledger/fabric/peer/cbpm/orderer/tls/tlscacerts/tls-0-0-0-0-7052.pem" -C scchannel -n $CHAINCODE_NAME -c '{"function": "initMarble","Args":["marble1","blue","35","tom"]}'
-
-
-peer chaincode query -C scchannel -n $CHAINCODE_NAME -c '{"function": "queryMarbles","Args":["{\"selector\":{\"owner\":\"tom\"}}"]}'
+peer chaincode invoke -o orderer-cbpm:7050 --tls --cafile "/tmp/hyperledger/fabric/peer/cbpm/orderer/tls/tlscacerts/tls-0-0-0-0-7052.pem" -C $CHANNEL -n $CHAINCODE_NAME -c '{"function": "initMarble","Args":["marble1","blue","35","tom"]}'
 
 
-peer chaincode query -C scchannel -n $CHAINCODE_NAME -c '{"Args":["readMarble","marble1"]}'
+peer chaincode query -C $CHANNEL -n $CHAINCODE_NAME -c '{"function": "queryMarbles","Args":["{\"selector\":{\"owner\":\"tom\"}}"]}'
+
+
+peer chaincode query -C $CHANNEL -n $CHAINCODE_NAME -c '{"Args":["readMarble","marble1"]}'
 ```
 
 
@@ -265,7 +283,7 @@ export CORE_PEER_TLS_KEY_FILE=/tmp/hyperledger/fabric/peer/supplier/peer1/tls/ke
 export CORE_PEER_LOCALMSPID=SupplierMSP
 export CORE_PEER_ADDRESS=peer1-supplier:7051
 
-peer chaincode instantiate -o orderer-cbpm:7050 --tls --cafile "/tmp/hyperledger/fabric/peer/cbpm/orderer/tls/tlscacerts/tls-0-0-0-0-7052.pem" -C scchannel -n $CHAINCODE_NAME -l $CHAINCODE_LANG -v $CHAINCODE_VERSION -c '{"Args":["initLedger"]}' -P "OR('SupplierMSP.peer','CarrierMSP.peer')"
+peer chaincode instantiate -o orderer-cbpm:7050 --tls --cafile "/tmp/hyperledger/fabric/peer/cbpm/orderer/tls/tlscacerts/tls-0-0-0-0-7052.pem" -C $CHANNEL -n $CHAINCODE_NAME -l $CHAINCODE_LANG -v $CHAINCODE_VERSION -c '{"Args":["initLedger"]}' -P "OR('SupplierMSP.peer','CarrierMSP.peer')"
 
 ```
 
@@ -273,13 +291,13 @@ peer chaincode instantiate -o orderer-cbpm:7050 --tls --cafile "/tmp/hyperledger
 
 ```shell
 
-peer chaincode query -C scchannel -n $CHAINCODE_NAME -c '{"Args":["ReadAsset","asset1"]}'
+peer chaincode query -C $CHANNEL -n $CHAINCODE_NAME -c '{"Args":["ReadAsset","asset1"]}'
 
 
-peer chaincode invoke -o orderer-cbpm:7050 --tls --cafile "/tmp/hyperledger/fabric/peer/cbpm/orderer/tls/tlscacerts/tls-0-0-0-0-7052.pem" -C scchannel -n $CHAINCODE_NAME -c '{"Args":["CreateAsset","asset10","black","5","cynyard","10"]}'
+peer chaincode invoke -o orderer-cbpm:7050 --tls --cafile "/tmp/hyperledger/fabric/peer/cbpm/orderer/tls/tlscacerts/tls-0-0-0-0-7052.pem" -C $CHANNEL -n $CHAINCODE_NAME -c '{"Args":["CreateAsset","asset10","black","5","cynyard","10"]}'
 
 
-peer chaincode query -C scchannel -n $CHAINCODE_NAME -c '{"Args":["ReadAsset","asset10"]}'
+peer chaincode query -C $CHANNEL -n $CHAINCODE_NAME -c '{"Args":["ReadAsset","asset10"]}'
 
 
 ```
@@ -301,9 +319,9 @@ export CORE_PEER_TLS_KEY_FILE=/tmp/hyperledger/fabric/peer/supplier/peer1/tls/ke
 export CORE_PEER_LOCALMSPID=SupplierMSP
 export CORE_PEER_ADDRESS=peer1-supplier:7051
 
-peer chaincode instantiate -o orderer-cbpm:7050 --tls --cafile "/tmp/hyperledger/fabric/peer/cbpm/orderer/tls/tlscacerts/tls-0-0-0-0-7052.pem" -C scchannel -n $CHAINCODE_NAME -l $CHAINCODE_LANG -v $CHAINCODE_VERSION -c '{"Args":[""]}' -P "OR('SupplierMSP.peer','CarrierMSP.peer')"
+peer chaincode instantiate -o orderer-cbpm:7050 --tls --cafile "/tmp/hyperledger/fabric/peer/cbpm/orderer/tls/tlscacerts/tls-0-0-0-0-7052.pem" -C $CHANNEL -n $CHAINCODE_NAME -l $CHAINCODE_LANG -v $CHAINCODE_VERSION -c '{"Args":[""]}' -P "OR('SupplierMSP.peer','CarrierMSP.peer')"
 
-peer chaincode upgrade -o orderer-cbpm:7050 --tls --cafile "/tmp/hyperledger/fabric/peer/cbpm/orderer/tls/tlscacerts/tls-0-0-0-0-7052.pem" -C scchannel -n $CHAINCODE_NAME -l $CHAINCODE_LANG -v $CHAINCODE_VERSION -c '{"Args":[""]}' -P "OR('SupplierMSP.peer','CarrierMSP.peer')"
+peer chaincode upgrade -o orderer-cbpm:7050 --tls --cafile "/tmp/hyperledger/fabric/peer/cbpm/orderer/tls/tlscacerts/tls-0-0-0-0-7052.pem" -C $CHANNEL -n $CHAINCODE_NAME -l $CHAINCODE_LANG -v $CHAINCODE_VERSION -c '{"Args":[""]}' -P "OR('SupplierMSP.peer','CarrierMSP.peer')"
 
 
 ```
@@ -320,17 +338,9 @@ export CORE_PEER_ADDRESS=peer1-supplier:7051
 export ASSET_PROPERTIES=$(echo -n "{\"object_type\":\"asset_properties\",\"asset_id\":\"asset1\",\"color\":\"blue\",\"size\":35,\"salt\":\"a94a8fe5ccb19ba61c4c0873d391e987982fbbd3\"}" | base64 | tr -d \\n)
 
 
-peer chaincode invoke -o orderer-cbpm:7050 --tls --cafile "/tmp/hyperledger/fabric/peer/cbpm/orderer/tls/tlscacerts/tls-0-0-0-0-7052.pem" -C scchannel -n scchaincode -c '{"Args":["CreateAsset", "asset1", "A new asset for Org1MSP"]}' --transient "{\"asset_properties\":\"$ASSET_PROPERTIES\"}"
+peer chaincode invoke -o orderer-cbpm:7050 --tls --cafile "/tmp/hyperledger/fabric/peer/cbpm/orderer/tls/tlscacerts/tls-0-0-0-0-7052.pem" -C $CHANNEL -n scchaincode -c '{"Args":["CreateAsset", "asset1", "A new asset for Org1MSP"]}' --transient "{\"asset_properties\":\"$ASSET_PROPERTIES\"}"
 
 
-peer chaincode query -o orderer-cbpm:7050 --tls --cafile "/tmp/hyperledger/fabric/peer/cbpm/orderer/tls/tlscacerts/tls-0-0-0-0-7052.pem" -C scchannel -n scchaincode -c '{"function":"GetAssetPrivateProperties","Args":["asset1"]}'
+peer chaincode query -o orderer-cbpm:7050 --tls --cafile "/tmp/hyperledger/fabric/peer/cbpm/orderer/tls/tlscacerts/tls-0-0-0-0-7052.pem" -C $CHANNEL -n scchaincode -c '{"function":"GetAssetPrivateProperties","Args":["asset1"]}'
 
 ```
-
-### 更新链码
-
-`peer chaincode install` 的命令，修改-v的参数
-
-
-
-`peer chaincode instantiate` 的命令，将该命令改为`peer chaincode upgrade` ，并且修改-v的参数

@@ -202,7 +202,7 @@ func (t *CBPMChaincode) GetDeliveryDetail(ctx contractapi.TransactionContextInte
 }
 
 func (t *CBPMChaincode) GetAllDeliveryDetails(ctx contractapi.TransactionContextInterface) ([]*DeliveryDetail, error) {
-	queryString := "{\"selector\":{\"docType\":\"DeliveryDetail\"}}"
+	queryString := "{\"selector\":{\"objectType\":\"DeliveryDetail\"}}"
 	return getQueryResultForQueryString(ctx, queryString)
 }
 
