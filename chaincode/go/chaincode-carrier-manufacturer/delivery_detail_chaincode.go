@@ -86,7 +86,7 @@ func (t *CBPMChaincode) CreateDeliveryDetail(ctx contractapi.TransactionContextI
 		return fmt.Errorf("contact must be a non-empty string")
 	}
 
-	exists, err := t.DeliveryDetailExists(ctx, detailInput.TradeID)
+	exists, err := t.deliveryDetailExists(ctx, detailInput.TradeID)
 	if err != nil {
 		return fmt.Errorf("fail to create delivery detail: %v", err)
 	}
@@ -335,7 +335,7 @@ func (t *CBPMChaincode) GetDetailHistory(ctx contractapi.TransactionContextInter
 	return records, nil
 }
 
-func (t *CBPMChaincode) DeliveryDetailExists(ctx contractapi.TransactionContextInterface, tradeID string) (bool, error) {
+func (t *CBPMChaincode) deliveryDetailExists(ctx contractapi.TransactionContextInterface, tradeID string) (bool, error) {
 	deliveryDetailBytes, err := ctx.GetStub().GetState(tradeID)
 	if err != nil {
 		return false, fmt.Errorf("fail to read delivery detail for trade %s from world state. %v", tradeID, err)

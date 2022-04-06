@@ -102,7 +102,7 @@ func (t *CBPMChaincode) CreateAsset(ctx contractapi.TransactionContextInterface)
 	if assetInput.AssetPrice <= 0 {
 		return fmt.Errorf("asset price field must be a positive number")
 	}
-	exists, err := t.AssetExists(ctx, assetInput.AssetID)
+	exists, err := t.assetExists(ctx, assetInput.AssetID)
 	if err != nil {
 		return fmt.Errorf("fail to create Asset: %v", err)
 	}
@@ -160,7 +160,7 @@ func (t *CBPMChaincode) UpdateAsset(ctx contractapi.TransactionContextInterface,
 }
 
 func (t *CBPMChaincode) DeleteAsset(ctx contractapi.TransactionContextInterface, assetID string) error {
-	exist, err := t.AssetExists(ctx, assetID)
+	exist, err := t.assetExists(ctx, assetID)
 	if !exist {
 		return fmt.Errorf("fail to delete asset: asset does not exist")
 	}
@@ -201,7 +201,7 @@ func (t *CBPMChaincode) QueryAssets(ctx contractapi.TransactionContextInterface,
 	return queryResults, nil
 }
 
-func (t *CBPMChaincode) AssetExists(ctx contractapi.TransactionContextInterface, assetID string) (bool, error) {
+func (t *CBPMChaincode) assetExists(ctx contractapi.TransactionContextInterface, assetID string) (bool, error) {
 	queryString := fmt.Sprintf("{\"selector\":{\"objectType\":\"Asset\",\"assetID\":\"%s\"}}", assetID)
 	queryResults, err := t.getAssetQueryResultForQueryString(ctx, queryString)
 	if err != nil {
@@ -213,14 +213,14 @@ func (t *CBPMChaincode) AssetExists(ctx contractapi.TransactionContextInterface,
 	return true, nil
 }
 
-func (t *CBPMChaincode) CreateOrder(ctx contractapi.TransactionContextInterface) (string, error) {
+func (t *CBPMChaincode) CreateOrder(ctx contractapi.TransactionContextInterface) (*Order, error) {
 	transMap, err := ctx.GetStub().GetTransient()
 	if err != nil {
-		return "", fmt.Errorf("Error getting transient: " + err.Error())
+		return nil, fmt.Errorf("Error getting transient: " + err.Error())
 	}
 	transientOrderJSON, ok := transMap["order"]
 	if !ok {
-		return "", fmt.Errorf("order not found in the transient map")
+		return nil, fmt.Errorf("order not found in the transient map")
 	}
 	type orderTransientInput struct {
 		AssetID          string `json:"assetID"`
@@ -231,29 +231,29 @@ func (t *CBPMChaincode) CreateOrder(ctx contractapi.TransactionContextInterface)
 	var orderInput orderTransientInput
 	err = json.Unmarshal(transientOrderJSON, &orderInput)
 	if err != nil {
-		return "", fmt.Errorf("fail to unmarshal JSON: %s", err.Error())
+		return nil, fmt.Errorf("fail to unmarshal JSON: %s", err.Error())
 	}
 	// check input
 	if len(orderInput.AssetID) == 0 {
-		return "", fmt.Errorf("asset ID must be a non-empty string")
+		return nil, fmt.Errorf("asset ID must be a non-empty string")
 	}
 	if len(orderInput.ReceivingAddress) == 0 {
-		return "", fmt.Errorf("order address must be a non-empty string")
+		return nil, fmt.Errorf("order address must be a non-empty string")
 	}
 	if orderInput.Quantity <= 0 {
-		return "", fmt.Errorf("asset quantity field must be a positive number")
+		return nil, fmt.Errorf("asset quantity field must be a positive number")
 	}
 	asset, err := t.GetAsset(ctx, orderInput.AssetID)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 	clientOrgID, err := getClientOrgID(ctx, false)
 	if err != nil {
-		return "", fmt.Errorf("fail to get verified OrgID: %v", err)
+		return nil, fmt.Errorf("fail to get verified OrgID: %v", err)
 	}
 	newTradeID, err := uuid.NewV4()
 	if err != nil {
-		return "", fmt.Errorf("fail to generate Trade ID: %v", err)
+		return nil, fmt.Errorf("fail to generate Trade ID: %v", err)
 	}
 
 	// create order
@@ -277,9 +277,9 @@ func (t *CBPMChaincode) CreateOrder(ctx contractapi.TransactionContextInterface)
 	orderJSONasBytes, err := json.Marshal(order)
 	err = ctx.GetStub().PutState(order.TradeID, orderJSONasBytes)
 	if err != nil {
-		return "", fmt.Errorf("fail to create Order: %s", err.Error())
+		return nil, fmt.Errorf("fail to create Order: %s", err.Error())
 	}
-	return newTradeID.String(), nil
+	return order, nil
 }
 
 func (t *CBPMChaincode) GetOrder(ctx contractapi.TransactionContextInterface, tradeID string) (*Order, error) {
@@ -313,7 +313,7 @@ func (t *CBPMChaincode) QueryOrders(ctx contractapi.TransactionContextInterface,
 }
 
 func (t *CBPMChaincode) DeleteOrder(ctx contractapi.TransactionContextInterface, tradeID string) error {
-	exists, err := t.OrderExists(ctx, tradeID)
+	exists, err := t.orderExists(ctx, tradeID)
 	if err != nil {
 		return err
 	}
@@ -417,7 +417,7 @@ func (t *CBPMChaincode) ConfirmFinishOrder(ctx contractapi.TransactionContextInt
 	return ctx.GetStub().PutState(tradeID, orderBytes)
 }
 
-func (t *CBPMChaincode) OrderExists(ctx contractapi.TransactionContextInterface, tradeID string) (bool, error) {
+func (t *CBPMChaincode) orderExists(ctx contractapi.TransactionContextInterface, tradeID string) (bool, error) {
 	queryString := fmt.Sprintf("{\"selector\":{\"objectType\":\"Order\",\"tradeID\":\"%s\"}}", tradeID)
 	queryResults, err := t.getOrderQueryResultForQueryString(ctx, queryString)
 	if err != nil {

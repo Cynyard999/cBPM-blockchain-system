@@ -92,7 +92,7 @@ func (t *CBPMChaincode) CreateDeliveryArrangement(ctx contractapi.TransactionCon
 		return fmt.Errorf("fee must be a positive number")
 	}
 
-	exists, err := t.DeliveryArrangementExists(ctx, arrangementInput.TradeID)
+	exists, err := t.deliveryArrangementExists(ctx, arrangementInput.TradeID)
 	if err != nil {
 		return fmt.Errorf("fail to create delivery arrangement: %v", err)
 	}
@@ -383,7 +383,7 @@ func (t *CBPMChaincode) GetOrderHistory(ctx contractapi.TransactionContextInterf
 	return records, nil
 }
 
-func (t *CBPMChaincode) DeliveryArrangementExists(ctx contractapi.TransactionContextInterface, tradeID string) (bool, error) {
+func (t *CBPMChaincode) deliveryArrangementExists(ctx contractapi.TransactionContextInterface, tradeID string) (bool, error) {
 	deliveryArrangementBytes, err := ctx.GetStub().GetState(tradeID)
 	if err != nil {
 		return false, fmt.Errorf("fail to read delivery arrangement for trade %s from world state. %v", tradeID, err)

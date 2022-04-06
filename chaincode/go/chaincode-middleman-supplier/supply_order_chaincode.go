@@ -141,7 +141,7 @@ func (t *CBPMChaincode) UpdateAsset(ctx contractapi.TransactionContextInterface,
 }
 
 func (t *CBPMChaincode) DeleteAsset(ctx contractapi.TransactionContextInterface, assetID string) error {
-	exist, err := t.AssetExists(ctx, assetID)
+	exist, err := t.assetExists(ctx, assetID)
 	if !exist {
 		return fmt.Errorf("fail to delete asset: asset does not exist")
 	}
@@ -182,7 +182,7 @@ func (t *CBPMChaincode) QueryAssets(ctx contractapi.TransactionContextInterface,
 	return queryResults, nil
 }
 
-func (t *CBPMChaincode) AssetExists(ctx contractapi.TransactionContextInterface, assetID string) (bool, error) {
+func (t *CBPMChaincode) assetExists(ctx contractapi.TransactionContextInterface, assetID string) (bool, error) {
 	queryString := fmt.Sprintf("{\"selector\":{\"objectType\":\"Asset\",\"assetID\":\"%s\"}}", assetID)
 	queryResults, err := t.getAssetQueryResultForQueryString(ctx, queryString)
 	if err != nil {
@@ -224,7 +224,7 @@ func (t *CBPMChaincode) CreateSupplyOrder(ctx contractapi.TransactionContextInte
 	if orderInput.Quantity <= 0 {
 		return fmt.Errorf("asset quantity field must be a positive number")
 	}
-	exist, err := t.SupplyOrderExists(ctx, orderInput.TradeID)
+	exist, err := t.supplyOrderExists(ctx, orderInput.TradeID)
 	if err != nil {
 		return fmt.Errorf("fail to create supply order: %v", err)
 	}
@@ -295,7 +295,7 @@ func (t *CBPMChaincode) QuerySupplyOrders(ctx contractapi.TransactionContextInte
 }
 
 func (t *CBPMChaincode) DeleteSupplyOrder(ctx contractapi.TransactionContextInterface, tradeID string) error {
-	exists, err := t.SupplyOrderExists(ctx, tradeID)
+	exists, err := t.supplyOrderExists(ctx, tradeID)
 	if err != nil {
 		return err
 	}
@@ -396,7 +396,7 @@ func (t *CBPMChaincode) ConfirmFinishSupplyOrder(ctx contractapi.TransactionCont
 	return ctx.GetStub().PutState(tradeID, orderBytes)
 }
 
-func (t *CBPMChaincode) SupplyOrderExists(ctx contractapi.TransactionContextInterface, tradeID string) (bool, error) {
+func (t *CBPMChaincode) supplyOrderExists(ctx contractapi.TransactionContextInterface, tradeID string) (bool, error) {
 	queryString := fmt.Sprintf("{\"selector\":{\"objectType\":\"SupplyOrder\",\"tradeID\":\"%s\"}}", tradeID)
 	queryResults, err := t.getOrderQueryResultForQueryString(ctx, queryString)
 	if err != nil {

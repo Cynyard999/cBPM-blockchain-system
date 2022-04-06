@@ -71,7 +71,7 @@ func (t *CBPMChaincode) CreateDeliveryOrder(ctx contractapi.TransactionContextIn
 	if len(orderInput.AssetName) == 0 {
 		return fmt.Errorf("asset name must be a non-empty string")
 	}
-	exists, err := t.DeliveryOrderExists(ctx, orderInput.TradeID)
+	exists, err := t.deliveryOrderExists(ctx, orderInput.TradeID)
 	if err != nil {
 		return fmt.Errorf("fail to create delivery order: %v", err)
 	}
@@ -360,7 +360,7 @@ func (t *CBPMChaincode) GetOrderHistory(ctx contractapi.TransactionContextInterf
 	return records, nil
 }
 
-func (t *CBPMChaincode) DeliveryOrderExists(ctx contractapi.TransactionContextInterface, tradeID string) (bool, error) {
+func (t *CBPMChaincode) deliveryOrderExists(ctx contractapi.TransactionContextInterface, tradeID string) (bool, error) {
 	deliveryOrderBytes, err := ctx.GetStub().GetState(tradeID)
 	if err != nil {
 		return false, fmt.Errorf("fail to read delivery order for trade %s from world state. %v", tradeID, err)
