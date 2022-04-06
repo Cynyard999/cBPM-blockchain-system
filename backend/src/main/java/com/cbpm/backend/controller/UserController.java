@@ -17,17 +17,18 @@ import com.alibaba.fastjson.JSONObject;
 @RestController
 @RequestMapping("/user")
 public class UserController {
+
     @Resource
     UserImpl userImpl;
 
 
     @PostMapping("/register")
-    ResponseVo register(@RequestBody JSONObject jsonObject){
+    ResponseVo register(@RequestBody JSONObject jsonObject) {
         return userImpl.register(jsonObject);
     }
 
     @PostMapping("/login")
-    ResponseVo login(@RequestBody JSONObject jsonObject){
+    ResponseVo login(@RequestBody JSONObject jsonObject) {
         return userImpl.login(jsonObject);
     }
 }

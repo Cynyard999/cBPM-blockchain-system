@@ -1,4 +1,5 @@
 package com.cbpm.backend.vo;
+
 import javax.persistence.*;
 
 /**
@@ -11,8 +12,9 @@ import javax.persistence.*;
 @Table(name = "user")
 @Entity
 public class UserVo {
+
     @Id
-    @GeneratedValue(strategy=GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
     private String name;
     private String password;
@@ -25,13 +27,13 @@ public class UserVo {
 
 
     @Override
-    public String toString(){
+    public String toString() {
         return "{" +
                 " id='" + getId() + "'" +
                 ", userName='" + getName() + "'" +
                 ", email='" + getEmail() + "'" +
                 ", password='" + getPassword() + "'" +
-                ", orgtype='" + getOrgType()+
+                ", orgtype='" + getOrgType() +
                 "}";
     }
 

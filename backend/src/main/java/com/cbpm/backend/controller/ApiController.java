@@ -14,11 +14,11 @@ public class ApiController {
 
 
     /**
+     * @param jsonObject
+     * @return java.lang.String
      * @author cynyard
      * @date 4/1/22
-     * @param jsonObject
      * @update by Polaris in 1/4/2022
-     * @return java.lang.String
      */
     @PostMapping("/invoke")
     public ResponseVo invokeFunc(@RequestBody JSONObject jsonObject) throws Exception {
@@ -26,11 +26,11 @@ public class ApiController {
     }
 
     /**
+     * @param jsonObject
+     * @return java.lang.String
      * @author cynyard
      * @date 4/1/22
-     * @param jsonObject
      * @update by Polaris in 1/4/2022
-     * @return java.lang.String
      */
     @PostMapping("/query")
     public ResponseVo queryFunc(@RequestBody JSONObject jsonObject) throws Exception {

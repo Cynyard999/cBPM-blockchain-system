@@ -13,6 +13,7 @@ import java.util.Set;
  * @date 2022/4/4 1:35
  */
 public class FabricUser implements User, Serializable {
+
     private static final long serialVersionUID = 1L;
     private String name;
     private Set<String> roles;
@@ -21,10 +22,12 @@ public class FabricUser implements User, Serializable {
     private String organization;
     private String enrollmentSecret;
     Enrollment enrollment = null;
+
     public FabricUser(String name, String org) {
         this.name = name;
         this.organization = org;
     }
+
     @Override
     public String getName() {
         return this.name;
@@ -52,6 +55,7 @@ public class FabricUser implements User, Serializable {
     public String getAffiliation() {
         return this.affiliation;
     }
+
     public void setAffiliation(String af) {
         this.affiliation = af;
     }
@@ -76,11 +80,14 @@ public class FabricUser implements User, Serializable {
     public void setEnrollment(Enrollment e) {
         this.enrollment = e;
     }
+
     String mspId;
+
     @Override
     public String getMspId() {
         return this.mspId;
     }
+
     public void setMspId(String mspId) {
         this.mspId = mspId;
     }

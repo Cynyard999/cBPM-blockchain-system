@@ -1,16 +1,14 @@
 package com.cbpm.backend.serviceImpl;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
+import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;
-import com.alibaba.fastjson.TypeReference;
 import com.cbpm.backend.config.GatewayConfig;
 import com.cbpm.backend.service.ApiService;
 import com.cbpm.backend.vo.ResponseVo;
-
 import org.hyperledger.fabric.gateway.*;
 import org.hyperledger.fabric.sdk.Peer;
-import org.hyperledger.fabric.sdk.exception.ProposalException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 
@@ -28,9 +26,9 @@ public class ApiImpl implements ApiService {
     @Override
     public ResponseVo query(JSONObject jsonObject) {
         //提取信息
-        String orgType=jsonObject.getString("orgType");
-        String channelName=jsonObject.getString("channelName");
-        String contractName=jsonObject.getString("contractName");
+        String orgType = jsonObject.getString("orgType");
+        String channelName = jsonObject.getString("channelName");
+        String contractName = jsonObject.getString("contractName");
         try {
             //获取对应组织的gateway
             Gateway gateway = gatewayConfig.gatewayHashMap.get(orgType);
@@ -47,56 +45,55 @@ public class ApiImpl implements ApiService {
             }
             //调用contract对应function
             byte[] queryResult = contract.evaluateTransaction(functionName, args);
-            System.out.println(functionName+" "+ Arrays.deepToString(args)+" "+"success");
-            return ResponseVo.buildSuccess(JSONObject.parseObject(new String(queryResult, StandardCharsets.UTF_8)));
-        }catch (ContractException e){
-            String exception=e.toString();
-            System.out.println(exception);
-            return ResponseVo.buildFailure(exception.split(":"));
-        }catch (NullPointerException e){
-            System.out.println(e.toString());
-            return ResponseVo.buildFailure("orgType is null or invalid orgType");
-        }catch (IllegalArgumentException e){
-            String exception=e.toString();
-            System.out.println(exception);
-            String[] temps=exception.split(":");
-            return ResponseVo.buildFailure(temps);
-        }
-        catch (GatewayRuntimeException e){
-            System.out.println(e.toString());
-            String [] errors=e.toString().split(":");
-            return ResponseVo.buildFailure(errors[errors.length-1]);
+            return ResponseVo
+                    .buildSuccess(JSON.parse(new String(queryResult, StandardCharsets.UTF_8)));
+        } catch (JSONException e) {
+            e.printStackTrace();
+            return ResponseVo.buildFailure("Fail to parse query result: " + e.getMessage());
+        } catch (ContractException e) {
+            e.printStackTrace();
+            return ResponseVo.buildFailure("Chaincode function querying failed: " + e.getMessage());
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+            return ResponseVo.buildFailure("Illegal argument: " + e.getMessage());
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+            return ResponseVo.buildFailure("Null pointer detected: " + e.getMessage());
+        } catch (GatewayRuntimeException e) {
+            e.printStackTrace();
+            return ResponseVo.buildFailure("Runtime limit exceed: " + e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseVo.buildFailure(e.getMessage());
         }
 
     }
 
     @Override
     public ResponseVo invoke(JSONObject jsonObject) {
-        String orgType=jsonObject.getString("orgType");
-        String channelName=jsonObject.getString("channelName");
-        String contractName=jsonObject.getString("contractName");
+        String orgType = jsonObject.getString("orgType");
+        String channelName = jsonObject.getString("channelName");
+        String contractName = jsonObject.getString("contractName");
         try {
             Gateway gateway = gatewayConfig.gatewayHashMap.get(orgType);
             Network network = gateway.getNetwork(channelName);
             Contract contract = network.getContract(contractName);
             String functionName = jsonObject.getString("function");
             String[] args;
-            JSONObject transientDetail=jsonObject.getJSONObject("transient");
+            JSONObject transientDetail = jsonObject.getJSONObject("transient");
             //处理incoke含有transient得情况
-            if(transientDetail!=null){
-                Map<String,byte[]> argsMap=new HashMap<>();
-                String str=transientDetail.toJSONString();
-                String transientKey=str.substring(2,str.indexOf(":")-1);
-                System.out.println("transient key: "+transientKey);
-                str=str.substring(str.indexOf(":")+1,str.length()-1);
-                System.out.println("transient value: "+str);
-                argsMap.put(transientKey,str.getBytes());
+            if (transientDetail != null) {
+                Map<String, byte[]> argsMap = new HashMap<>();
+                String str = transientDetail.toJSONString();
+                String transientKey = str.substring(2, str.indexOf(":") - 1);
+                str = str.substring(str.indexOf(":") + 1, str.length() - 1);
+                argsMap.put(transientKey, str.getBytes());
                 byte[] invokeResult = contract.createTransaction(functionName).setEndorsingPeers(
-                                    network.getChannel().getPeers(EnumSet.of(Peer.PeerRole.ENDORSING_PEER)))
-                                    .setTransient(argsMap).submit();
+                        network.getChannel().getPeers(EnumSet.of(Peer.PeerRole.ENDORSING_PEER)))
+                        .setTransient(argsMap).submit();
 
-                System.out.println("transient"+" "+functionName+" "+str+" "+"success");
-                return ResponseVo.buildSuccess(JSONObject.parseObject(new String(invokeResult, StandardCharsets.UTF_8)));
+                return ResponseVo
+                        .buildSuccess(JSON.parse(new String(invokeResult, StandardCharsets.UTF_8)));
             }
             //无transient情况
             JSONArray argArray = jsonObject.getJSONArray("args");
@@ -105,30 +102,28 @@ public class ApiImpl implements ApiService {
                 args[i] = argArray.getString(i);
             }
             byte[] invokeResult = contract.createTransaction(functionName).setEndorsingPeers(
-                network.getChannel().getPeers(EnumSet.of(Peer.PeerRole.ENDORSING_PEER)))
-                .submit(args);
-            System.out.println(functionName+" "+Arrays.deepToString(args)+" "+"success");
-            return ResponseVo.buildSuccess(JSONObject.parseObject(new String(invokeResult, StandardCharsets.UTF_8)));
-        }catch (ContractException e){
-            String exception= Arrays.toString(e.getProposalResponses().toArray());
-            return ResponseVo.buildFailure(exception);
-        }catch (IllegalArgumentException e){
-            String exception=e.toString();
-            String[] temps=exception.split(":");
-            return ResponseVo.buildFailure(temps[temps.length-1]);
-        }catch (NullPointerException e){
-            System.out.println(e.toString());
-            return ResponseVo.buildFailure("orgType is null or invalid orgType");
-        } catch (GatewayRuntimeException e){
-            System.out.println(e.toString());
-            String [] errors=e.toString().split(":");
-            return ResponseVo.buildFailure(errors[errors.length-1]);
-        } catch (InterruptedException e) {
+                    network.getChannel().getPeers(EnumSet.of(Peer.PeerRole.ENDORSING_PEER)))
+                    .submit(args);
+            return ResponseVo
+                    .buildSuccess(JSON.parse(new String(invokeResult, StandardCharsets.UTF_8)));
+        } catch (JSONException e) {
             e.printStackTrace();
-            return ResponseVo.buildFailure(e.toString());
-        } catch (TimeoutException e) {
+            return ResponseVo.buildFailure("Fail to parse invoke result: " + e.getMessage());
+        } catch (ContractException e) {
             e.printStackTrace();
-            return  ResponseVo.buildFailure(e.toString());
+            return ResponseVo.buildFailure("Chaincode function invoking failed: " + e.getMessage());
+        } catch (IllegalArgumentException e) {
+            e.printStackTrace();
+            return ResponseVo.buildFailure("Illegal argument: " + e.getMessage());
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+            return ResponseVo.buildFailure("Null pointer detected: " + e.getMessage());
+        } catch (GatewayRuntimeException e) {
+            e.printStackTrace();
+            return ResponseVo.buildFailure("Runtime limit exceed: " + e.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseVo.buildFailure(e.getMessage());
         }
     }
 

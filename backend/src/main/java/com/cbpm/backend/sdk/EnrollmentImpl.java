@@ -12,6 +12,7 @@ import java.security.PrivateKey;
  * @date 2022/4/4 1:36
  */
 public class EnrollmentImpl implements Enrollment, Serializable {
+
     private static final long serialVersionUID = 1L;
     private final PrivateKey privateKey;
     private final String certificate;

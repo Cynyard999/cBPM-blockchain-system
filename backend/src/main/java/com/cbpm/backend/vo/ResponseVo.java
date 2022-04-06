@@ -1,20 +1,21 @@
 package com.cbpm.backend.vo;
 
 /**
- * @author Polaris
- * @version 1.0
+ * @author Polaris, Cynyard
+ * @version 1.1
  * @description: 封装所有response
  * @date 2022/4/1 21:02
  */
 public class ResponseVo {
-    boolean successful;
+
+    boolean success;
 
     String message;
 
-    Object content;
+    Object result;
 
-    public ResponseVo(boolean successful) {
-        this.successful = successful;
+    public ResponseVo(boolean success) {
+        this.success = success;
     }
 
     public ResponseVo(String message) {
@@ -22,62 +23,62 @@ public class ResponseVo {
     }
 
     public ResponseVo(Object object) {
-        this.content = object;
+        this.result = object;
     }
 
-    public boolean isSuccessful() {
-        return successful;
+    public boolean isSuccess() {
+        return success;
     }
 
-    public  static ResponseVo buildSuccess(){
-        ResponseVo responseVo=new ResponseVo("success");
-        responseVo.setSuccessful(true);
+    public static ResponseVo buildSuccess() {
+        ResponseVo responseVo = new ResponseVo("success");
+        responseVo.setSuccess(true);
         return responseVo;
     }
 
-    public static ResponseVo buildSuccess(String message){
-        if(message.length()==0){
-            message="success";
+    public static ResponseVo buildSuccess(String message) {
+        if (message.length() == 0) {
+            message = "success";
         }
-        ResponseVo responseVo=new ResponseVo(true);
+        ResponseVo responseVo = new ResponseVo(true);
         System.out.println(message);
         responseVo.setMessage(message);
 
         return responseVo;
     }
 
-    public static ResponseVo buildSuccess(Object content){
-        ResponseVo responseVo=new ResponseVo(content);
-        responseVo.setSuccessful(true);
+    public static ResponseVo buildSuccess(Object content) {
+        ResponseVo responseVo = new ResponseVo(content);
+        responseVo.setSuccess(true);
         return responseVo;
     }
 
-    public static ResponseVo buildFailure(String message){
-        ResponseVo responseVo=new ResponseVo(message);
+    public static ResponseVo buildFailure(String message) {
+        ResponseVo responseVo = new ResponseVo(message);
         System.out.println(message);
-        responseVo.setSuccessful(false);
-        return  responseVo;
-    }
-
-    public static ResponseVo buildFailure(Object content){
-        ResponseVo responseVo=new ResponseVo(false);
-        responseVo.setContent(content);
+        responseVo.setSuccess(false);
         return responseVo;
     }
 
-    public static ResponseVo buildFailure(String [] exceptions){
-        ResponseVo responseVo=new ResponseVo(false);
-        String str="";
-        for(int i=1;i<exceptions.length;i++){
-            str=str+exceptions[i];
+    public static ResponseVo buildFailure(Object content) {
+        ResponseVo responseVo = new ResponseVo(false);
+        responseVo.setResult(content);
+        return responseVo;
+    }
+
+    public static ResponseVo buildFailure(String[] exceptions) {
+        ResponseVo responseVo = new ResponseVo(false);
+        StringBuilder str = new StringBuilder();
+        for (int i = 1; i < exceptions.length; i++) {
+            str.append(exceptions[i]);
         }
-        responseVo.setMessage(str);
+        responseVo.setMessage(str.toString());
         return responseVo;
     }
 
 
-    public void setSuccessful(boolean successful) {
-        this.successful = successful;
+    public void setSuccess(boolean success) {
+        this.success = success;
     }
 
     public String getMessage() {
@@ -88,11 +89,11 @@ public class ResponseVo {
         this.message = message;
     }
 
-    public Object getContent() {
-        return content;
+    public Object getResult() {
+        return result;
     }
 
-    public void setContent(Object content) {
-        this.content = content;
+    public void setResult(Object result) {
+        this.result = result;
     }
 }
