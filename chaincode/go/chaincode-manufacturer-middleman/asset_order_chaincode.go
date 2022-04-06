@@ -62,10 +62,9 @@ type PaginatedQueryResult struct {
 	Bookmark            string   `json:"bookmark"`
 }
 
-// TODO 查询另一通道的信息，与供货商提供的Asset信息校验
-
-// 中间商根据供应商的asset创建自己能提供的asset，价格可以变化
+// 中间商根据供应商的asset创建自己能提供的asset，价格名称等可以变化
 func (t *CBPMChaincode) CreateAsset(ctx contractapi.TransactionContextInterface) (*Asset, error) {
+	// TODO 查询另一通道的信息，与供货商提供的Asset信息校验
 	transMap, err := ctx.GetStub().GetTransient()
 	if err != nil {
 		return nil, fmt.Errorf("Error getting transient: " + err.Error())
@@ -105,6 +104,13 @@ func (t *CBPMChaincode) CreateAsset(ctx contractapi.TransactionContextInterface)
 	}
 	if exists {
 		return nil, fmt.Errorf("fail to create Asset: asset already exists")
+	}
+	exists, err = t.assetNameExists(ctx, assetInput.AssetName)
+	if err != nil {
+		return nil, fmt.Errorf("fail to create Asset: %v", err)
+	}
+	if exists {
+		return nil, fmt.Errorf("fail to create Asset: asset name already exists")
 	}
 
 	clientOrgID, err := getClientOrgID(ctx, false)
@@ -203,6 +209,17 @@ func (t *CBPMChaincode) assetExists(ctx contractapi.TransactionContextInterface,
 	queryResults, err := t.getAssetQueryResultForQueryString(ctx, queryString)
 	if err != nil {
 		return false, fmt.Errorf("fail to check whether asset exists: %v", err)
+	}
+	if len(queryResults) == 0 {
+		return false, nil
+	}
+	return true, nil
+}
+func (t *CBPMChaincode) assetNameExists(ctx contractapi.TransactionContextInterface, assetName string) (bool, error) {
+	queryString := fmt.Sprintf("{\"selector\":{\"objectType\":\"Asset\",\"assetName\":\"%s\"}}", assetName)
+	queryResults, err := t.getAssetQueryResultForQueryString(ctx, queryString)
+	if err != nil {
+		return false, fmt.Errorf("fail to check whether asset name exists: %v", err)
 	}
 	if len(queryResults) == 0 {
 		return false, nil

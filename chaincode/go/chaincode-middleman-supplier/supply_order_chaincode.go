@@ -85,6 +85,15 @@ func (t *CBPMChaincode) CreateAsset(ctx contractapi.TransactionContextInterface)
 	if assetInput.AssetPrice <= 0 {
 		return nil, fmt.Errorf("fail to create asset: asset price field must be a positive number")
 	}
+
+	exists, err := t.assetNameExists(ctx, assetInput.AssetName)
+	if err != nil {
+		return nil, fmt.Errorf("fail to create Asset: %v", err)
+	}
+	if exists {
+		return nil, fmt.Errorf("fail to create Asset: asset name already exists")
+	}
+
 	assetIDUUID, err := uuid.NewV4()
 	if err != nil {
 		return nil, fmt.Errorf("fail to create asset: fail to generate asset ID: %v", err)
@@ -187,6 +196,18 @@ func (t *CBPMChaincode) assetExists(ctx contractapi.TransactionContextInterface,
 	queryResults, err := t.getAssetQueryResultForQueryString(ctx, queryString)
 	if err != nil {
 		return false, fmt.Errorf("fail to check whether asset exists: %v", err)
+	}
+	if len(queryResults) == 0 {
+		return false, nil
+	}
+	return true, nil
+}
+
+func (t *CBPMChaincode) assetNameExists(ctx contractapi.TransactionContextInterface, assetName string) (bool, error) {
+	queryString := fmt.Sprintf("{\"selector\":{\"objectType\":\"Asset\",\"assetName\":\"%s\"}}", assetName)
+	queryResults, err := t.getAssetQueryResultForQueryString(ctx, queryString)
+	if err != nil {
+		return false, fmt.Errorf("fail to check whether asset name exists: %v", err)
 	}
 	if len(queryResults) == 0 {
 		return false, nil
