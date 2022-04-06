@@ -141,7 +141,7 @@ func (t *CBPMChaincode) CreateAsset(ctx contractapi.TransactionContextInterface)
 	return asset, nil
 }
 
-// UpdateAsset 更新Asset，args传入assetID,assetName,desc,assetPrice，只能
+// UpdateAsset 更新Asset，args传入assetID,assetName,desc,assetPrice，只能owner更新
 func (t *CBPMChaincode) UpdateAsset(ctx contractapi.TransactionContextInterface, assetID string, assetName string, desc string, assetPrice float32) error {
 	// TODO 重名检测
 	asset, err := t.GetAsset(ctx, assetID)

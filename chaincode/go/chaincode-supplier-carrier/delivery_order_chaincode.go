@@ -46,7 +46,7 @@ type PaginatedQueryResult struct {
 	Bookmark            string           `json:"bookmark"`
 }
 
-// 创建
+// CreateDeliveryOrder 创建DeliveryOrder，transient传入tradeID，assetName，note
 func (t *CBPMChaincode) CreateDeliveryOrder(ctx contractapi.TransactionContextInterface) (*DeliveryOrder, error) {
 	transMap, err := ctx.GetStub().GetTransient()
 	if err != nil {
@@ -108,7 +108,9 @@ func (t *CBPMChaincode) CreateDeliveryOrder(ctx contractapi.TransactionContextIn
 	return deliveryOrder, nil
 }
 
+// DeleteDeliveryOrder 删除DeliveryOrder，args传入tradeID
 func (t *CBPMChaincode) DeleteDeliveryOrder(ctx contractapi.TransactionContextInterface, tradeID string) error {
+	// TODO 只有owner能删除，只有未进行的订单能删除
 	deliveryOrder, err := t.GetDeliveryOrder(ctx, tradeID)
 	if err != nil {
 		return fmt.Errorf("fail to delete delivery order: %v", err)
@@ -119,6 +121,7 @@ func (t *CBPMChaincode) DeleteDeliveryOrder(ctx contractapi.TransactionContextIn
 	return ctx.GetStub().DelState(tradeID)
 }
 
+// HandleDeliveryOrder 开始处理DeliveryOrder，args传入tradeID，非owner的组织才能护处理
 func (t *CBPMChaincode) HandleDeliveryOrder(ctx contractapi.TransactionContextInterface, tradeID string) error {
 	deliveryOrder, err := t.GetDeliveryOrder(ctx, tradeID)
 	if err != nil {
@@ -147,6 +150,7 @@ func (t *CBPMChaincode) HandleDeliveryOrder(ctx contractapi.TransactionContextIn
 	return ctx.GetStub().PutState(tradeID, deliveryOrderBytes)
 }
 
+// FinishDeliveryOrder handler处理完成订单，args传入tradeID
 func (t *CBPMChaincode) FinishDeliveryOrder(ctx contractapi.TransactionContextInterface, tradeID string) error {
 	deliveryOrder, err := t.GetDeliveryOrder(ctx, tradeID)
 	if err != nil {
@@ -181,38 +185,7 @@ func (t *CBPMChaincode) FinishDeliveryOrder(ctx contractapi.TransactionContextIn
 	return ctx.GetStub().PutState(tradeID, deliveryOrderBytes)
 }
 
-//func (t *CBPMChaincode) ConfirmFinishDeliveryOrder(ctx contractapi.TransactionContextInterface, tradeID string) error {
-//	deliveryOrder, err := t.GetDeliveryOrder(ctx, tradeID)
-//	if err != nil {
-//		return fmt.Errorf("fail to confirm finish delivery order: %v", err)
-//	}
-//	if deliveryOrder.Status == 0 {
-//		return fmt.Errorf("fail to confirm finish delivery order: order has not been handled")
-//	}
-//	if deliveryOrder.Status == 1 {
-//		return fmt.Errorf("fail to confirm finish delivery order: order has not been finished")
-//	}
-//	if deliveryOrder.Status == 3 {
-//		return fmt.Errorf("fail to confirm finish delivery order: order has been confirmed finished")
-//	}
-//	clientOrgID, err := getClientOrgID(ctx, false)
-//	if err != nil {
-//		return fmt.Errorf("fail to confirm finish delivery order: %v", err)
-//
-//	}
-//	// 只能由运输方来修改状态
-//	if deliveryOrder.HandlerOrg == clientOrgID {
-//		return fmt.Errorf("fail to confirm finish delivery order: only owner can comfirm finish order")
-//	}
-//	deliveryOrder.Status = 3
-//	deliveryOrder.UpdateTime = time.Now().Format("2006-01-02 15:04:05")
-//	deliveryOrderBytes, err := json.Marshal(deliveryOrder)
-//	if err != nil {
-//		return fmt.Errorf("fail to confirm finish delivery order: %v", err)
-//	}
-//	return ctx.GetStub().PutState(tradeID, deliveryOrderBytes)
-//}
-
+// GetDeliveryOrder 获取DeliveryOrder，args传入tradeID
 func (t *CBPMChaincode) GetDeliveryOrder(ctx contractapi.TransactionContextInterface, tradeID string) (*DeliveryOrder, error) {
 	deliveryOrderBytes, err := ctx.GetStub().GetState(tradeID)
 	if err != nil {
@@ -231,11 +204,13 @@ func (t *CBPMChaincode) GetDeliveryOrder(ctx contractapi.TransactionContextInter
 	return &deliveryOrder, nil
 }
 
+// GetAllDeliveryOrders 获取所有DeliveryOrder
 func (t *CBPMChaincode) GetAllDeliveryOrders(ctx contractapi.TransactionContextInterface) ([]*DeliveryOrder, error) {
 	queryString := "{\"selector\":{\"objectType\":\"DeliveryOrder\"}}"
 	return getQueryResultForQueryString(ctx, queryString)
 }
 
+// QueryDeliveryOrders 查询满足条件的deliveryOrders，args传入查询语句
 func (t *CBPMChaincode) QueryDeliveryOrders(ctx contractapi.TransactionContextInterface, queryString string) ([]*DeliveryOrder, error) {
 	return getQueryResultForQueryString(ctx, queryString)
 }
