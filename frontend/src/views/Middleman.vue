@@ -1,12 +1,12 @@
 <template>
     <div>
-        <h1>Home</h1>
+        <h1>Middleman</h1>
     </div>
 </template>
 
 <script>
     export default {
-        name: "Home"
+        name: "Middleman.vue"
     }
 </script>
 
