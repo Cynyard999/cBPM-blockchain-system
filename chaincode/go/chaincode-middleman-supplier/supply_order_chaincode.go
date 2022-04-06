@@ -152,7 +152,7 @@ func (t *CBPMChaincode) DeleteAsset(ctx contractapi.TransactionContextInterface,
 }
 
 func (t *CBPMChaincode) GetAsset(ctx contractapi.TransactionContextInterface, assetID string) (*Asset, error) {
-	queryString := fmt.Sprintf("{\"selector\":{\"docType\":\"Asset\",\"tradeID\":\"%s\"}}", assetID)
+	queryString := fmt.Sprintf("{\"selector\":{\"docType\":\"Asset\",\"assetID\":\"%s\"}}", assetID)
 	queryResults, err := t.getAssetQueryResultForQueryString(ctx, queryString)
 	if err != nil {
 		return nil, fmt.Errorf("fail to get asset: %v", err)

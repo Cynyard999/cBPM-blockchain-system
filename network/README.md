@@ -109,19 +109,27 @@ export CHAINCODE_LANG=golang
 export CHAINCODE_VERSION=1.0
 export CHAINCODE_NAME=scchaincode
 
+
+export CORE_PEER_TLS_ROOTCERT_FILE=/tmp/hyperledger/fabric/peer/supplier/peer1/tls/tlscacerts/tls-0-0-0-0-7052.pem
+export CORE_PEER_TLS_CERT_FILE=/tmp/hyperledger/fabric/peer/supplier/peer1/tls/signcerts/cert.pem
+export CORE_PEER_TLS_KEY_FILE=/tmp/hyperledger/fabric/peer/supplier/peer1/tls/keystore/key.pem
 export CORE_PEER_MSPCONFIGPATH=/tmp/hyperledger/fabric/peer/supplier/admin/msp
-export CORE_PEER_ADDRESS=peer1-supplier:7051
 export CORE_PEER_LOCALMSPID=SupplierMSP
 
+export CORE_PEER_ADDRESS=peer1-supplier:7051
 peer chaincode install -n $CHAINCODE_NAME -v $CHAINCODE_VERSION  -p $CHAINCODE -l $CHAINCODE_LANG
 
 export CORE_PEER_ADDRESS=peer2-supplier:7051
 peer chaincode install -n $CHAINCODE_NAME -v $CHAINCODE_VERSION  -p $CHAINCODE -l $CHAINCODE_LANG
 
 
+export CORE_PEER_TLS_ROOTCERT_FILE=/tmp/hyperledger/fabric/peer/carrier/peer1/tls/tlscacerts/tls-0-0-0-0-7052.pem
+export CORE_PEER_TLS_CERT_FILE=/tmp/hyperledger/fabric/peer/carrier/peer1/tls/signcerts/cert.pem
+export CORE_PEER_TLS_KEY_FILE=/tmp/hyperledger/fabric/peer/carrier/peer1/tls/keystore/key.pem
 export CORE_PEER_MSPCONFIGPATH=/tmp/hyperledger/fabric/peer/carrier/admin/msp
-export CORE_PEER_ADDRESS=peer1-carrier:7051
 export CORE_PEER_LOCALMSPID=CarrierMSP
+
+export CORE_PEER_ADDRESS=peer1-carrier:7051
 peer chaincode install -n $CHAINCODE_NAME -v $CHAINCODE_VERSION  -p $CHAINCODE -l $CHAINCODE_LANG
 
 
@@ -156,6 +164,8 @@ peer chaincode install -n $CHAINCODE_NAME -v $CHAINCODE_VERSION  -p $CHAINCODE -
 
 ```shell
 peer chaincode instantiate -o orderer-cbpm:7050 --tls --cafile "/tmp/hyperledger/fabric/peer/cbpm/orderer/tls/tlscacerts/tls-0-0-0-0-7052.pem" -C scchannel -n $CHAINCODE_NAME -l $CHAINCODE_LANG -v $CHAINCODE_VERSION -c '{"Args":[""]}' -P "OR('SupplierMSP.peer','CarrierMSP.peer')"
+
+peer chaincode upgrade -o orderer-cbpm:7050 --tls --cafile "/tmp/hyperledger/fabric/peer/cbpm/orderer/tls/tlscacerts/tls-0-0-0-0-7052.pem" -C scchannel -n $CHAINCODE_NAME -l $CHAINCODE_LANG -v $CHAINCODE_VERSION -c '{"Args":[""]}' -P "OR('SupplierMSP.peer','CarrierMSP.peer')"
 ```
 
 
