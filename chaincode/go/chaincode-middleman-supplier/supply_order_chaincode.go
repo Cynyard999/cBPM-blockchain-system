@@ -160,10 +160,10 @@ func (t *CBPMChaincode) GetAsset(ctx contractapi.TransactionContextInterface, as
 	if len(queryResults) == 0 {
 		return nil, fmt.Errorf("fail to get asset: %s does not exist", assetID)
 	}
-	return &queryResults[0], nil
+	return queryResults[0], nil
 }
 
-func (t *CBPMChaincode) GetAllAssets(ctx contractapi.TransactionContextInterface) ([]Asset, error) {
+func (t *CBPMChaincode) GetAllAssets(ctx contractapi.TransactionContextInterface) ([]*Asset, error) {
 
 	queryString := "{\"selector\":{\"docType\":\"Asset\"}}"
 
@@ -174,7 +174,7 @@ func (t *CBPMChaincode) GetAllAssets(ctx contractapi.TransactionContextInterface
 	return queryResults, nil
 }
 
-func (t *CBPMChaincode) QueryAssets(ctx contractapi.TransactionContextInterface, queryString string) ([]Asset, error) {
+func (t *CBPMChaincode) QueryAssets(ctx contractapi.TransactionContextInterface, queryString string) ([]*Asset, error) {
 	queryResults, err := t.getAssetQueryResultForQueryString(ctx, queryString)
 	if err != nil {
 		return nil, err
@@ -442,14 +442,14 @@ func verifyClientOrgMatchesPeerOrg(clientOrgID string) error {
 	return nil
 }
 
-func (s *CBPMChaincode) getAssetQueryResultForQueryString(ctx contractapi.TransactionContextInterface, queryString string) ([]Asset, error) {
+func (s *CBPMChaincode) getAssetQueryResultForQueryString(ctx contractapi.TransactionContextInterface, queryString string) ([]*Asset, error) {
 
 	resultsIterator, err := ctx.GetStub().GetQueryResult(queryString)
 	if err != nil {
 		return nil, err
 	}
 	defer resultsIterator.Close()
-	results := []Asset{}
+	var results []*Asset
 	for resultsIterator.HasNext() {
 		response, err := resultsIterator.Next()
 		if err != nil {
@@ -460,7 +460,7 @@ func (s *CBPMChaincode) getAssetQueryResultForQueryString(ctx contractapi.Transa
 		if err != nil {
 			return nil, err
 		}
-		results = append(results, *newAsset)
+		results = append(results, newAsset)
 	}
 	return results, nil
 }
