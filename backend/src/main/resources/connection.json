@@ -25,19 +25,19 @@
                     "eventSource": true
                 },
                 "peer2-supplier": {
-                    "endorsingPeer": true,
+                    "endorsingPeer": false,
                     "chaincodeQuery": true,
                     "ledgerQuery": true,
                     "eventSource": true
                 },
                 "peer1-carrier": {
-                    "endorsingPeer": true,
+                    "endorsingPeer": false,
                     "chaincodeQuery": true,
                     "ledgerQuery": true,
                     "eventSource": true
                 },
                 "peer2-carrier": {
-                    "endorsingPeer": true,
+                    "endorsingPeer": false,
                     "chaincodeQuery": true,
                     "ledgerQuery": true,
                     "eventSource": true
@@ -56,19 +56,19 @@
                     "eventSource": true
                 },
                 "peer2-manufacturer": {
-                    "endorsingPeer": true,
+                    "endorsingPeer": false,
                     "chaincodeQuery": true,
                     "ledgerQuery": true,
                     "eventSource": true
                 },
                 "peer1-carrier": {
-                    "endorsingPeer": true,
+                    "endorsingPeer": false,
                     "chaincodeQuery": true,
                     "ledgerQuery": true,
                     "eventSource": true
                 },
                 "peer2-carrier": {
-                    "endorsingPeer": true,
+                    "endorsingPeer": false,
                     "chaincodeQuery": true,
                     "ledgerQuery": true,
                     "eventSource": true
@@ -87,19 +87,19 @@
                     "eventSource": true
                 },
                 "peer2-manufacturer": {
-                    "endorsingPeer": true,
+                    "endorsingPeer": false,
                     "chaincodeQuery": true,
                     "ledgerQuery": true,
                     "eventSource": true
                 },
                 "peer1-middleman": {
-                    "endorsingPeer": true,
+                    "endorsingPeer": false,
                     "chaincodeQuery": true,
                     "ledgerQuery": true,
                     "eventSource": true
                 },
                 "peer2-middleman": {
-                    "endorsingPeer": true,
+                    "endorsingPeer": false,
                     "chaincodeQuery": true,
                     "ledgerQuery": true,
                     "eventSource": true
@@ -118,19 +118,19 @@
                     "eventSource": true
                 },
                 "peer2-middleman": {
-                    "endorsingPeer": true,
+                    "endorsingPeer": false,
                     "chaincodeQuery": true,
                     "ledgerQuery": true,
                     "eventSource": true
                 },
                 "peer1-carrier": {
-                    "endorsingPeer": true,
+                    "endorsingPeer": false,
                     "chaincodeQuery": true,
                     "ledgerQuery": true,
                     "eventSource": true
                 },
                 "peer2-carrier": {
-                    "endorsingPeer": true,
+                    "endorsingPeer": false,
                     "chaincodeQuery": true,
                     "ledgerQuery": true,
                     "eventSource": true
@@ -149,19 +149,19 @@
                     "eventSource": true
                 },
                 "peer2-middleman": {
-                    "endorsingPeer": true,
+                    "endorsingPeer": false,
                     "chaincodeQuery": true,
                     "ledgerQuery": true,
                     "eventSource": true
                 },
                 "peer1-supplier": {
-                    "endorsingPeer": true,
+                    "endorsingPeer": false,
                     "chaincodeQuery": true,
                     "ledgerQuery": true,
                     "eventSource": true
                 },
                 "peer2-supplier": {
-                    "endorsingPeer": true,
+                    "endorsingPeer": false,
                     "chaincodeQuery": true,
                     "ledgerQuery": true,
                     "eventSource": true

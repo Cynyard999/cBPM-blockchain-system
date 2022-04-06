@@ -10,6 +10,7 @@ import com.cbpm.backend.vo.ResponseVo;
 import org.hyperledger.fabric.gateway.*;
 import org.hyperledger.fabric.sdk.Peer;
 import org.hyperledger.fabric.sdk.exception.ProposalException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 
@@ -92,8 +93,8 @@ public class ApiImpl implements ApiService {
                 argsMap.put(transientKey,str.getBytes());
                 byte[] invokeResult = contract.createTransaction(functionName).setEndorsingPeers(
                                     network.getChannel().getPeers(EnumSet.of(Peer.PeerRole.ENDORSING_PEER)))
-                                    .setTransient(argsMap)
-                                    .submit();
+                                    .setTransient(argsMap).submit();
+
                 System.out.println("transient"+" "+functionName+" "+str+" "+"success");
                 return ResponseVo.buildSuccess(JSONObject.parseObject(new String(invokeResult, StandardCharsets.UTF_8)));
             }
@@ -109,9 +110,8 @@ public class ApiImpl implements ApiService {
             System.out.println(functionName+" "+Arrays.deepToString(args)+" "+"success");
             return ResponseVo.buildSuccess(JSONObject.parseObject(new String(invokeResult, StandardCharsets.UTF_8)));
         }catch (ContractException e){
-            String exception=e.toString();
-            System.out.println(exception);
-            return ResponseVo.buildFailure(exception.split(":")[1]);
+            String exception= Arrays.toString(e.getProposalResponses().toArray());
+            return ResponseVo.buildFailure(exception);
         }catch (IllegalArgumentException e){
             String exception=e.toString();
             String[] temps=exception.split(":");
