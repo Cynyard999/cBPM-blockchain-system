@@ -6,6 +6,10 @@ import App from './App.vue'
 
 createApp(App).use(createPinia()).mount('#app')
 
-const app = createApp(App).use(VueAxios, axios);
+new Vue({
+    el: '#app',
+    components: {App},
+    template: '<App/>'
+})
 app.mount("#app");
 
