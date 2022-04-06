@@ -46,6 +46,7 @@ type PaginatedQueryResult struct {
 	Bookmark            string           `json:"bookmark"`
 }
 
+// 创建
 func (t *CBPMChaincode) CreateDeliveryOrder(ctx contractapi.TransactionContextInterface) (*DeliveryOrder, error) {
 	transMap, err := ctx.GetStub().GetTransient()
 	if err != nil {

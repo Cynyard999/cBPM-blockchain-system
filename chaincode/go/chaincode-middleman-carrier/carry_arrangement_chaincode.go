@@ -50,6 +50,7 @@ type PaginatedQueryResult struct {
 	Bookmark            string                 `json:"bookmark"`
 }
 
+// CreateDeliveryArrangement 创建DeliveryArrangement，需要transient传入tradeID，assetName，quantity，startPlace，endPlace，fee，note，返回创建好的DeliveryArrangement
 func (t *CBPMChaincode) CreateDeliveryArrangement(ctx contractapi.TransactionContextInterface) (*DeliveryArrangement, error) {
 	transMap, err := ctx.GetStub().GetTransient()
 	if err != nil {
@@ -131,7 +132,9 @@ func (t *CBPMChaincode) CreateDeliveryArrangement(ctx contractapi.TransactionCon
 	return deliveryArrangement, nil
 }
 
+// DeleteDeliveryArrangement 删除DeliveryArrangement，args传入tradeID
 func (t *CBPMChaincode) DeleteDeliveryArrangement(ctx contractapi.TransactionContextInterface, tradeID string) error {
+	// TODO 只能拥有者删除，并且不能在进行过程中删除
 	deliveryArrangement, err := t.GetDeliveryArrangement(ctx, tradeID)
 	if err != nil {
 		return fmt.Errorf("fail to delete delivery arrangement: %v", err)
@@ -142,6 +145,7 @@ func (t *CBPMChaincode) DeleteDeliveryArrangement(ctx contractapi.TransactionCon
 	return ctx.GetStub().DelState(tradeID)
 }
 
+// HandleDeliveryArrangement 非owner的一方处理DeliveryArrangement，agrs传入tradeID
 func (t *CBPMChaincode) HandleDeliveryArrangement(ctx contractapi.TransactionContextInterface, tradeID string) error {
 	deliveryArrangement, err := t.GetDeliveryArrangement(ctx, tradeID)
 	if err != nil {
@@ -170,6 +174,7 @@ func (t *CBPMChaincode) HandleDeliveryArrangement(ctx contractapi.TransactionCon
 	return ctx.GetStub().PutState(tradeID, deliveryArrangementBytes)
 }
 
+// FinishDeliveryArrangement handler完成DeliveryArrangement，args传入tradeID
 func (t *CBPMChaincode) FinishDeliveryArrangement(ctx contractapi.TransactionContextInterface, tradeID string) error {
 	deliveryArrangement, err := t.GetDeliveryArrangement(ctx, tradeID)
 	if err != nil {
@@ -203,6 +208,7 @@ func (t *CBPMChaincode) FinishDeliveryArrangement(ctx contractapi.TransactionCon
 	return ctx.GetStub().PutState(tradeID, deliveryArrangementBytes)
 }
 
+// ConfirmFinishDeliveryArrangement owner确定handler完成deliveryArrangement，args传入tradeID，在例子中需要manufacturer收到货物过后，middleman才能确认carrier完成
 func (t *CBPMChaincode) ConfirmFinishDeliveryArrangement(ctx contractapi.TransactionContextInterface, tradeID string) error {
 	deliveryArrangement, err := t.GetDeliveryArrangement(ctx, tradeID)
 	if err != nil {
@@ -235,6 +241,7 @@ func (t *CBPMChaincode) ConfirmFinishDeliveryArrangement(ctx contractapi.Transac
 	return ctx.GetStub().PutState(tradeID, deliveryArrangementBytes)
 }
 
+// GetDeliveryArrangement 获取DeliveryArrangement，args传入tradeID
 func (t *CBPMChaincode) GetDeliveryArrangement(ctx contractapi.TransactionContextInterface, tradeID string) (*DeliveryArrangement, error) {
 	deliveryArrangementBytes, err := ctx.GetStub().GetState(tradeID)
 	if err != nil {
@@ -253,11 +260,13 @@ func (t *CBPMChaincode) GetDeliveryArrangement(ctx contractapi.TransactionContex
 	return &deliveryArrangement, nil
 }
 
+// GetAllDeliveryArrangements 获取所有DeliveryArrangement
 func (t *CBPMChaincode) GetAllDeliveryArrangements(ctx contractapi.TransactionContextInterface) ([]*DeliveryArrangement, error) {
 	queryString := "{\"selector\":{\"objectType\":\"DeliveryArrangement\"}}"
 	return getQueryResultForQueryString(ctx, queryString)
 }
 
+// QueryDeliveryArrangements 查询满足条件的DeliveryArrangements，args传入查询语句
 func (t *CBPMChaincode) QueryDeliveryArrangements(ctx contractapi.TransactionContextInterface, queryString string) ([]*DeliveryArrangement, error) {
 	return getQueryResultForQueryString(ctx, queryString)
 }

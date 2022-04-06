@@ -48,7 +48,7 @@ type PaginatedQueryResult struct {
 	Bookmark            string            `json:"bookmark"`
 }
 
-// 创建DeliveryDetail，需要传入tradeID，assetName，startPlace，endPlace，contact，note
+// CreateDeliveryDetail 创建DeliveryDetail，需要传入tradeID，assetName，startPlace，endPlace，contact，note
 func (t *CBPMChaincode) CreateDeliveryDetail(ctx contractapi.TransactionContextInterface) (*DeliveryDetail, error) {
 	transMap, err := ctx.GetStub().GetTransient()
 	if err != nil {
@@ -126,7 +126,9 @@ func (t *CBPMChaincode) CreateDeliveryDetail(ctx contractapi.TransactionContextI
 
 }
 
+// DeleteDeliveryDetail 删除DeliveryDetail，args传入tradeID
 func (t *CBPMChaincode) DeleteDeliveryDetail(ctx contractapi.TransactionContextInterface, tradeID string) error {
+	// TODO 只有owner能删除，只能删除没有进行中
 	deliveryDetail, err := t.GetDeliveryDetail(ctx, tradeID)
 	if err != nil {
 		return fmt.Errorf("fail to delete delivery detail: %v", err)
@@ -137,6 +139,7 @@ func (t *CBPMChaincode) DeleteDeliveryDetail(ctx contractapi.TransactionContextI
 	return ctx.GetStub().DelState(tradeID)
 }
 
+// HandleDeliveryDetail 开始处理DeliveryDetail，args传入tradeID，只有owner能处理，在业务中，只有carrier能处理
 func (t *CBPMChaincode) HandleDeliveryDetail(ctx contractapi.TransactionContextInterface, tradeID string) error {
 	deliveryDetail, err := t.GetDeliveryDetail(ctx, tradeID)
 	if err != nil {
@@ -161,6 +164,7 @@ func (t *CBPMChaincode) HandleDeliveryDetail(ctx contractapi.TransactionContextI
 	return ctx.GetStub().PutState(tradeID, deliveryDetailBytes)
 }
 
+// FinishDeliveryDetail 处理完成，args传入tradeID，只有owner能完成
 func (t *CBPMChaincode) FinishDeliveryDetail(ctx contractapi.TransactionContextInterface, tradeID string) error {
 	deliveryDetail, err := t.GetDeliveryDetail(ctx, tradeID)
 	if err != nil {
@@ -189,6 +193,7 @@ func (t *CBPMChaincode) FinishDeliveryDetail(ctx contractapi.TransactionContextI
 	return ctx.GetStub().PutState(tradeID, deliveryDetailBytes)
 }
 
+// GetDeliveryDetail 获取DeliveryDetail信息，args传入tradeID
 func (t *CBPMChaincode) GetDeliveryDetail(ctx contractapi.TransactionContextInterface, tradeID string) (*DeliveryDetail, error) {
 	deliveryDetailBytes, err := ctx.GetStub().GetState(tradeID)
 	if err != nil {
@@ -207,11 +212,13 @@ func (t *CBPMChaincode) GetDeliveryDetail(ctx contractapi.TransactionContextInte
 	return &deliveryDetail, nil
 }
 
+// GetAllDeliveryDetails 获取所有DeliveryDetails
 func (t *CBPMChaincode) GetAllDeliveryDetails(ctx contractapi.TransactionContextInterface) ([]*DeliveryDetail, error) {
 	queryString := "{\"selector\":{\"objectType\":\"DeliveryDetail\"}}"
 	return getQueryResultForQueryString(ctx, queryString)
 }
 
+// QueryDeliveryDetails 查询满足条件的DeliveryDetails,args传入查询语句
 func (t *CBPMChaincode) QueryDeliveryDetails(ctx contractapi.TransactionContextInterface, queryString string) ([]*DeliveryDetail, error) {
 	return getQueryResultForQueryString(ctx, queryString)
 }

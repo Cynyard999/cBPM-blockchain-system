@@ -62,7 +62,7 @@ type PaginatedQueryResult struct {
 	Bookmark            string   `json:"bookmark"`
 }
 
-// 中间商根据供应商的asset创建自己能提供的asset，价格名称等可以变化
+// CreateAsset 创建Asset，transient传入assetID，assetName，assetPrice，shippingAddress，publicDescription，中间商根据供应商的asset创建自己能提供的asset，价格名称等可以变化
 func (t *CBPMChaincode) CreateAsset(ctx contractapi.TransactionContextInterface) (*Asset, error) {
 	// TODO 查询另一通道的信息，与供货商提供的Asset信息校验
 	transMap, err := ctx.GetStub().GetTransient()
@@ -140,7 +140,10 @@ func (t *CBPMChaincode) CreateAsset(ctx contractapi.TransactionContextInterface)
 	}
 	return asset, nil
 }
+
+// UpdateAsset 更新Asset，args传入assetID,assetName,desc,assetPrice，只能
 func (t *CBPMChaincode) UpdateAsset(ctx contractapi.TransactionContextInterface, assetID string, assetName string, desc string, assetPrice float32) error {
+	// TODO 重名检测
 	asset, err := t.GetAsset(ctx, assetID)
 	if err != nil {
 		return err
@@ -162,7 +165,9 @@ func (t *CBPMChaincode) UpdateAsset(ctx contractapi.TransactionContextInterface,
 	return ctx.GetStub().PutState(assetID, newAssetBytes)
 }
 
+// DeleteAsset 删除Asset
 func (t *CBPMChaincode) DeleteAsset(ctx contractapi.TransactionContextInterface, assetID string) error {
+	// TODO owner才能删除
 	exist, err := t.assetExists(ctx, assetID)
 	if !exist {
 		return fmt.Errorf("fail to delete asset: asset does not exist")
@@ -173,6 +178,7 @@ func (t *CBPMChaincode) DeleteAsset(ctx contractapi.TransactionContextInterface,
 	return ctx.GetStub().DelState(assetID)
 }
 
+// GetAsset 获取Asset，args传入assetID
 func (t *CBPMChaincode) GetAsset(ctx contractapi.TransactionContextInterface, assetID string) (*Asset, error) {
 	queryString := fmt.Sprintf("{\"selector\":{\"objectType\":\"Asset\",\"assetID\":\"%s\"}}", assetID)
 	queryResults, err := t.getAssetQueryResultForQueryString(ctx, queryString)
@@ -185,6 +191,7 @@ func (t *CBPMChaincode) GetAsset(ctx contractapi.TransactionContextInterface, as
 	return queryResults[0], nil
 }
 
+// GetAllAssets 获取所有Assets
 func (t *CBPMChaincode) GetAllAssets(ctx contractapi.TransactionContextInterface) ([]*Asset, error) {
 
 	queryString := "{\"selector\":{\"objectType\":\"Asset\"}}"
@@ -196,6 +203,7 @@ func (t *CBPMChaincode) GetAllAssets(ctx contractapi.TransactionContextInterface
 	return queryResults, nil
 }
 
+// QueryAssets 查询满足条件的assets，args传入查询语句
 func (t *CBPMChaincode) QueryAssets(ctx contractapi.TransactionContextInterface, queryString string) ([]*Asset, error) {
 	queryResults, err := t.getAssetQueryResultForQueryString(ctx, queryString)
 	if err != nil {
@@ -227,6 +235,7 @@ func (t *CBPMChaincode) assetNameExists(ctx contractapi.TransactionContextInterf
 	return true, nil
 }
 
+// CreateOrder 创建Order，transient传入assetID，quantity，receivingAddress，note，链码生成UUID，返回创建好的Order
 func (t *CBPMChaincode) CreateOrder(ctx contractapi.TransactionContextInterface) (*Order, error) {
 	transMap, err := ctx.GetStub().GetTransient()
 	if err != nil {
@@ -296,6 +305,7 @@ func (t *CBPMChaincode) CreateOrder(ctx contractapi.TransactionContextInterface)
 	return order, nil
 }
 
+// GetOrder 获取Order，args传入tradeID
 func (t *CBPMChaincode) GetOrder(ctx contractapi.TransactionContextInterface, tradeID string) (*Order, error) {
 	queryString := fmt.Sprintf("{\"selector\":{\"objectType\":\"Order\",\"tradeID\":\"%s\"}}", tradeID)
 	queryResults, err := t.getOrderQueryResultForQueryString(ctx, queryString)
@@ -308,6 +318,7 @@ func (t *CBPMChaincode) GetOrder(ctx contractapi.TransactionContextInterface, tr
 	return queryResults[0], nil
 }
 
+// GetAllOrders 获取所有Orders
 func (t *CBPMChaincode) GetAllOrders(ctx contractapi.TransactionContextInterface) ([]*Order, error) {
 	queryString := "{\"selector\":{\"objectType\":\"Order\"}}"
 
@@ -318,6 +329,7 @@ func (t *CBPMChaincode) GetAllOrders(ctx contractapi.TransactionContextInterface
 	return queryResults, nil
 }
 
+// QueryOrders 查询满足条件的Orders，args传入查询语句
 func (t *CBPMChaincode) QueryOrders(ctx contractapi.TransactionContextInterface, queryString string) ([]*Order, error) {
 	queryResults, err := t.getOrderQueryResultForQueryString(ctx, queryString)
 	if err != nil {
@@ -326,7 +338,9 @@ func (t *CBPMChaincode) QueryOrders(ctx contractapi.TransactionContextInterface,
 	return queryResults, nil
 }
 
+// DeleteOrder 删除Order，args传入tradeID
 func (t *CBPMChaincode) DeleteOrder(ctx contractapi.TransactionContextInterface, tradeID string) error {
+	// TODO owner才能删除，非进行中的Order才能删除
 	exists, err := t.orderExists(ctx, tradeID)
 	if err != nil {
 		return err
@@ -337,6 +351,7 @@ func (t *CBPMChaincode) DeleteOrder(ctx contractapi.TransactionContextInterface,
 	return ctx.GetStub().DelState(tradeID)
 }
 
+// HandleOrder 非Owner开始处理Order，args传入tradeID
 func (t *CBPMChaincode) HandleOrder(ctx contractapi.TransactionContextInterface, tradeID string) error {
 	order, err := t.GetOrder(ctx, tradeID)
 	if err != nil {
@@ -365,6 +380,7 @@ func (t *CBPMChaincode) HandleOrder(ctx contractapi.TransactionContextInterface,
 	return ctx.GetStub().PutState(tradeID, orderBytes)
 }
 
+// FinishOrder handler完成Order，args传入tradeID
 func (t *CBPMChaincode) FinishOrder(ctx contractapi.TransactionContextInterface, tradeID string) error {
 	order, err := t.GetOrder(ctx, tradeID)
 	if err != nil {
@@ -398,6 +414,7 @@ func (t *CBPMChaincode) FinishOrder(ctx contractapi.TransactionContextInterface,
 	return ctx.GetStub().PutState(tradeID, orderBytes)
 }
 
+// ConfirmFinishOrder owner确定完成，args传入tradeID
 func (t *CBPMChaincode) ConfirmFinishOrder(ctx contractapi.TransactionContextInterface, tradeID string) error {
 	order, err := t.GetOrder(ctx, tradeID)
 	if err != nil {
@@ -442,6 +459,7 @@ func (t *CBPMChaincode) orderExists(ctx contractapi.TransactionContextInterface,
 	}
 	return true, nil
 }
+
 func getClientOrgID(ctx contractapi.TransactionContextInterface, verifyOrg bool) (string, error) {
 	clientOrgID, err := ctx.GetClientIdentity().GetMSPID()
 	if err != nil {
