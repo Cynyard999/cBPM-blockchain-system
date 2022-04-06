@@ -1,7 +1,2 @@
-# frontend-cBPM-blockchain-system
-
-系统前端，基于Vue+？？+？？
-
-
-
-TODO
+前端
+yarn+vue3+axios+pinia
