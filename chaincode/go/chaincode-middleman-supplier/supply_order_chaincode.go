@@ -273,10 +273,10 @@ func (t *CBPMChaincode) GetSupplyOrder(ctx contractapi.TransactionContextInterfa
 	if len(queryResults) == 0 {
 		return nil, fmt.Errorf("fail to get supply order for tradeID: %s does not exist", tradeID)
 	}
-	return &queryResults[0], nil
+	return queryResults[0], nil
 }
 
-func (t *CBPMChaincode) GetAllSupplyOrders(ctx contractapi.TransactionContextInterface) ([]SupplyOrder, error) {
+func (t *CBPMChaincode) GetAllSupplyOrders(ctx contractapi.TransactionContextInterface) ([]*SupplyOrder, error) {
 	queryString := "{\"selector\":{\"objectType\":\"SupplyOrder\"}}"
 
 	queryResults, err := t.getOrderQueryResultForQueryString(ctx, queryString)
@@ -286,7 +286,7 @@ func (t *CBPMChaincode) GetAllSupplyOrders(ctx contractapi.TransactionContextInt
 	return queryResults, nil
 }
 
-func (t *CBPMChaincode) QuerySupplyOrders(ctx contractapi.TransactionContextInterface, queryString string) ([]SupplyOrder, error) {
+func (t *CBPMChaincode) QuerySupplyOrders(ctx contractapi.TransactionContextInterface, queryString string) ([]*SupplyOrder, error) {
 	queryResults, err := t.getOrderQueryResultForQueryString(ctx, queryString)
 	if err != nil {
 		return nil, err
@@ -465,14 +465,14 @@ func (s *CBPMChaincode) getAssetQueryResultForQueryString(ctx contractapi.Transa
 	return results, nil
 }
 
-func (s *CBPMChaincode) getOrderQueryResultForQueryString(ctx contractapi.TransactionContextInterface, queryString string) ([]SupplyOrder, error) {
+func (s *CBPMChaincode) getOrderQueryResultForQueryString(ctx contractapi.TransactionContextInterface, queryString string) ([]*SupplyOrder, error) {
 
 	resultsIterator, err := ctx.GetStub().GetQueryResult(queryString)
 	if err != nil {
 		return nil, err
 	}
 	defer resultsIterator.Close()
-	results := []SupplyOrder{}
+	var results []*SupplyOrder
 	for resultsIterator.HasNext() {
 		response, err := resultsIterator.Next()
 		if err != nil {
@@ -483,7 +483,7 @@ func (s *CBPMChaincode) getOrderQueryResultForQueryString(ctx contractapi.Transa
 		if err != nil {
 			return nil, err
 		}
-		results = append(results, *newOrder)
+		results = append(results, newOrder)
 	}
 	return results, nil
 }

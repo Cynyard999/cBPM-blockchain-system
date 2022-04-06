@@ -470,7 +470,7 @@ func (s *CBPMChaincode) getAssetQueryResultForQueryString(ctx contractapi.Transa
 		return nil, err
 	}
 	defer resultsIterator.Close()
-	results := []*Asset{}
+	var results []*Asset
 	for resultsIterator.HasNext() {
 		response, err := resultsIterator.Next()
 		if err != nil {
@@ -493,7 +493,7 @@ func (s *CBPMChaincode) getOrderQueryResultForQueryString(ctx contractapi.Transa
 		return nil, err
 	}
 	defer resultsIterator.Close()
-	results := []*Order{}
+	var results []*Order
 	for resultsIterator.HasNext() {
 		response, err := resultsIterator.Next()
 		if err != nil {

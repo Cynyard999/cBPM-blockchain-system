@@ -29,11 +29,11 @@ docker exec -it cli /bin/bash
 ```shell
 ### 更新链码
 # 在容器中
-export CHANNEL=mischannel
-export CHAINCODE=chaincode-middleman-supplier
+export CHANNEL=mamichannel
+export CHAINCODE=chaincode-manufacturer-middleman
 export CHAINCODE_LANG=golang
-export CHAINCODE_VERSION=1.2
-export CHAINCODE_NAME=mischaincode
+export CHAINCODE_VERSION=1.1
+export CHAINCODE_NAME=mamichaincode
 
 ./scripts/upgrade-chaincode.sh
 
