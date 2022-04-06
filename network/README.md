@@ -28,6 +28,7 @@ docker exec -it cli /bin/bash
 
 ```shell
 ### 更新链码
+# 在容器中
 export CHANNEL=mischannel
 export CHAINCODE=chaincode-middleman-supplier
 export CHAINCODE_LANG=golang

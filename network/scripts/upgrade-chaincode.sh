@@ -84,4 +84,4 @@ peer chaincode upgrade -o orderer-cbpm:7050 --tls --cafile /tmp/hyperledger/fabr
 if [ $? -ne 0 ]; then
     fatalln "fail to upgrade chaincode $CHAINCODE_NAME"
 fi
-successln "chaincode successfully instantiated $CHAINCODE_NAME"
+successln "chaincode successfully upgraded $CHAINCODE_NAME"
