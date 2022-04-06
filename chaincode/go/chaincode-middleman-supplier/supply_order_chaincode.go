@@ -56,14 +56,14 @@ type PaginatedQueryResult struct {
 	Bookmark            string         `json:"bookmark"`
 }
 
-func (t *CBPMChaincode) CreateAsset(ctx contractapi.TransactionContextInterface) error {
+func (t *CBPMChaincode) CreateAsset(ctx contractapi.TransactionContextInterface) (*Asset, error) {
 	transMap, err := ctx.GetStub().GetTransient()
 	if err != nil {
-		return fmt.Errorf("Error getting transient: " + err.Error())
+		return nil, fmt.Errorf("Error getting transient: " + err.Error())
 	}
 	transientAssetJSON, ok := transMap["asset"]
 	if !ok {
-		return fmt.Errorf("asset not found in the transient map")
+		return nil, fmt.Errorf("asset not found in the transient map")
 	}
 	type assetTransientInput struct {
 		AssetName         string  `json:"assetName"`
@@ -74,26 +74,26 @@ func (t *CBPMChaincode) CreateAsset(ctx contractapi.TransactionContextInterface)
 	var assetInput assetTransientInput
 	err = json.Unmarshal(transientAssetJSON, &assetInput)
 	if err != nil {
-		return fmt.Errorf("fail to create asset: fail to unmarshal JSON: %s", err.Error())
+		return nil, fmt.Errorf("fail to create asset: fail to unmarshal JSON: %s", err.Error())
 	}
 	if len(assetInput.ShippingAddress) == 0 {
-		return fmt.Errorf("fail to create asset: shipping address must be a non-empty string")
+		return nil, fmt.Errorf("fail to create asset: shipping address must be a non-empty string")
 	}
 	if len(assetInput.AssetName) == 0 {
-		return fmt.Errorf("fail to create asset: asset name must be a non-empty string")
+		return nil, fmt.Errorf("fail to create asset: asset name must be a non-empty string")
 	}
 	if assetInput.AssetPrice <= 0 {
-		return fmt.Errorf("fail to create asset: asset price field must be a positive number")
+		return nil, fmt.Errorf("fail to create asset: asset price field must be a positive number")
 	}
 	assetIDUUID, err := uuid.NewV4()
 	if err != nil {
-		return fmt.Errorf("fail to create asset: fail to generate asset ID: %v", err)
+		return nil, fmt.Errorf("fail to create asset: fail to generate asset ID: %v", err)
 	}
 	assetID := assetIDUUID.String()
 
 	clientOrgID, err := getClientOrgID(ctx, false)
 	if err != nil {
-		return fmt.Errorf("fail to create asset: %v", err)
+		return nil, fmt.Errorf("fail to create asset: %v", err)
 	}
 
 	// create asset
@@ -108,14 +108,14 @@ func (t *CBPMChaincode) CreateAsset(ctx contractapi.TransactionContextInterface)
 	}
 	assetJSONasBytes, err := json.Marshal(asset)
 	if err != nil {
-		return fmt.Errorf("fail to create asset: %v", err)
+		return nil, fmt.Errorf("fail to create asset: %v", err)
 	}
 
 	err = ctx.GetStub().PutState(asset.AssetID, assetJSONasBytes)
 	if err != nil {
-		return fmt.Errorf("fail to create asset: %v", err)
+		return nil, fmt.Errorf("fail to create asset: %v", err)
 	}
-	return nil
+	return asset, nil
 }
 func (t *CBPMChaincode) UpdateAsset(ctx contractapi.TransactionContextInterface, assetID string, assetName string, assetPrice float32, shippingAddress string, desc string) error {
 	asset, err := t.GetAsset(ctx, assetID)
@@ -194,14 +194,14 @@ func (t *CBPMChaincode) assetExists(ctx contractapi.TransactionContextInterface,
 	return true, nil
 }
 
-func (t *CBPMChaincode) CreateSupplyOrder(ctx contractapi.TransactionContextInterface) error {
+func (t *CBPMChaincode) CreateSupplyOrder(ctx contractapi.TransactionContextInterface) (*SupplyOrder, error) {
 	transMap, err := ctx.GetStub().GetTransient()
 	if err != nil {
-		return fmt.Errorf("Error getting transient: " + err.Error())
+		return nil, fmt.Errorf("Error getting transient: " + err.Error())
 	}
 	transientOrderJSON, ok := transMap["order"]
 	if !ok {
-		return fmt.Errorf("order not found in the transient map")
+		return nil, fmt.Errorf("order not found in the transient map")
 	}
 	type orderTransientInput struct {
 		TradeID  string `json:"tradeID"`
@@ -212,32 +212,32 @@ func (t *CBPMChaincode) CreateSupplyOrder(ctx contractapi.TransactionContextInte
 	var orderInput orderTransientInput
 	err = json.Unmarshal(transientOrderJSON, &orderInput)
 	if err != nil {
-		return fmt.Errorf("fail to unmarshal JSON: %s", err.Error())
+		return nil, fmt.Errorf("fail to unmarshal JSON: %s", err.Error())
 	}
 	// check input
 	if len(orderInput.TradeID) == 0 {
-		return fmt.Errorf("trade ID must be a non-empty string")
+		return nil, fmt.Errorf("trade ID must be a non-empty string")
 	}
 	if len(orderInput.AssetID) == 0 {
-		return fmt.Errorf("asset ID must be a non-empty string")
+		return nil, fmt.Errorf("asset ID must be a non-empty string")
 	}
 	if orderInput.Quantity <= 0 {
-		return fmt.Errorf("asset quantity field must be a positive number")
+		return nil, fmt.Errorf("asset quantity field must be a positive number")
 	}
 	exist, err := t.supplyOrderExists(ctx, orderInput.TradeID)
 	if err != nil {
-		return fmt.Errorf("fail to create supply order: %v", err)
+		return nil, fmt.Errorf("fail to create supply order: %v", err)
 	}
 	if exist {
-		return fmt.Errorf("fail to create supply order: order for trade %s already exists", orderInput.TradeID)
+		return nil, fmt.Errorf("fail to create supply order: order for trade %s already exists", orderInput.TradeID)
 	}
 	clientOrgID, err := getClientOrgID(ctx, false)
 	if err != nil {
-		return fmt.Errorf("fail to create supply order: %v", err)
+		return nil, fmt.Errorf("fail to create supply order: %v", err)
 	}
 	asset, err := t.GetAsset(ctx, orderInput.AssetID)
 	if err != nil {
-		return fmt.Errorf("fail to create supply order: %v", err)
+		return nil, fmt.Errorf("fail to create supply order: %v", err)
 	}
 	// create order
 	order := &SupplyOrder{
@@ -259,9 +259,9 @@ func (t *CBPMChaincode) CreateSupplyOrder(ctx contractapi.TransactionContextInte
 	orderJSONasBytes, err := json.Marshal(order)
 	err = ctx.GetStub().PutState(order.TradeID, orderJSONasBytes)
 	if err != nil {
-		return fmt.Errorf("fail to create supply order: %s", err.Error())
+		return nil, fmt.Errorf("fail to create supply order: %s", err.Error())
 	}
-	return nil
+	return order, nil
 }
 
 func (t *CBPMChaincode) GetSupplyOrder(ctx contractapi.TransactionContextInterface, tradeID string) (*SupplyOrder, error) {

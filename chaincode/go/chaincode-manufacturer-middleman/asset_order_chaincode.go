@@ -24,11 +24,6 @@ type Asset struct {
 	PublicDescription string  `json:"publicDescription"`
 }
 
-type QueryAssetResult struct {
-	Key    string `json:"Key"`
-	Record *Asset
-}
-
 type Order struct {
 	ObjectType       string  `json:"objectType"`
 	TradeID          string  `json:"tradeID"`
@@ -68,14 +63,16 @@ type PaginatedQueryResult struct {
 }
 
 // TODO 查询另一通道的信息，与供货商提供的Asset信息校验
-func (t *CBPMChaincode) CreateAsset(ctx contractapi.TransactionContextInterface) error {
+
+// 中间商根据供应商的asset创建自己能提供的asset，价格可以变化
+func (t *CBPMChaincode) CreateAsset(ctx contractapi.TransactionContextInterface) (*Asset, error) {
 	transMap, err := ctx.GetStub().GetTransient()
 	if err != nil {
-		return fmt.Errorf("Error getting transient: " + err.Error())
+		return nil, fmt.Errorf("Error getting transient: " + err.Error())
 	}
 	transientAssetJSON, ok := transMap["asset"]
 	if !ok {
-		return fmt.Errorf("asset not found in the transient map")
+		return nil, fmt.Errorf("asset not found in the transient map")
 	}
 	type assetTransientInput struct {
 		AssetID           string  `json:"assetID"`
@@ -87,32 +84,32 @@ func (t *CBPMChaincode) CreateAsset(ctx contractapi.TransactionContextInterface)
 	var assetInput assetTransientInput
 	err = json.Unmarshal(transientAssetJSON, &assetInput)
 	if err != nil {
-		return fmt.Errorf("fail to unmarshal JSON: %s", err.Error())
+		return nil, fmt.Errorf("fail to unmarshal JSON: %s", err.Error())
 	}
 	// check input
 	if len(assetInput.AssetID) == 0 {
-		return fmt.Errorf("asset ID must be a non-empty string")
+		return nil, fmt.Errorf("asset ID must be a non-empty string")
 	}
 	if len(assetInput.AssetName) == 0 {
-		return fmt.Errorf("asset name must be a non-empty string")
+		return nil, fmt.Errorf("asset name must be a non-empty string")
 	}
 	if len(assetInput.AssetName) == 0 {
-		return fmt.Errorf("shipping address must be a non-empty string")
+		return nil, fmt.Errorf("shipping address must be a non-empty string")
 	}
 	if assetInput.AssetPrice <= 0 {
-		return fmt.Errorf("asset price field must be a positive number")
+		return nil, fmt.Errorf("asset price field must be a positive number")
 	}
 	exists, err := t.assetExists(ctx, assetInput.AssetID)
 	if err != nil {
-		return fmt.Errorf("fail to create Asset: %v", err)
+		return nil, fmt.Errorf("fail to create Asset: %v", err)
 	}
 	if exists {
-		return fmt.Errorf("fail to create Asset: asset already exists")
+		return nil, fmt.Errorf("fail to create Asset: asset already exists")
 	}
 
 	clientOrgID, err := getClientOrgID(ctx, false)
 	if err != nil {
-		return fmt.Errorf("fail to get verified OrgID: %v", err)
+		return nil, fmt.Errorf("fail to get verified OrgID: %v", err)
 	}
 
 	// create asset
@@ -127,15 +124,15 @@ func (t *CBPMChaincode) CreateAsset(ctx contractapi.TransactionContextInterface)
 	}
 	assetJSONasBytes, err := json.Marshal(asset)
 	if err != nil {
-		return fmt.Errorf(err.Error())
+		return nil, fmt.Errorf(err.Error())
 	}
 
 	// === Save marble to state ===
 	err = ctx.GetStub().PutState(asset.AssetID, assetJSONasBytes)
 	if err != nil {
-		return fmt.Errorf("fail to create Asset: %s", err.Error())
+		return nil, fmt.Errorf("fail to create Asset: %s", err.Error())
 	}
-	return nil
+	return asset, nil
 }
 func (t *CBPMChaincode) UpdateAsset(ctx contractapi.TransactionContextInterface, assetID string, assetName string, desc string, assetPrice float32) error {
 	asset, err := t.GetAsset(ctx, assetID)

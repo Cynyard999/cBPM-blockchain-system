@@ -50,14 +50,14 @@ type PaginatedQueryResult struct {
 	Bookmark            string                 `json:"bookmark"`
 }
 
-func (t *CBPMChaincode) CreateDeliveryArrangement(ctx contractapi.TransactionContextInterface) error {
+func (t *CBPMChaincode) CreateDeliveryArrangement(ctx contractapi.TransactionContextInterface) (*DeliveryArrangement, error) {
 	transMap, err := ctx.GetStub().GetTransient()
 	if err != nil {
-		return fmt.Errorf("Error getting transient: " + err.Error())
+		return nil, fmt.Errorf("Error getting transient: " + err.Error())
 	}
 	transientArrangementJSON, ok := transMap["arrangement"]
 	if !ok {
-		return fmt.Errorf("arrangement not found in the transient map")
+		return nil, fmt.Errorf("arrangement not found in the transient map")
 	}
 	type arrangementTransientInput struct {
 		TradeID    string  `json:"tradeID"`
@@ -71,38 +71,38 @@ func (t *CBPMChaincode) CreateDeliveryArrangement(ctx contractapi.TransactionCon
 	var arrangementInput arrangementTransientInput
 	err = json.Unmarshal(transientArrangementJSON, &arrangementInput)
 	if err != nil {
-		return fmt.Errorf("fail to unmarshal JSON: %s", err.Error())
+		return nil, fmt.Errorf("fail to unmarshal JSON: %s", err.Error())
 	}
 	if len(arrangementInput.TradeID) == 0 {
-		return fmt.Errorf("trade ID must be a non-empty string")
+		return nil, fmt.Errorf("trade ID must be a non-empty string")
 	}
 	if len(arrangementInput.AssetName) == 0 {
-		return fmt.Errorf("asset name must be a non-empty string")
+		return nil, fmt.Errorf("asset name must be a non-empty string")
 	}
 	if len(arrangementInput.StartPlace) == 0 {
-		return fmt.Errorf("start place must be a non-empty string")
+		return nil, fmt.Errorf("start place must be a non-empty string")
 	}
 	if len(arrangementInput.EndPlace) == 0 {
-		return fmt.Errorf("end place must be a non-empty string")
+		return nil, fmt.Errorf("end place must be a non-empty string")
 	}
 	if arrangementInput.Quantity <= 0 {
-		return fmt.Errorf("asset quantity must be a positive number")
+		return nil, fmt.Errorf("asset quantity must be a positive number")
 	}
 	if arrangementInput.Fee <= 0 {
-		return fmt.Errorf("fee must be a positive number")
+		return nil, fmt.Errorf("fee must be a positive number")
 	}
 
 	exists, err := t.deliveryArrangementExists(ctx, arrangementInput.TradeID)
 	if err != nil {
-		return fmt.Errorf("fail to create delivery arrangement: %v", err)
+		return nil, fmt.Errorf("fail to create delivery arrangement: %v", err)
 	}
 	if exists {
-		return fmt.Errorf("fail to create delivery arrangement: arrangement for trade %s already exists", arrangementInput.TradeID)
+		return nil, fmt.Errorf("fail to create delivery arrangement: arrangement for trade %s already exists", arrangementInput.TradeID)
 	}
 
 	clientOrgID, err := getClientOrgID(ctx, false)
 	if err != nil {
-		return fmt.Errorf("fail to create delivery arrangement: %v", err)
+		return nil, fmt.Errorf("fail to create delivery arrangement: %v", err)
 	}
 
 	deliveryArrangement := &DeliveryArrangement{
@@ -122,9 +122,13 @@ func (t *CBPMChaincode) CreateDeliveryArrangement(ctx contractapi.TransactionCon
 
 	deliveryArrangementBytes, err := json.Marshal(deliveryArrangement)
 	if err != nil {
-		return err
+		return nil, fmt.Errorf("fail to create delivery arrangement: %v", err)
 	}
-	return ctx.GetStub().PutState(arrangementInput.TradeID, deliveryArrangementBytes)
+	err = ctx.GetStub().PutState(arrangementInput.TradeID, deliveryArrangementBytes)
+	if err != nil {
+		return nil, fmt.Errorf("fail to create delivery arrangement: %v", err)
+	}
+	return deliveryArrangement, nil
 }
 
 func (t *CBPMChaincode) DeleteDeliveryArrangement(ctx contractapi.TransactionContextInterface, tradeID string) error {

@@ -48,14 +48,15 @@ type PaginatedQueryResult struct {
 	Bookmark            string            `json:"bookmark"`
 }
 
-func (t *CBPMChaincode) CreateDeliveryDetail(ctx contractapi.TransactionContextInterface) error {
+// 创建DeliveryDetail，需要传入tradeID，assetName，startPlace，endPlace，contact，note
+func (t *CBPMChaincode) CreateDeliveryDetail(ctx contractapi.TransactionContextInterface) (*DeliveryDetail, error) {
 	transMap, err := ctx.GetStub().GetTransient()
 	if err != nil {
-		return fmt.Errorf("Error getting transient: " + err.Error())
+		return nil, fmt.Errorf("Error getting transient: " + err.Error())
 	}
 	transientDetailJSON, ok := transMap["detail"]
 	if !ok {
-		return fmt.Errorf("detail not found in the transient map")
+		return nil, fmt.Errorf("detail not found in the transient map")
 	}
 	type detailTransientInput struct {
 		TradeID    string `json:"tradeID"`
@@ -68,35 +69,35 @@ func (t *CBPMChaincode) CreateDeliveryDetail(ctx contractapi.TransactionContextI
 	var detailInput detailTransientInput
 	err = json.Unmarshal(transientDetailJSON, &detailInput)
 	if err != nil {
-		return fmt.Errorf("fail to unmarshal JSON: %s", err.Error())
+		return nil, fmt.Errorf("fail to unmarshal JSON: %s", err.Error())
 	}
 	if len(detailInput.TradeID) == 0 {
-		return fmt.Errorf("trade ID must be a non-empty string")
+		return nil, fmt.Errorf("trade ID must be a non-empty string")
 	}
 	if len(detailInput.AssetName) == 0 {
-		return fmt.Errorf("asset name must be a non-empty string")
+		return nil, fmt.Errorf("asset name must be a non-empty string")
 	}
 	if len(detailInput.StartPlace) == 0 {
-		return fmt.Errorf("start place must be a non-empty string")
+		return nil, fmt.Errorf("start place must be a non-empty string")
 	}
 	if len(detailInput.EndPlace) == 0 {
-		return fmt.Errorf("end place must be a non-empty string")
+		return nil, fmt.Errorf("end place must be a non-empty string")
 	}
 	if len(detailInput.Contact) == 0 {
-		return fmt.Errorf("contact must be a non-empty string")
+		return nil, fmt.Errorf("contact must be a non-empty string")
 	}
 
 	exists, err := t.deliveryDetailExists(ctx, detailInput.TradeID)
 	if err != nil {
-		return fmt.Errorf("fail to create delivery detail: %v", err)
+		return nil, fmt.Errorf("fail to create delivery detail: %v", err)
 	}
 	if exists {
-		return fmt.Errorf("fail to create delivery detail: detail for trade %s already exists", detailInput.TradeID)
+		return nil, fmt.Errorf("fail to create delivery detail: detail for trade %s already exists", detailInput.TradeID)
 	}
 
 	clientOrgID, err := getClientOrgID(ctx, false)
 	if err != nil {
-		return fmt.Errorf("fail to create delivery detail: %v", err)
+		return nil, fmt.Errorf("fail to create delivery detail: %v", err)
 	}
 
 	deliveryDetail := &DeliveryDetail{
@@ -115,9 +116,14 @@ func (t *CBPMChaincode) CreateDeliveryDetail(ctx contractapi.TransactionContextI
 
 	deliveryDetailBytes, err := json.Marshal(deliveryDetail)
 	if err != nil {
-		return err
+		return nil, err
 	}
-	return ctx.GetStub().PutState(detailInput.TradeID, deliveryDetailBytes)
+	err = ctx.GetStub().PutState(detailInput.TradeID, deliveryDetailBytes)
+	if err != nil {
+		return nil, fmt.Errorf("fail to create delivery detail: %s", err.Error())
+	}
+	return deliveryDetail, nil
+
 }
 
 func (t *CBPMChaincode) DeleteDeliveryDetail(ctx contractapi.TransactionContextInterface, tradeID string) error {

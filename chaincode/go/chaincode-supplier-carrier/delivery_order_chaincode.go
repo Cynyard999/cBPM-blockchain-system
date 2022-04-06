@@ -46,14 +46,14 @@ type PaginatedQueryResult struct {
 	Bookmark            string           `json:"bookmark"`
 }
 
-func (t *CBPMChaincode) CreateDeliveryOrder(ctx contractapi.TransactionContextInterface) error {
+func (t *CBPMChaincode) CreateDeliveryOrder(ctx contractapi.TransactionContextInterface) (*DeliveryOrder, error) {
 	transMap, err := ctx.GetStub().GetTransient()
 	if err != nil {
-		return fmt.Errorf("Error getting transient: " + err.Error())
+		return nil, fmt.Errorf("Error getting transient: " + err.Error())
 	}
 	transientOrderJSON, ok := transMap["order"]
 	if !ok {
-		return fmt.Errorf("order not found in the transient map")
+		return nil, fmt.Errorf("order not found in the transient map")
 	}
 	type orderTransientInput struct {
 		TradeID   string `json:"tradeID"`
@@ -63,25 +63,25 @@ func (t *CBPMChaincode) CreateDeliveryOrder(ctx contractapi.TransactionContextIn
 	var orderInput orderTransientInput
 	err = json.Unmarshal(transientOrderJSON, &orderInput)
 	if err != nil {
-		return fmt.Errorf("fail to unmarshal JSON: %s", err.Error())
+		return nil, fmt.Errorf("fail to unmarshal JSON: %s", err.Error())
 	}
 	if len(orderInput.TradeID) == 0 {
-		return fmt.Errorf("trade ID must be a non-empty string")
+		return nil, fmt.Errorf("trade ID must be a non-empty string")
 	}
 	if len(orderInput.AssetName) == 0 {
-		return fmt.Errorf("asset name must be a non-empty string")
+		return nil, fmt.Errorf("asset name must be a non-empty string")
 	}
 	exists, err := t.deliveryOrderExists(ctx, orderInput.TradeID)
 	if err != nil {
-		return fmt.Errorf("fail to create delivery order: %v", err)
+		return nil, fmt.Errorf("fail to create delivery order: %v", err)
 	}
 	if exists {
-		return fmt.Errorf("fail to create delivery order: order for trade %s already exists", orderInput.TradeID)
+		return nil, fmt.Errorf("fail to create delivery order: order for trade %s already exists", orderInput.TradeID)
 	}
 
 	clientOrgID, err := getClientOrgID(ctx, false)
 	if err != nil {
-		return fmt.Errorf("fail to create delivery order: %v", err)
+		return nil, fmt.Errorf("fail to create delivery order: %v", err)
 	}
 
 	deliveryOrder := &DeliveryOrder{
@@ -98,9 +98,13 @@ func (t *CBPMChaincode) CreateDeliveryOrder(ctx contractapi.TransactionContextIn
 
 	deliveryOrderBytes, err := json.Marshal(deliveryOrder)
 	if err != nil {
-		return err
+		return nil, fmt.Errorf("fail to create delivery order: %v", err)
 	}
-	return ctx.GetStub().PutState(orderInput.TradeID, deliveryOrderBytes)
+	err = ctx.GetStub().PutState(orderInput.TradeID, deliveryOrderBytes)
+	if err != nil {
+		return nil, fmt.Errorf("fail to create delivery order: %v", err)
+	}
+	return deliveryOrder, nil
 }
 
 func (t *CBPMChaincode) DeleteDeliveryOrder(ctx contractapi.TransactionContextInterface, tradeID string) error {
