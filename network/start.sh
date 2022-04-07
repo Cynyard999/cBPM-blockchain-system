@@ -18,4 +18,6 @@ successln "Successfully build up fabric network"
 
 infoln "Initiating channels..."
 
+sleep 3
+
 ${CONTAINER_CLI} exec -it cli /bin/bash -c "./scripts/init-channel.sh && ./scripts/deploy-chaincode.sh"
