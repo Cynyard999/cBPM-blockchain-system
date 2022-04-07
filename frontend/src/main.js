@@ -1,11 +1,7 @@
 import {createApp} from 'vue'
 import {createPinia} from 'pinia'
-import axios from 'axios'
-import VueAxios from "vue-axios";
 import App from './App.vue'
 import router from "./router";
+import ElementPlus from 'element-plus'
 
-createApp(App).use(createPinia().use(axios).use(VueAxios).use(router)).mount('#app')
-
-
-
+createApp(App).use(createPinia()).use(router).use(ElementPlus).mount('#app');

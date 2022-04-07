@@ -1,11 +1,9 @@
 import axios from 'axios';
-import {showMessage} from "./status";   // 引入状态码文件
+import {ShowMessage} from "./status";   // 引入状态码文件
 import {ElMessage} from 'element-plus'  // 引入el 提示框
 
 // 设置接口超时时间
 axios.defaults.timeout = 60000;
-
-// axios.defaults.baseURL = process.env.VUE_APP_BASE_URL;
 
 //http request 拦截器
 axios.interceptors.request.use(
@@ -29,7 +27,7 @@ axios.interceptors.response.use(
     error => {
         const {response} = error;
         if (response) {
-            showMessage(response.status);           // 传入响应码，匹配响应码对应信息
+            ShowMessage(response.status);           // 传入响应码，匹配响应码对应信息
             return Promise.reject(response.data);
         } else {
             ElMessage.warning('网络连接异常,请稍后再试!');

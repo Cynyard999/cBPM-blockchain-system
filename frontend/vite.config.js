@@ -7,19 +7,15 @@ export default defineConfig({
     server: {
         port: 3333,
         proxy: {
-            '/invoke': {
-                target: 'localhost:8080/invoke',	//实际请求地址
-                changeOrigin: true,
-                pathRewrite: {
-                    '^/invoke': ''   // 重写接口
-                }
-            },
             '/query': {
-                target: 'localhost:8080/invoke',	//实际请求地址
+                target: "http://localhost:8080/query",
                 changeOrigin: true,
-                pathRewrite: {
-                    '^/invoke': ''   // 重写接口
-                }
+                rewrite: (path) => path.replace(/^\/query/, '')
+            },
+            '/invoke': {
+                target: "http://localhost:8080/invoke",
+                changeOrigin: true,
+                rewrite: (path) => path.replace(/^\/invoke/, '')
             }
         }
     }

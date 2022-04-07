@@ -5,33 +5,28 @@
 </template>
 
 <script>
-    import {request} from '../api/axios'
+    import {request} from "../api/axios";
 
     export default {
-        mounted(): void {
-            let params = {
-                orgType: "supplier",
-                channelName: "mischannel",
-                contractName: "mischaincode",
-                function: "CreateAsset",
-                transient: {
-                    asset: {
-                        assetName: "asset1",
-                        assetPrice: 100.1,
-                        shippingAddress: "PlaceB",
-                        publicDescription: "good"
-                    }
-                }
-            };
-            request('/invoke', params, 'post').then(response => {
-                console.log(response)
-                if (response.status === 200) {
-                    console.log(response.data)
-                }
-            })
-                .catch(function (error) {
-                    console.log(error);
+        name: 'Home',
+        methods: {
+            test() {
+                let params = {
+                    orgType: "supplier",
+                    channelName: "mischannel",
+                    contractName: "mischaincode",
+                    function: "GetAsset",
+                    args: ["8bf609c9-de72-4882-8638-e3b52e2f2fa6"]
+                };
+                request("/query",params,"POST").then(res=>{
+                    console.log(res)
+                }).catch(err=>{
+                    console.log(err)
                 })
+            },
+        },
+        mounted() {
+            // this.test()
         }
     }
 </script>
