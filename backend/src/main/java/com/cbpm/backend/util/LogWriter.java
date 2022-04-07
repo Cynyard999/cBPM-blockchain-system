@@ -36,8 +36,8 @@ public class LogWriter {
                 file.createNewFile();
             }
             FileWriter fileWriter = new FileWriter(file, true);
-            Timestamp timestamp = new Timestamp(System.currentTimeMillis());
-            fileWriter.write(timestamp.toString() + ": " + logStr + "\n");
+            fileWriter.write(new Timestamp(System.currentTimeMillis()).toString() + ": " + logStr
+                    + "\n");
             fileWriter.close();
         } catch (IOException e) {
             System.out.println("writing to log failed.");

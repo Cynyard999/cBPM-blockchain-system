@@ -11,15 +11,8 @@
 ```shell
 # 清除原先的网络
 ./clean.sh
-# 建立fabric网络
+# 部署网络 1. 创建fabric网络 2. 创建channel 3. 部署链码
 ./start.sh
-# 进入容器
-docker exec -it cli /bin/bash
-# 在容器中
-# 创建channel
-./scripts/init-channel.sh
-# 部署链码
-./scripts/deploy-chaincode.sh
 ```
 
 
