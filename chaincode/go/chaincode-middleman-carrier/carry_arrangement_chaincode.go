@@ -183,7 +183,7 @@ func (t *CBPMChaincode) FinishDeliveryArrangement(ctx contractapi.TransactionCon
 	if deliveryArrangement.Status == 0 {
 		return fmt.Errorf("fail to finish delivery arrangement: arrangement for trade #{tradeID} has not been handled")
 	}
-	if deliveryArrangement.Status == 1 {
+	if deliveryArrangement.Status == 2 {
 		return fmt.Errorf("fail to finish delivery arrangement: arrangement for trade #{tradeID} has been finished")
 	}
 	if deliveryArrangement.HandlerOrg == "" {

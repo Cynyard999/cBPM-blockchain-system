@@ -411,7 +411,10 @@ func (t *CBPMChaincode) ConfirmFinishSupplyOrder(ctx contractapi.TransactionCont
 	if order.Status == 0 {
 		return fmt.Errorf("fail to confirm finish supply order: order for trade #{tradeID} has not been handled")
 	}
-	if order.Status == 2 {
+	if order.Status == 1 {
+		return fmt.Errorf("fail to confirm finish supply order: order for trade #{tradeID} has not been finished")
+	}
+	if order.Status == 3 {
 		return fmt.Errorf("fail to confirm finish supply order: order for trade #{tradeID} has been confirmed finished")
 	}
 	if order.HandlerOrg == "" {

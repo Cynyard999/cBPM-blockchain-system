@@ -173,7 +173,7 @@ func (t *CBPMChaincode) FinishDeliveryDetail(ctx contractapi.TransactionContextI
 	if deliveryDetail.Status == 0 {
 		return fmt.Errorf("fail to finish delivery detail: detail for trade #{tradeID} has not been handled")
 	}
-	if deliveryDetail.Status == 1 {
+	if deliveryDetail.Status == 2 {
 		return fmt.Errorf("fail to finish delivery detail: detail for trade #{tradeID} has been finished")
 	}
 	clientOrgID, err := getClientOrgID(ctx, false)
