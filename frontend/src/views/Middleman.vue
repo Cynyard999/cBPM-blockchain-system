@@ -2,11 +2,16 @@
     <div>
         <h1>Middleman</h1>
     </div>
+  <LeftSideBar/>
 </template>
 
 <script>
+import LeftSideBar from "../components/MiddlemanLeftSideBar.vue";
     export default {
-        name: "Middleman.vue"
+        name: "Middleman.vue",
+        components:{
+          LeftSideBar
+      }
     }
 </script>
 
