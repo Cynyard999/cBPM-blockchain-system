@@ -12,7 +12,7 @@
       >
         <el-sub-menu index="1">
           <template #title>
-            <el-icon ><goods /></el-icon>
+            <el-icon ><rank /></el-icon>
             <span>与中间商</span>
           </template>
           <el-menu-item-group  title="商品相关">
@@ -55,6 +55,7 @@ import {
   Setting,
   Sort,
   Goods,
+  Rank,
 } from '@element-plus/icons-vue'
 const handleOpen = (key: string, keyPath: string[]) => {
   console.log(key, keyPath)
