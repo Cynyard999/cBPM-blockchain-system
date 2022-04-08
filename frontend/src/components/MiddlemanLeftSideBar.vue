@@ -1,21 +1,23 @@
 <template>
   <el-row class="tac">
-    <el-col :span="4">
+    <el-col class="column" :span="4">
       <div class="mb-2">
-      <h5 >选 项</h5>
+      <h5 style="color: white;text-align: left">后台管理</h5>
       </div>
       <el-menu
           default-active="1"
           class="el-menu-vertical"
           @open="handleOpen"
           @close="handleClose"
+          background-color="#495057"
+          text-color="white"
       >
         <el-sub-menu index="1">
           <template #title>
             <el-icon ><goods /></el-icon>
             <span>与生产商</span>
           </template>
-          <el-menu-item-group title="商品相关">
+          <el-menu-item-group  title="商品相关">
             <el-menu-item index="1-1">增加商品</el-menu-item>
             <el-menu-item index="1-2">查看所有商品</el-menu-item>
           </el-menu-item-group>
@@ -79,8 +81,11 @@ const handleClose = (key: string, keyPath: string[]) => {
 }
 </script>
 <style>
+.column{
+  background-color: #6c757d;
+}
 .mb-2{
-  margin-left: 60px;
+  margin-left: 35px;
   font-size: large;
 
 }

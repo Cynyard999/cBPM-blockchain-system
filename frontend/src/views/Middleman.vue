@@ -1,6 +1,6 @@
 <template>
-    <div>
-        <h1>Middleman</h1>
+    <div class="header">
+        <h1 style="color: white;text-align: center">中间商管理</h1>
     </div>
   <LeftSideBar/>
 </template>
@@ -16,5 +16,9 @@ import LeftSideBar from "../components/MiddlemanLeftSideBar.vue";
 </script>
 
 <style scoped>
-
+.header{
+  width: 100%;
+  height: 50px;
+  background-color: #343a40;
+}
 </style>
