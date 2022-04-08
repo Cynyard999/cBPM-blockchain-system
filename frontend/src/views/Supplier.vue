@@ -1,12 +1,17 @@
 <template>
-    <div>
-        <h1>Supplier</h1>
-    </div>
+  <Header/>
+  <LeftSideBar/>
 </template>
 
 <script>
+import LeftSideBar from "../components/SupplierLeftSideBar.vue";
+import Header from "../components/Header.vue"
     export default {
-        name: "Supplier"
+        name: "Supplier",
+      components:{
+        LeftSideBar,
+        Header
+      }
     }
 </script>
 

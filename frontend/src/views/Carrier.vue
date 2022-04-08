@@ -1,15 +1,22 @@
 <template>
-    <div>
-        <h1>Carrier</h1>
-    </div>
+  <Header/>
+  <LeftSideBar/>
 </template>
 
-<script>
+<script >
+import LeftSideBar from "../components/CarrierLeftSideBar.vue";
+import Header from "../components/Header.vue"
     export default {
-        name: "Carrier"
+        name: "Carrier",
+      components:{
+        LeftSideBar,
+        Header
+      },
     }
 </script>
 
+
 <style scoped>
+
 
 </style>

@@ -1,14 +1,18 @@
 <template>
-    <div>
-        <h1>Manufacturer</h1>
-    </div>
+  <Header/>
+  <LeftSideBar/>
 </template>
 
 <script>
     import {request} from "../api/axios";
-
+    import LeftSideBar from "../components/ManufacturerLeftSideBar.vue";
+    import Header from "../components/Header.vue"
     export default {
         name: 'Home',
+      components:{
+        LeftSideBar,
+        Header
+      },
         methods: {
             test() {
                 let params = {
