@@ -1,6 +1,7 @@
 import axios from 'axios';
 import {ShowMessage} from "./status";   // 引入状态码文件
-import {ElMessage} from 'element-plus'  // 引入el 提示框
+import {ElMessage} from 'element-plus'
+import router from "../router";
 
 // 设置接口超时时间
 axios.defaults.timeout = 60000;
@@ -11,7 +12,7 @@ axios.interceptors.request.use(
         // 配置请求头
         config.headers['Content-Type'] = 'application/json;charset=UTF-8';
         let token = window.localStorage.getItem('token');
-        if(token){
+        if (token) {
             config.headers['Authorization'] = token;
         }
         return config;
@@ -24,10 +25,17 @@ axios.interceptors.request.use(
 //http response 拦截器
 axios.interceptors.response.use(
     response => {
-        let token = response.headers.Authorization;
+        if (response.status === 401) {
+            window.localStorage.removeItem('token');
+            window.localStorage.removeItem('userInfo');
+            router.replace('/home').then(r => console.log("switch to home"));
+            return
+        }
+        let token = response.headers.authorization;
         if (token) {
+            console.log(response.data.result);
             window.localStorage.setItem('token', token);
-            window.localStorage.setItem('userInfo', response.data.result);
+            window.localStorage.setItem('user', JSON.stringify(response.data.result));
         }
         return response;
     },

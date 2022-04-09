@@ -7,15 +7,15 @@ export default defineConfig({
     server: {
         port: 3333,
         proxy: {
-            '/query': {
-                target: "http://localhost:8080/query",
+            '/work': {
+                target: "http://localhost:8080/work",
                 changeOrigin: true,
-                rewrite: (path) => path.replace(/^\/query/, '')
+                rewrite: (path) => path.replace(/^\/work/, '')
             },
-            '/invoke': {
-                target: "http://localhost:8080/invoke",
+            '/user': {
+                target: "http://localhost:8080/user",
                 changeOrigin: true,
-                rewrite: (path) => path.replace(/^\/invoke/, '')
+                rewrite: (path) => path.replace(/^\/user/, '')
             }
         }
     }

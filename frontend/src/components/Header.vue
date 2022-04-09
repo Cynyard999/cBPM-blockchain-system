@@ -8,18 +8,86 @@
                 <li><a href="/carrier">Carrier</a></li>
                 <li><a href="/supplier">Supplier</a></li>
                 <li><a href="/middleman">Middleman</a></li>
+                <li v-show="!isLogin" @click="loginFormVisible = true"><span style="cursor: pointer;">Login</span></li>
+                <li v-show="isLogin">
+                    <el-tooltip placement="bottom">
+                        <template #content>{{userOrg}}</template>
+                        <span style="cursor: default;">{{userName}}</span>
+                    </el-tooltip>
+                </li>
+                <el-dialog title="登录" v-model="loginFormVisible" center width="500px">
+                    <el-form :model="userInput">
+                        <el-form-item label="Email">
+                            <el-input v-model="userInput.email" prefix-icon="User"></el-input>
+                        </el-form-item>
+                        <el-form-item label="Password">
+                            <el-input v-model="userInput.pwd" prefix-icon="Key" show-password></el-input>
+                        </el-form-item>
+                    </el-form>
+                    <template #footer>
+                          <span>
+                            <el-button @click="loginFormVisible = false">Cancel</el-button>
+                            <el-button type="primary" @click="login">Confirm</el-button>
+                          </span>
+                    </template>
+                </el-dialog>
             </ul>
         </header>
     </div>
 </template>
 
 <script>
+    import {request} from "../api/axios";
+
     export default {
-        name: "Header"
+        name: "Header",
+        data() {
+            return {
+                isLogin: false,
+                userName: "",
+                userOrg: "",
+                userInput: {
+                    "email": "",
+                    "pwd": ""
+                },
+                loginFormVisible: false,
+            }
+        },
+        mounted() {
+            this.checkUserLogin();
+        },
+        methods: {
+            login() {
+                this.loginFormVisible = false;
+                request('user/login', this.userInput, 'POST').then(response => {
+                    this.$notify({
+                        title: '提示',
+                        message: '登录成功',
+                        type: 'success',
+                        duration: 2000
+                    });
+                    this.checkUserLogin();
+                })
+            },
+
+            test() {
+            },
+            checkUserLogin() {
+                let token = window.localStorage.getItem("token");
+                if (token) {
+                    this.isLogin = true;
+                    this.userName = JSON.parse(window.localStorage.getItem("user"))["name"]
+                    this.userOrg = JSON.parse(window.localStorage.getItem("user"))["orgType"]
+                } else {
+                    this.isLogin = false;
+                    this.userName = "";
+                }
+            }
+        }
     }
 </script>
 
-<style scoped>
+<style>
 
     .header {
         background-color: #ffffff;
@@ -83,8 +151,23 @@
         color: #253237;
     }
 
+    header ul li span {
+        text-decoration: none;
+        font-weight: 300;
+        margin: 0 15px;
+        color: #253237;
+    }
+
     header ul li a:hover {
         color: #5C6B73;
+    }
+
+    header ul li span:hover {
+        color: #5C6B73;
+    }
+
+    .el-dialog {
+        border-radius: 1rem;
     }
 
 </style>

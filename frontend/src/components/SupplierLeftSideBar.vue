@@ -39,11 +39,13 @@
 </template>
 
 <script>
-    const handleOpen = (key, keyPath) => {
-        console.log(key, keyPath)
-    };
-    const handleClose = (key, keyPath) => {
-        console.log(key, keyPath)
+    export default {
+        name: "SupplierSideBar",
+        methods: {
+            clickMenuItem(menuItem) {
+                console.log(menuItem.index)
+            }
+        }
     }
 
 </script>
