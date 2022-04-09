@@ -43,7 +43,7 @@ public class JwtFilter implements Filter {
         //编码
         response.setCharacterEncoding("UTF-8");
         //读取token
-        final String token=request.getHeader("authorization");
+        final String token=request.getHeader("Authorization");
         if("OPTIONS".equals(request.getMethod())){
             response.setStatus(HttpServletResponse.SC_OK);
             filterChain.doFilter(request,response);
