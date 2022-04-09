@@ -143,7 +143,11 @@ public class UserImpl implements UserService {
             wallet.put(userName, newUser);
             userRepository.save(userVo);
             String token = JwtUtil.createToken(userVo);
-            return ResponseVo.buildSuccess(token);
+            JSONObject userInfo = new JSONObject();
+            userInfo.put("email", userVo.getEmail());
+            userInfo.put("name", userVo.getName());
+            userInfo.put("orgType", userVo.getOrgType());
+            return ResponseVo.buildSuccess(token, userInfo);
         } catch (Exception e) {
             log.info("register failure: " + e.getMessage());
             return ResponseVo.buildFailure("register failure: unvalid orgType.");
@@ -173,8 +177,11 @@ public class UserImpl implements UserService {
             return ResponseVo.buildFailure("wrong email or password.");
         } else {
             String token = JwtUtil.createToken(userVo);
-//            System.out.println("token: "+token);
-            return ResponseVo.buildSuccess(token);
+            JSONObject userInfo = new JSONObject();
+            userInfo.put("email", userVo.getEmail());
+            userInfo.put("name", userVo.getName());
+            userInfo.put("orgType", userVo.getOrgType());
+            return ResponseVo.buildSuccess(token, userInfo);
         }
     }
 

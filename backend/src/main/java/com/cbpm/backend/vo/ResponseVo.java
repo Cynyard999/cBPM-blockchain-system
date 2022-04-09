@@ -26,6 +26,11 @@ public class ResponseVo {
         this.result = object;
     }
 
+    public ResponseVo(String message, Object result) {
+        this.message = message;
+        this.result = result;
+    }
+
     public boolean isSuccess() {
         return success;
     }
@@ -42,7 +47,12 @@ public class ResponseVo {
         }
         ResponseVo responseVo = new ResponseVo(true);
         responseVo.setMessage(message);
+        return responseVo;
+    }
 
+    public static ResponseVo buildSuccess(String message, Object content) {
+        ResponseVo responseVo = new ResponseVo(message, content);
+        responseVo.setSuccess(true);
         return responseVo;
     }
 
@@ -63,17 +73,6 @@ public class ResponseVo {
         responseVo.setResult(content);
         return responseVo;
     }
-
-    public static ResponseVo buildFailure(String[] exceptions) {
-        ResponseVo responseVo = new ResponseVo(false);
-        StringBuilder str = new StringBuilder();
-        for (int i = 1; i < exceptions.length; i++) {
-            str.append(exceptions[i]);
-        }
-        responseVo.setMessage(str.toString());
-        return responseVo;
-    }
-
 
     public void setSuccess(boolean success) {
         this.success = success;
