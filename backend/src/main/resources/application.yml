@@ -7,3 +7,12 @@ spring:
       ddl-auto: update
     show-sql: true
     database: mysql
+
+logging:
+  file:
+    name: logs/cbpm.log
+  level:
+    root: warn
+    org.springframework.security: warn
+    org.springframework.web: warn
+    com.cbpm.backend: info

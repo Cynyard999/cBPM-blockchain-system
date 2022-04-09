@@ -7,6 +7,7 @@ import com.alibaba.fastjson.JSONObject;
 import com.cbpm.backend.config.GatewayConfig;
 import com.cbpm.backend.service.ApiService;
 import com.cbpm.backend.vo.ResponseVo;
+import lombok.extern.slf4j.Slf4j;
 import org.hyperledger.fabric.gateway.*;
 import org.hyperledger.fabric.sdk.Peer;
 import org.springframework.stereotype.Service;
@@ -16,6 +17,7 @@ import javax.annotation.Resource;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
+@Slf4j
 @Service
 public class ApiImpl implements ApiService {
 
@@ -49,22 +51,17 @@ public class ApiImpl implements ApiService {
             return ResponseVo
                     .buildSuccess(JSON.parse(new String(queryResult, StandardCharsets.UTF_8)));
         } catch (JSONException e) {
-            e.printStackTrace();
+
             return ResponseVo.buildFailure("Fail to parse query result: " + e.getMessage());
         } catch (ContractException e) {
-            e.printStackTrace();
             return ResponseVo.buildFailure("Chaincode function querying failed: " + e.getMessage());
         } catch (IllegalArgumentException e) {
-            e.printStackTrace();
             return ResponseVo.buildFailure("Illegal argument: " + e.getMessage());
         } catch (NullPointerException e) {
-            e.printStackTrace();
             return ResponseVo.buildFailure("Null pointer detected: " + e.getMessage());
         } catch (GatewayRuntimeException e) {
-            e.printStackTrace();
             return ResponseVo.buildFailure("Runtime limit exceed: " + e.getMessage());
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseVo.buildFailure(e.getMessage());
         }
 
@@ -108,22 +105,16 @@ public class ApiImpl implements ApiService {
             return ResponseVo
                     .buildSuccess(JSON.parse(new String(invokeResult, StandardCharsets.UTF_8)));
         } catch (JSONException e) {
-            e.printStackTrace();
             return ResponseVo.buildFailure("Fail to parse invoke result: " + e.getMessage());
         } catch (ContractException e) {
-            e.printStackTrace();
             return ResponseVo.buildFailure("Chaincode function invoking failed: " + e.getMessage());
         } catch (IllegalArgumentException e) {
-            e.printStackTrace();
             return ResponseVo.buildFailure("Illegal argument: " + e.getMessage());
         } catch (NullPointerException e) {
-            e.printStackTrace();
             return ResponseVo.buildFailure("Null pointer detected: " + e.getMessage());
         } catch (GatewayRuntimeException e) {
-            e.printStackTrace();
             return ResponseVo.buildFailure("Runtime limit exceed: " + e.getMessage());
         } catch (Exception e) {
-            e.printStackTrace();
             return ResponseVo.buildFailure(e.getMessage());
         }
     }

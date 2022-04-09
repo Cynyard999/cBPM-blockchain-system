@@ -10,7 +10,7 @@ axios.interceptors.request.use(
     config => {
         // 配置请求头
         config.headers = {
-            'Content-Type': 'application/json;charset=UTF-8',        // 传参方式jso
+            'Content-Type': 'application/json;charset=UTF-8',
         };
         return config;
     },

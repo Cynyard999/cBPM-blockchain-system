@@ -8,7 +8,7 @@ import com.cbpm.backend.service.UserService;
 import com.cbpm.backend.util.JwtUtil;
 import com.cbpm.backend.vo.ResponseVo;
 import com.cbpm.backend.vo.UserVo;
-import java.util.logging.Logger;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -24,17 +24,12 @@ import org.hyperledger.fabric.gateway.Identities;
 import org.hyperledger.fabric.gateway.Identity;
 import org.hyperledger.fabric.gateway.X509Identity;
 
-import java.awt.geom.RectangularShape;
 import java.io.*;
-import java.lang.reflect.InvocationTargetException;
-import java.net.MalformedURLException;
 import java.nio.file.Paths;
-import java.security.CryptoPrimitive;
 import java.security.PrivateKey;
 import java.security.Security;
 import java.util.HashMap;
 import java.util.Properties;
-import javax.annotation.Resource;
 
 /**
  * @author Polaris
@@ -42,7 +37,7 @@ import javax.annotation.Resource;
  * @description: 实现user相关逻辑
  * @date 2022/4/5 12:49
  */
-
+@Slf4j
 @Service
 public class UserImpl implements UserService {
 
@@ -83,7 +78,6 @@ public class UserImpl implements UserService {
     public ResponseVo register(JSONObject jsonObject) {
         try {
             Wallet wallet = Wallets.newFileSystemWallet(Paths.get("wallet"));
-            System.out.println(jsonObject.toJSONString());
             String orgType = jsonObject.getString("orgType");
             if (orgType.length() == 0) {
                 return ResponseVo.buildFailure("orgType must not be null");
@@ -140,19 +134,17 @@ public class UserImpl implements UserService {
                 responseVo.setMessage("get wrong pwd from ca-server");
                 return responseVo;
             } else {
-                System.out.println("get right pwd from ca-server");
+//                System.out.println("get right pwd from ca-server");
             }
             //向系统enroll，获取证书和私钥
             Enrollment enrollment = caClient.enroll(userName, enrollmentSecret);
             Identity newUser = Identities.newX509Identity(orgMSPHash.get(orgType), enrollment);
             //将新user存进wallet
             wallet.put(userName, newUser);
-
             userRepository.save(userVo);
-            System.out.println(userVo.toString() + " saved to the repo");
             return ResponseVo.buildSuccess(userName + " " + "register success");
         } catch (Exception e) {
-            e.printStackTrace();
+            log.info("register failure: " + e.getMessage());
             return ResponseVo.buildFailure("register failure: unvalid orgType.");
         }
 
@@ -174,12 +166,12 @@ public class UserImpl implements UserService {
         UserVo userVo = userRepository.findByEmail(email);
         if (userVo == null) {
             return ResponseVo
-                    .buildFailure("this email has not been registered,please register first.");
+                    .buildFailure("this email has not been registered, please register first.");
         }
         if (!userVo.getPassword().equals(password)) {
             return ResponseVo.buildFailure("wrong email or password.");
         } else {
-            String token= JwtUtil.createToken(userVo);
+            String token = JwtUtil.createToken(userVo);
 //            System.out.println("token: "+token);
             return ResponseVo.buildSuccess(token);
         }
@@ -195,21 +187,16 @@ public class UserImpl implements UserService {
      * @author: Polaris
      * @date: 2022/4/5
      */
-    private static User getFabricUserLocal(String username, String org, String orgId) {
+    private static User getFabricUserLocal(String username, String org, String orgId)
+            throws Exception {
         FabricUser user = new FabricUser(username, org);
         user.setMspId(orgId);
-
-        try {
-            Wallet wallet = Wallets.newFileSystemWallet(Paths.get("wallet"));
-            X509Identity adminIdentity = (X509Identity) wallet.get(username);
-            String certificate = Identities.toPemString(adminIdentity.getCertificate());
-            PrivateKey pk = adminIdentity.getPrivateKey();
-            EnrollmentImpl enrollement = new EnrollmentImpl(pk, certificate);
-            user.setEnrollment(enrollement);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
+        Wallet wallet = Wallets.newFileSystemWallet(Paths.get("wallet"));
+        X509Identity adminIdentity = (X509Identity) wallet.get(username);
+        String certificate = Identities.toPemString(adminIdentity.getCertificate());
+        PrivateKey pk = adminIdentity.getPrivateKey();
+        EnrollmentImpl enrollement = new EnrollmentImpl(pk, certificate);
+        user.setEnrollment(enrollement);
         return user;
     }
 }

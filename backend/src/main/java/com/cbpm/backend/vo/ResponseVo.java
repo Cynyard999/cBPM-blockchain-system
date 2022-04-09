@@ -41,7 +41,6 @@ public class ResponseVo {
             message = "success";
         }
         ResponseVo responseVo = new ResponseVo(true);
-        System.out.println(message);
         responseVo.setMessage(message);
 
         return responseVo;
@@ -55,7 +54,6 @@ public class ResponseVo {
 
     public static ResponseVo buildFailure(String message) {
         ResponseVo responseVo = new ResponseVo(message);
-        System.out.println(message);
         responseVo.setSuccess(false);
         return responseVo;
     }
