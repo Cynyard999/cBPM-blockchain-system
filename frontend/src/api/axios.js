@@ -26,7 +26,8 @@ axios.interceptors.response.use(
     response => {
         let token = response.headers.Authorization;
         if (token) {
-            window.localStorage.setItem('token', token)
+            window.localStorage.setItem('token', token);
+            window.localStorage.setItem('userInfo', response.data.result);
         }
         return response;
     },
