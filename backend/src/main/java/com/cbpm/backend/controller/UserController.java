@@ -9,7 +9,9 @@ package com.cbpm.backend.controller;
 
 import com.cbpm.backend.serviceImpl.ApiImpl;
 import com.cbpm.backend.serviceImpl.UserImpl;
+import com.cbpm.backend.util.JsonReader;
 import com.cbpm.backend.vo.ResponseVo;
+import javax.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -26,25 +28,33 @@ public class UserController {
     UserImpl userImpl;
 
     @PostMapping("/register")
-    ResponseVo register(@RequestBody JSONObject jsonObject) {
+    ResponseEntity<ResponseVo> register(HttpServletRequest request) throws Exception {
+        JSONObject jsonObject = JsonReader.receivePostBody(request);
         ResponseVo responseVo = userImpl.register(jsonObject);
         log.info("Request: " + jsonObject.toJSONString() + " and Response: "
                 + responseVo.toString());
-        return responseVo;
+        HttpHeaders responseHeaders = new HttpHeaders();
+        if (responseVo.isSuccess()) {
+            responseHeaders.set("Authorization", responseVo.getMessage());
+            return ResponseEntity.ok().headers(responseHeaders).body(responseVo);
+        } else {
+            return ResponseEntity.status(401).body(responseVo);
+        }
 
     }
 
     @PostMapping("/login")
-    ResponseEntity<String> login(@RequestBody JSONObject jsonObject) {
+    ResponseEntity<ResponseVo> login(HttpServletRequest request) throws Exception {
+        JSONObject jsonObject = JsonReader.receivePostBody(request);
         ResponseVo responseVo = userImpl.login(jsonObject);
         log.info("Request: " + jsonObject.toJSONString() + " and Response: "
                 + responseVo.toString());
         HttpHeaders responseHeaders = new HttpHeaders();
         if (responseVo.isSuccess()) {
             responseHeaders.set("Authorization", responseVo.getMessage());
-            return ResponseEntity.ok().headers(responseHeaders).body("login success");
+            return ResponseEntity.ok().headers(responseHeaders).body(responseVo);
         } else {
-            return ResponseEntity.status(401).body(responseVo.getMessage());
+            return ResponseEntity.status(401).body(responseVo);
         }
     }
 }

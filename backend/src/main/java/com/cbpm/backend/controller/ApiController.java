@@ -5,6 +5,7 @@ import com.cbpm.backend.util.JsonReader;
 import com.cbpm.backend.vo.ResponseVo;
 import javax.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import javax.annotation.Resource;
 import com.alibaba.fastjson.JSONObject;
@@ -26,14 +27,18 @@ public class ApiController {
      * @update by Polaris in 1/4/2022
      */
     @PostMapping("/invoke")
-    public ResponseVo invokeFunc(HttpServletRequest request) throws Exception {
+    public ResponseEntity<ResponseVo>invokeFunc(HttpServletRequest request) throws Exception {
         String orgType = request.getAttribute("orgType").toString();
-        JSONObject jsonObject = JsonReader.receivePost(request);
+        JSONObject jsonObject = JsonReader.receivePostBody(request);
         jsonObject.put("orgType", orgType);
         ResponseVo responseVo = apiImpl.invoke(jsonObject);
         log.info("Request: " + jsonObject.toJSONString() + "and Response: " + responseVo
                 .toString());
-        return responseVo;
+        if (responseVo.isSuccess()) {
+            return ResponseEntity.ok().body(responseVo);
+        } else {
+            return ResponseEntity.status(500).body(responseVo);
+        }
     }
 
     /**
@@ -44,13 +49,17 @@ public class ApiController {
      * @update by Polaris in 1/4/2022
      */
     @PostMapping("/query")
-    public ResponseVo queryFunc(HttpServletRequest request) throws Exception {
+    public ResponseEntity<ResponseVo>  queryFunc(HttpServletRequest request) throws Exception {
         String orgType = request.getAttribute("orgType").toString();
-        JSONObject jsonObject = JsonReader.receivePost(request);
+        JSONObject jsonObject = JsonReader.receivePostBody(request);
         jsonObject.put("orgType", orgType);
         ResponseVo responseVo = apiImpl.query(jsonObject);
         log.info("Request: " + jsonObject.toJSONString() + "and Response: " + responseVo.toString());
-        return responseVo;
+        if (responseVo.isSuccess()) {
+            return ResponseEntity.ok().body(responseVo);
+        } else {
+            return ResponseEntity.status(500).body(responseVo);
+        }
     }
 }
 

@@ -9,9 +9,11 @@ axios.defaults.timeout = 60000;
 axios.interceptors.request.use(
     config => {
         // 配置请求头
-        config.headers = {
-            'Content-Type': 'application/json;charset=UTF-8',
-        };
+        config.headers['Content-Type'] = 'application/json;charset=UTF-8';
+        let token = window.localStorage.getItem('token');
+        if(token){
+            config.headers['Authorization'] = token;
+        }
         return config;
     },
     error => {
@@ -22,6 +24,10 @@ axios.interceptors.request.use(
 //http response 拦截器
 axios.interceptors.response.use(
     response => {
+        let token = response.headers.Authorization;
+        if (token) {
+            window.localStorage.setItem('token', token)
+        }
         return response;
     },
     error => {

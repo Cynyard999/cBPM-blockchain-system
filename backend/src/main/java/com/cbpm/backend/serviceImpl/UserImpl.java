@@ -142,7 +142,8 @@ public class UserImpl implements UserService {
             //将新user存进wallet
             wallet.put(userName, newUser);
             userRepository.save(userVo);
-            return ResponseVo.buildSuccess(userName + " " + "register success");
+            String token = JwtUtil.createToken(userVo);
+            return ResponseVo.buildSuccess(token);
         } catch (Exception e) {
             log.info("register failure: " + e.getMessage());
             return ResponseVo.buildFailure("register failure: unvalid orgType.");
