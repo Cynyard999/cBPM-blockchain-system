@@ -8,7 +8,6 @@ import * as Icons from '@element-plus/icons-vue'
 
 const app = createApp(App);
 app.use(createPinia()).use(router).use(ElementPlus).mount('#app');
-
 Object.keys(Icons).forEach(key => {
     app.component(key, Icons[key])
 });
