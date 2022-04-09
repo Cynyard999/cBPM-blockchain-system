@@ -1,17 +1,18 @@
 <template>
-  <Header/>
-  <LeftSideBar/>
+    <Header/>
+    <LeftSideBar/>
 </template>
 
 <script>
-import LeftSideBar from "../components/MiddlemanLeftSideBar.vue";
-import Header from "../components/Header.vue"
+    import LeftSideBar from "../components/MiddlemanLeftSideBar.vue";
+    import Header from "../components/Header.vue"
+
     export default {
         name: "Middleman.vue",
-        components:{
-          LeftSideBar,
-          Header
-      }
+        components: {
+            LeftSideBar,
+            Header
+        }
     }
 </script>
 

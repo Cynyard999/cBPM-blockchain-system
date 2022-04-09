@@ -1,17 +1,18 @@
 <template>
-  <Header/>
-  <LeftSideBar/>
+    <Header/>
+    <LeftSideBar/>
 </template>
 
-<script >
-import LeftSideBar from "../components/CarrierLeftSideBar.vue";
-import Header from "../components/Header.vue"
+<script>
+    import LeftSideBar from "../components/CarrierLeftSideBar.vue";
+    import Header from "../components/Header.vue"
+
     export default {
         name: "Carrier",
-      components:{
-        LeftSideBar,
-        Header
-      },
+        components: {
+            LeftSideBar,
+            Header
+        },
     }
 </script>
 

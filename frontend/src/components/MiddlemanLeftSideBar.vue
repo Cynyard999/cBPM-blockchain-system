@@ -1,89 +1,67 @@
 <template>
-  <el-row class="tac" >
-    <el-col class="column" :span="4">
-      <div class="mb-2">
-      <h5 >中间商后台管理</h5>
-      </div>
-      <el-menu
-          default-active="1"
-          class="el-menu-vertical"
-          @open="handleOpen"
-          @close="handleClose"
-      >
-        <el-sub-menu index="1">
-          <template #title>
-            <el-icon ><goods /></el-icon>
-            <span>与生产商</span>
-          </template>
-          <el-menu-item-group  title="商品相关">
-            <el-menu-item index="1-1">增加商品</el-menu-item>
-            <el-menu-item  index="1-2">查看所有商品</el-menu-item>
-          </el-menu-item-group>
-          <el-menu-item-group title="订单相关">
-            <el-menu-item index="1-3">创建订单</el-menu-item>
-            <el-menu-item index="1-4">查看所有订单</el-menu-item>
-          </el-menu-item-group>
-        </el-sub-menu>
+    <el-row class="tac">
+        <el-col class="column" :span="4">
+            <div class="name">
+                <h5>中间商后台管理</h5>
+            </div>
+            <el-menu
+                    default-active="1"
+                    class="el-menu-vertical"
+            >
+                <el-sub-menu index="1">
+                    <template #title>
+                        <el-icon>
+                            <goods/>
+                        </el-icon>
+                        <span>与供应商</span>
+                    </template>
+                    <el-menu-item index="1-1" @click="clickMenuItem">货物信息</el-menu-item>
+                    <el-menu-item index="1-2" @click="clickMenuItem">进货订单</el-menu-item>
+                </el-sub-menu>
 
-        <el-sub-menu index="2">
-          <template #title>
-            <el-icon><sort /></el-icon>
-            <span>与供货商</span>
-          </template>
-          <el-menu-item-group title="商品相关">
-            <el-menu-item index="2-1">增加商品</el-menu-item>
-            <el-menu-item index="2-2">查看所有商品</el-menu-item>
-          </el-menu-item-group>
-          <el-menu-item-group title="订单相关">
-            <el-menu-item index="2-3">创建订单</el-menu-item>
-            <el-menu-item index="2-4">查看所有订单</el-menu-item>
-          </el-menu-item-group>
-        </el-sub-menu>
+                <el-sub-menu index="2">
+                    <template #title>
+                        <el-icon>
+                            <sort/>
+                        </el-icon>
+                        <span>与生产商</span>
+                    </template>
+                    <el-menu-item index="2-1" @click="clickMenuItem">供应商品</el-menu-item>
+                    <el-menu-item index="2-2" @click="clickMenuItem">商品订单</el-menu-item>
+                </el-sub-menu>
 
-        <el-sub-menu index="3">
-          <template #title>
-            <el-icon><refresh /></el-icon>
-            <span>与运输商</span>
-          </template>
-          <el-menu-item-group title="商品相关">
-            <el-menu-item index="3-1">增加商品</el-menu-item>
-            <el-menu-item index="3-2">查看所有商品</el-menu-item>
-          </el-menu-item-group>
-          <el-menu-item-group title="订单相关">
-            <el-menu-item index="3-3">创建订单</el-menu-item>
-            <el-menu-item index="3-4">查看所有订单</el-menu-item>
-          </el-menu-item-group>
-        </el-sub-menu>
+                <el-sub-menu index="3">
+                    <template #title>
+                        <el-icon>
+                            <refresh/>
+                        </el-icon>
+                        <span>与运输商</span>
+                    </template>
+                    <el-menu-item index="3-1" @click="clickMenuItem">运输安排</el-menu-item>
+                </el-sub-menu>
 
-      </el-menu>
-    </el-col>
+            </el-menu>
+        </el-col>
 
-  </el-row>
+    </el-row>
 </template>
 
-<script lang="ts" setup>
-import {
-  Document,
-  Menu as IconMenu,
-  Location,
-  Refresh,
-  Setting,
-  Sort,
-  Goods,
-} from '@element-plus/icons-vue'
-const handleOpen = (key: string, keyPath: string[]) => {
-  console.log(key, keyPath)
-}
-const handleClose = (key: string, keyPath: string[]) => {
-  console.log(key, keyPath)
-}
-
+<script>
+    export default {
+        name: "MiddlemanSideBar",
+        methods: {
+            clickMenuItem(menuItem) {
+                console.log(menuItem.index)
+            }
+        }
+    }
 </script>
+
 <style>
 
-.mb-2{
-  margin-left: 35px;
-  font-size: large;
+    .name {
+        margin-left: 35px;
+        font-size: large;
 
-}
+    }
 </style>

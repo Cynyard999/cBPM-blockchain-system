@@ -13,7 +13,8 @@
     "pinia": "^2.0.13",
     "vue": "^3.2.25",
     "vue-axios": "^3.4.1",
-    "vue-router": "^4.0.14"
+    "vue-router": "^4.0.14",
+    "@element-plus/icons-vue": "latest"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^2.3.0",
