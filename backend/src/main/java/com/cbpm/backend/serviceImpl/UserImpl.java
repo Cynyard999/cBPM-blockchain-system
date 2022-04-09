@@ -5,8 +5,10 @@ import com.cbpm.backend.dao.UserRepository;
 import com.cbpm.backend.sdk.EnrollmentImpl;
 import com.cbpm.backend.sdk.FabricUser;
 import com.cbpm.backend.service.UserService;
+import com.cbpm.backend.util.JwtUtil;
 import com.cbpm.backend.vo.ResponseVo;
 import com.cbpm.backend.vo.UserVo;
+import java.util.logging.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -177,7 +179,9 @@ public class UserImpl implements UserService {
         if (!userVo.getPassword().equals(password)) {
             return ResponseVo.buildFailure("wrong email or password.");
         } else {
-            return ResponseVo.buildSuccess("login seccess");
+            String token= JwtUtil.createToken(userVo);
+//            System.out.println("token: "+token);
+            return ResponseVo.buildSuccess(token);
         }
     }
 
