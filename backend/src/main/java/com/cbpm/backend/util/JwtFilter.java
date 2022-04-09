@@ -1,5 +1,8 @@
 package com.cbpm.backend.util;
 
+import com.auth0.jwt.exceptions.InvalidClaimException;
+import com.auth0.jwt.exceptions.SignatureVerificationException;
+import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.Claim;
 import java.io.IOException;
 import java.util.Map;
@@ -37,38 +40,50 @@ public class JwtFilter implements Filter {
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse,
             FilterChain filterChain) throws ServletException, IOException {
 
-        final HttpServletRequest request=(HttpServletRequest) servletRequest;
+        final HttpServletRequest request = (HttpServletRequest) servletRequest;
 
-        final HttpServletResponse response=(HttpServletResponse) servletResponse;
+        final HttpServletResponse response = (HttpServletResponse) servletResponse;
         //编码
         response.setCharacterEncoding("UTF-8");
         //读取request里面的token
-        final String token=request.getHeader("Authorization");
-        if("OPTIONS".equals(request.getMethod())){
+        final String token = request.getHeader("Authorization");
+        if ("OPTIONS".equals(request.getMethod())) {
             response.setStatus(HttpServletResponse.SC_OK);
-            filterChain.doFilter(request,response);
-        }else{
-            if(token==null){
+            filterChain.doFilter(request, response);
+        } else {
+            if (token == null) {
+                response.setStatus(401);
                 response.getWriter().write("no token");
                 return;
             }
-
-            Map<String, Claim> map=JwtUtil.parseToken(token);
-            if(map==null){
-                response.getWriter().write("invalid token");
-                return;
+            try {
+                Map<String, Claim> map = JwtUtil.parseToken(token);
+                //解密token得到的信息
+                String userId = map.get("userId").asString();
+                String orgType = map.get("orgType").asString();
+                String userEmail = map.get("email").asString();
+                request.setAttribute("orgType", orgType);
+                request.setAttribute("email", userEmail);
+                request.setAttribute("userId", userId);
+                filterChain.doFilter(request, response);
+            } catch (SignatureVerificationException e) {
+                log.info("invalid token signature for token: " + token);
+                response.setStatus(401);
+                response.getWriter().write("invalid token signature");
+            } catch (TokenExpiredException e) {
+                log.info("token has expired: " + token);
+                response.setStatus(401);
+                response.getWriter().write("token has expired");
+            } catch (InvalidClaimException e) {
+                log.info("invalid token claims for token: " + token);
+                response.setStatus(401);
+                response.getWriter().write("invalid token signature");
+            } catch (Exception e) {
+                log.info("token authentication failure: " + e.getMessage());
+                response.setStatus(401);
+                response.getWriter().write("token authentication failure");
             }
-            //解密token得到的信息
-            String userId=map.get("userId").asString();
-            String orgType=map.get("orgType").asString();
-            String userEmail=map.get("email").asString();
-//            String password=map.get("password").asString();
-            //放进requst的attribute里
-            request.setAttribute("orgType",orgType);
-            request.setAttribute("email",userEmail);
-            request.setAttribute("userId",userId);
-//            request.setAttribute("password",password);
-            filterChain.doFilter(request,response);
+
         }
     }
 

@@ -20,32 +20,32 @@ import org.slf4j.LoggerFactory;
  */
 public class JwtUtil {
 
-    private static final Logger logger= LoggerFactory.getLogger(JwtUtil.class);
+    private static final Logger logger = LoggerFactory.getLogger(JwtUtil.class);
     //盐随机写的一个
-    private static final String SERECT="asfakjGUIYFGFASKJFGhasdgjkAFHzlksh";
+    private static final String SERECT = "asfakjGUIYFGFASKJFGhasdgjkAFHzlksh";
     //单位为秒,设置为30min
     private static final Long EXPIRATION = 1800L;
 
     /**
-    * @description: 生成token
      * @param userVo
-    * @return: java.lang.String
-    * @author: Polaris
-    * @date: 2022/4/9
-    */
-    public static String createToken(UserVo userVo){
-        Date expireDate=new Date(System.currentTimeMillis()+EXPIRATION*1000);
-        Map<String,Object> map=new HashMap<>();
+     * @description: 生成token
+     * @return: java.lang.String
+     * @author: Polaris
+     * @date: 2022/4/9
+     */
+    public static String createToken(UserVo userVo) {
+        Date expireDate = new Date(System.currentTimeMillis() + EXPIRATION * 1000);
+        Map<String, Object> map = new HashMap<>();
         //设置加密方式
-        map.put("alg","H256");
+        map.put("alg", "H256");
         //类型
-        map.put("typ","JWT");
+        map.put("typ", "JWT");
         //将user相关信息加密生成token
-        String token= JWT.create()
+        String token = JWT.create()
                 .withHeader(map)
-                .withClaim("userId",userVo.getId())
-                .withClaim("orgType",userVo.getOrgType())
-                .withClaim("email",userVo.getEmail())
+                .withClaim("userId", userVo.getId())
+                .withClaim("orgType", userVo.getOrgType())
+                .withClaim("email", userVo.getEmail())
 //                .withClaim("password",userVo.getPassword())
                 .withExpiresAt(expireDate)
                 .withIssuedAt(new Date())
@@ -54,22 +54,15 @@ public class JwtUtil {
     }
 
     /**
-    * @description: 解析token
      * @param token
-    * @return: java.util.Map<java.lang.String,com.auth0.jwt.interfaces.Claim>
-    * @author: Polaris
-    * @date: 2022/4/9
-    */
-    public static Map<String, Claim> parseToken(String token){
-        DecodedJWT decodedJWT=null;
-        try{
-            JWTVerifier jwtVerifier=JWT.require(Algorithm.HMAC256(SERECT)).build();
-            decodedJWT=jwtVerifier.verify(token);
-        }catch (Exception e){
-            logger.error(e.getMessage());
-            logger.error("parsing token has exception");
-            return null;
-        }
-        return decodedJWT.getClaims();
+     * @description: 解析token, 抛出异常
+     * @return: java.util.Map<java.lang.String, com.auth0.jwt.interfaces.Claim>
+     * @author: Polaris
+     * @date: 2022/4/9
+     * @updator: cynyard
+     */
+    public static Map<String, Claim> parseToken(String token) throws Exception {
+        JWTVerifier jwtVerifier = JWT.require(Algorithm.HMAC256(SERECT)).build();
+        return jwtVerifier.verify(token).getClaims();
     }
 }
