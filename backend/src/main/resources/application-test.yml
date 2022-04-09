@@ -1,13 +1,13 @@
 server:
   port: 8080
-#windows环境
+# 本地环境
 spring:
   application:
     name: backend
   datasource:
-    url: jdbc:mysql://172.19.241.74:3306/blockChain
+    url: jdbc:mysql://127.0.0.1/blockChain
     username: root
-    password: 123456
+    password: password
     driver-class-name: com.mysql.cj.jdbc.Driver
 
 backend:
