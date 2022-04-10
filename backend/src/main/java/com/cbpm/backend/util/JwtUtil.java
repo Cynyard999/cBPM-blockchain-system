@@ -63,6 +63,8 @@ public class JwtUtil {
      */
     public static Map<String, Claim> parseToken(String token) throws Exception {
         JWTVerifier jwtVerifier = JWT.require(Algorithm.HMAC256(SERECT)).build();
-        return jwtVerifier.verify(token).getClaims();
+        DecodedJWT  decodedJWT= jwtVerifier.verify(token);
+        Map<String, Claim> claimMap = decodedJWT.getClaims();
+        return claimMap;
     }
 }

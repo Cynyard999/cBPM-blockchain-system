@@ -1,9 +1,11 @@
 package com.cbpm.backend.util;
 
+import com.alibaba.fastjson.JSON;
 import com.auth0.jwt.exceptions.InvalidClaimException;
 import com.auth0.jwt.exceptions.SignatureVerificationException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.Claim;
+import com.cbpm.backend.vo.ResponseVo;
 import java.io.IOException;
 import java.util.Map;
 import javax.servlet.Filter;
@@ -43,6 +45,7 @@ public class JwtFilter implements Filter {
         final HttpServletRequest request = (HttpServletRequest) servletRequest;
 
         final HttpServletResponse response = (HttpServletResponse) servletResponse;
+        response.setContentType("application/json;charset=utf-8");
         //编码
         response.setCharacterEncoding("UTF-8");
         //读取request里面的token
@@ -53,7 +56,9 @@ public class JwtFilter implements Filter {
         } else {
             if (token == null) {
                 response.setStatus(401);
-                response.getWriter().write("no token");
+                response.getOutputStream()
+                        .write(JSON.toJSONString(ResponseVo.buildFailure("unauthorized operation"))
+                                .getBytes());
                 return;
             }
             try {
@@ -68,20 +73,28 @@ public class JwtFilter implements Filter {
                 filterChain.doFilter(request, response);
             } catch (SignatureVerificationException e) {
                 log.info("invalid token signature for token: " + token);
-                response.setStatus(401);
-                response.getWriter().write("invalid token signature");
+                response.setStatus(403);
+                response.getOutputStream()
+                        .write(JSON.toJSONString(ResponseVo.buildFailure("invalid token signature"))
+                                .getBytes());
             } catch (TokenExpiredException e) {
                 log.info("token has expired: " + token);
-                response.setStatus(401);
-                response.getWriter().write("token has expired");
+                response.setStatus(403);
+                response.getOutputStream()
+                        .write(JSON.toJSONString(ResponseVo.buildFailure("invalid token signature"))
+                                .getBytes());
             } catch (InvalidClaimException e) {
                 log.info("invalid token claims for token: " + token);
-                response.setStatus(401);
-                response.getWriter().write("invalid token signature");
+                response.setStatus(403);
+                response.getOutputStream()
+                        .write(JSON.toJSONString(ResponseVo.buildFailure("invalid token claims"))
+                                .getBytes());
             } catch (Exception e) {
                 log.info("token authentication failure: " + e.getMessage());
-                response.setStatus(401);
-                response.getWriter().write("token authentication failure");
+                response.setStatus(403);
+                response.getOutputStream()
+                        .write(JSON.toJSONString(ResponseVo.buildFailure("invalid token claims"))
+                                .getBytes());
             }
 
         }
