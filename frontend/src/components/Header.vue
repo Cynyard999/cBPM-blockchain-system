@@ -45,7 +45,6 @@
 
 <script>
     import {request} from "../api/axios";
-
     export default {
         name: "Header",
         data() {
@@ -192,7 +191,7 @@
     }
 
     .el-icon {
-        top: 4px;
+        top: 2px;
     }
 
     .el-icon:hover {

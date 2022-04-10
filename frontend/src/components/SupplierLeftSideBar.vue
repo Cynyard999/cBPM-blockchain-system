@@ -50,6 +50,5 @@
     .name {
         margin-left: 35px;
         font-size: large;
-
     }
 </style>

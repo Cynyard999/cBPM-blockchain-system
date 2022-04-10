@@ -2,6 +2,7 @@ import axios from 'axios';
 import {ShowMessage} from "./status";   // 引入状态码文件
 import {ElMessage} from 'element-plus'
 import 'element-plus/dist/index.css'
+import router from "../router";
 
 // 设置接口超时时间
 axios.defaults.timeout = 60000;
@@ -25,15 +26,8 @@ axios.interceptors.request.use(
 //http response 拦截器
 axios.interceptors.response.use(
     response => {
-        // if (response.status === 401) {
-        //     window.localStorage.removeItem('token');
-        //     window.localStorage.removeItem('userInfo');
-        //     router.replace('/home').then(r => console.log("switch to home"));
-        //     return
-        // }
         let token = response.headers.authorization;
         if (token) {
-            console.log(response.data.result);
             window.localStorage.setItem('token', token);
             window.localStorage.setItem('user', JSON.stringify(response.data.result));
         }
@@ -41,9 +35,19 @@ axios.interceptors.response.use(
     },
     error => {
         const {response} = error;
-        if (response) {// 传入响应码，匹配响应码对应信息
-            ElMessage.warning(ShowMessage(response.status) + ": " + response.data.message);
-            return Promise.reject(response);
+        if (response) {
+            if (response.config.url.startsWith("work") && (response.status === 401 || response.status === 403)) { // 没有登录或者token失效
+                window.localStorage.removeItem('token');
+                window.localStorage.removeItem('user');
+                router.replace('/home').then(ElMessage({
+                    message: '未登录或登录状态失效',
+                    type: 'warning',
+                }));
+                return Promise.reject(response);
+            } else {
+                ElMessage.warning(ShowMessage(response.status) + ": " + response.data.message);
+                return Promise.reject(response);
+            }
         } else {
             ElMessage.warning('网络连接异常,请稍后再试!');
         }

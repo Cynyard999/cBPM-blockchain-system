@@ -83,7 +83,6 @@ const router = createRouter({
 });
 
 router.beforeEach((to, from, next) => {
-    console.log(to);
     if ((to.path !== "/home" && to.path !== "/") && (window.localStorage.getItem("user") === null || window.localStorage.getItem("user") === undefined)) {
         ElMessage({
             message: '请先登录',
