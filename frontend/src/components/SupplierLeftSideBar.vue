@@ -7,8 +7,6 @@
             <el-menu
                     default-active="1"
                     class="el-menu-vertical"
-                    @open="handleOpen"
-                    @close="handleClose"
             >
                 <el-sub-menu index="1">
                     <template #title>
@@ -30,8 +28,6 @@
                     </template>
                     <el-menu-item index="2-1">运输信息</el-menu-item>
                 </el-sub-menu>
-
-
             </el-menu>
         </el-col>
 

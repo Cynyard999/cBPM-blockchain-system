@@ -1,7 +1,7 @@
 import axios from 'axios';
 import {ShowMessage} from "./status";   // 引入状态码文件
 import {ElMessage} from 'element-plus'
-import router from "../router";
+import 'element-plus/dist/index.css'
 
 // 设置接口超时时间
 axios.defaults.timeout = 60000;
@@ -25,12 +25,12 @@ axios.interceptors.request.use(
 //http response 拦截器
 axios.interceptors.response.use(
     response => {
-        if (response.status === 401) {
-            window.localStorage.removeItem('token');
-            window.localStorage.removeItem('userInfo');
-            router.replace('/home').then(r => console.log("switch to home"));
-            return
-        }
+        // if (response.status === 401) {
+        //     window.localStorage.removeItem('token');
+        //     window.localStorage.removeItem('userInfo');
+        //     router.replace('/home').then(r => console.log("switch to home"));
+        //     return
+        // }
         let token = response.headers.authorization;
         if (token) {
             console.log(response.data.result);
@@ -41,9 +41,9 @@ axios.interceptors.response.use(
     },
     error => {
         const {response} = error;
-        if (response) {
-            ShowMessage(response.status);           // 传入响应码，匹配响应码对应信息
-            return Promise.reject(response.data);
+        if (response) {// 传入响应码，匹配响应码对应信息
+            ElMessage.warning(ShowMessage(response.status) + ": " + response.data.message);
+            return Promise.reject(response);
         } else {
             ElMessage.warning('网络连接异常,请稍后再试!');
         }

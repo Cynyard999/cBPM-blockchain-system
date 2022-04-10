@@ -12,8 +12,15 @@
                 <li v-show="isLogin">
                     <el-tooltip placement="bottom">
                         <template #content>{{userOrg}}</template>
-                        <span style="cursor: default;">{{userName}}</span>
+                        <span style="cursor: default;">
+                            {{userName}}
+                        </span>
                     </el-tooltip>
+                </li>
+                <li v-show="isLogin" @click="logout">
+                    <el-icon>
+                        <close/>
+                    </el-icon>
                 </li>
                 <el-dialog title="登录" v-model="loginFormVisible" center width="500px">
                     <el-form :model="userInput">
@@ -58,16 +65,30 @@
         },
         methods: {
             login() {
-                this.loginFormVisible = false;
                 request('user/login', this.userInput, 'POST').then(response => {
                     this.$notify({
-                        title: '提示',
-                        message: '登录成功',
+                        title: '登录成功',
+                        message: response.data.result.name,
                         type: 'success',
                         duration: 2000
                     });
+                    this.loginFormVisible = false;
                     this.checkUserLogin();
-                })
+                }).catch(error => {
+                    this.$notify({
+                        title: '登录失败',
+                        message: error.data.result.message,
+                        type: 'success',
+                        duration: 2000
+                    });
+                });
+            },
+            logout() {
+                this.userName = "";
+                this.userOrg = "";
+                this.isLogin = false;
+                window.localStorage.removeItem("token");
+                window.localStorage.removeItem("user");
             },
 
             test() {
@@ -168,6 +189,15 @@
 
     .el-dialog {
         border-radius: 1rem;
+    }
+
+    .el-icon {
+        top: 4px;
+    }
+
+    .el-icon:hover {
+        color: #5C6B73;
+        cursor: pointer;
     }
 
 </style>

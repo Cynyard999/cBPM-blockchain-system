@@ -26,8 +26,9 @@ const router = createRouter({
                         type: 'warning',
                     });
                     next('/home');
+                } else {
+                    next()
                 }
-                next()
             },
         },
         {
@@ -41,8 +42,9 @@ const router = createRouter({
                         type: 'warning',
                     });
                     next('/home');
+                } else {
+                    next()
                 }
-                next()
             },
         },
         {
@@ -56,8 +58,9 @@ const router = createRouter({
                         type: 'warning',
                     });
                     next('/home');
+                } else {
+                    next()
                 }
-                next()
             },
         },
         {
@@ -71,22 +74,23 @@ const router = createRouter({
                         type: 'warning',
                     });
                     next('/home');
+                } else {
+                    next()
                 }
-                next()
             },
         }
     ]
 });
 
 router.beforeEach((to, from, next) => {
-    if (window.localStorage.getItem("user") === null || window.localStorage.getItem("user") === undefined) {
+    console.log(to);
+    if ((to.path !== "/home" && to.path !== "/") && (window.localStorage.getItem("user") === null || window.localStorage.getItem("user") === undefined)) {
         ElMessage({
             message: '请先登录',
             type: 'warning',
         });
         next('/home');
-    }
-    else{
+    } else {
         next();
     }
 });
