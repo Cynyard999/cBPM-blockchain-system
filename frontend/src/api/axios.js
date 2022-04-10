@@ -1,7 +1,6 @@
 import axios from 'axios';
 import {ShowMessage} from "./status";   // 引入状态码文件
 import {ElMessage} from 'element-plus'
-import 'element-plus/dist/index.css'
 import router from "../router";
 
 // 设置接口超时时间

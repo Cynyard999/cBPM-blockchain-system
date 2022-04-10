@@ -45,6 +45,10 @@
 
 <script>
     import {request} from "../api/axios";
+    import router from "../router";
+    import {ElMessage} from 'element-plus'
+    import {ElNotification} from 'element-plus'
+
     export default {
         name: "Header",
         data() {
@@ -65,7 +69,7 @@
         methods: {
             login() {
                 request('user/login', this.userInput, 'POST').then(response => {
-                    this.$notify({
+                    ElNotification({
                         title: '登录成功',
                         message: response.data.result.name,
                         type: 'success',
@@ -74,7 +78,7 @@
                     this.loginFormVisible = false;
                     this.checkUserLogin();
                 }).catch(error => {
-                    this.$notify({
+                    ElNotification({
                         title: '登录失败',
                         message: error.data.result.message,
                         type: 'success',
@@ -88,6 +92,10 @@
                 this.isLogin = false;
                 window.localStorage.removeItem("token");
                 window.localStorage.removeItem("user");
+                router.replace('/home').then(ElMessage({
+                    message: '注销成功',
+                    type: 'success',
+                }));
             },
 
             test() {

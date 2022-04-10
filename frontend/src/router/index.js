@@ -18,6 +18,29 @@ const router = createRouter({
         {
             path: '/manufacturer',
             component: () => import('../views/Manufacturer.vue'),
+            children: [
+                {
+                    path: "assets",
+                    name: "manufacturer-assets",
+                    components: {
+                        manufacturerSubpage: () => import("../components/mamichannel/AssetsPanel.vue")
+                    }
+                },
+                {
+                    path: "orders",
+                    name: "manufacturer-orders",
+                    components: {
+                        manufacturerSubpage: () => import("../components/mamichannel/OrdersPanel.vue")
+                    }
+                },
+                {
+                    path: "delivery-details",
+                    name: "manufacturer-delivery-details",
+                    components: {
+                        manufacturerSubpage: () => import("../components/cmachannel/DeliveryDetailsPanel.vue")
+                    }
+                },
+            ],
             beforeEnter: (to, from, next) => {
                 let userInfo = JSON.parse(window.localStorage.getItem("user"));
                 if (userInfo['orgType'] !== 'manufacturer') {
@@ -34,6 +57,29 @@ const router = createRouter({
         {
             path: '/carrier',
             component: () => import('../views/Carrier.vue'),
+            children: [
+                {
+                    path: "delivery-arrangements",
+                    name: "carrier-delivery-arrangements",
+                    components: {
+                        carrierSubpage: () => import("../components/micchannel/DeliveryArrangementsPanel.vue")
+                    }
+                },
+                {
+                    path: "delivery-details",
+                    name: "carrier-delivery-details",
+                    components: {
+                        carrierSubpage: () => import("../components/cmachannel/DeliveryDetailsPanel.vue")
+                    }
+                },
+                {
+                    path: "delivery-orders",
+                    name: "carrier-delivery-orders",
+                    components: {
+                        carrierSubpage: () => import("../components/scchannel/DeliveryOrdersPanel.vue")
+                    }
+                },
+            ],
             beforeEnter: (to, from, next) => {
                 let userInfo = JSON.parse(window.localStorage.getItem("user"));
                 if (userInfo['orgType'] !== 'carrier') {
@@ -50,6 +96,29 @@ const router = createRouter({
         {
             path: '/supplier',
             component: () => import('../views/Supplier.vue'),
+            children: [
+                {
+                    path: "assets",
+                    name: "supplier-assets",
+                    components: {
+                        supplierSubpage: () => import("../components/mischannel/AssetsPanel.vue")
+                    }
+                },
+                {
+                    path: "supply-orders",
+                    name: "supplier-supply-orders1",
+                    components: {
+                        supplierSubpage: () => import("../components/mischannel/SupplyOrdersPanel.vue")
+                    }
+                },
+                {
+                    path: "delivery-orders",
+                    name: "supplier-delivery-orders",
+                    components: {
+                        supplierSubpage: () => import("../components/scchannel/DeliveryOrdersPanel.vue")
+                    }
+                },
+            ],
             beforeEnter: (to, from, next) => {
                 let userInfo = JSON.parse(window.localStorage.getItem("user"));
                 if (userInfo['orgType'] !== 'supplier') {
@@ -66,6 +135,29 @@ const router = createRouter({
         {
             path: '/middleman',
             component: () => import('../views/Middleman.vue'),
+            children: [
+                {
+                    path: "assets",
+                    name: "middleman-assets",
+                    components: {
+                        middlemanSubpage: () => import("../components/mischannel/AssetsPanel.vue")
+                    }
+                },
+                {
+                    path: "supply-orders",
+                    name: "middleman-supply-orders",
+                    components: {
+                        middlemanSubpage: () => import("../components/mischannel/SupplyOrdersPanel.vue")
+                    }
+                },
+                {
+                    path: "delivery-arrangements",
+                    name: "middleman-delivery-arrangements",
+                    components: {
+                        middlemanSubpage: () => import("../components/micchannel/DeliveryArrangementsPanel.vue")
+                    }
+                },
+            ],
             beforeEnter: (to, from, next) => {
                 let userInfo = JSON.parse(window.localStorage.getItem("user"));
                 if (userInfo['orgType'] !== 'middleman') {
