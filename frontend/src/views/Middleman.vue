@@ -28,7 +28,7 @@
                                 </el-icon>
                                 <span>与生产商</span>
                             </template>
-                            <el-menu-item index="/middleman/assets" >供应商品</el-menu-item>
+                            <el-menu-item index="/middleman/goods" >供应商品</el-menu-item>
                             <el-menu-item index="/middleman/orders" >商品订单</el-menu-item>
                         </el-sub-menu>
 
@@ -64,5 +64,9 @@
 </script>
 
 <style>
+    .name {
+        margin-left: 35px;
+        font-size: large;
+    }
 
 </style>

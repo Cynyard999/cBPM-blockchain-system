@@ -151,6 +151,20 @@ const router = createRouter({
                     }
                 },
                 {
+                    path: "goods",
+                    name: "middleman-goods",
+                    components: {
+                        middlemanSubpage: () => import("../components/mamichannel/AssetsPanel.vue")
+                    }
+                },
+                {
+                    path: "orders",
+                    name: "middleman-orders",
+                    components: {
+                        middlemanSubpage: () => import("../components/mamichannel/OrdersPanel.vue")
+                    }
+                },
+                {
                     path: "delivery-arrangements",
                     name: "middleman-delivery-arrangements",
                     components: {

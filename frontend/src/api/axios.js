@@ -35,7 +35,7 @@ axios.interceptors.response.use(
     error => {
         const {response} = error;
         if (response) {
-            if (response.config.url.startsWith("work") && (response.status === 401 || response.status === 403)) { // 没有登录或者token失效
+            if (response.config.url.startsWith("/work") && (response.status === 401 || response.status === 403)) { // 没有登录或者token失效
                 window.localStorage.removeItem('token');
                 window.localStorage.removeItem('user');
                 router.replace('/home').then(ElMessage({
