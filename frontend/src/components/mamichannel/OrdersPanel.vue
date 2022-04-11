@@ -12,8 +12,8 @@
         <el-table-column prop="assetPrice" label="单价" sortable/>
         <el-table-column prop="quantity" label="数量"/>
         <el-table-column prop="totalPrice" label="总价"/>
-        <el-table-column prop="receivingAddress" label="发货地"/>
-        <el-table-column prop="shippingAddress" label="发货地"/>
+        <el-table-column prop="shippingAddress" label="货地"/>
+        <el-table-column prop="receivingAddress" label="收货地"/>
         <el-table-column prop="note" label="备注" overflow/>
         <el-table-column prop="ownerOrg" label="所属组织"/>
         <el-table-column prop="updateTime" label="修改时间"/>
@@ -161,13 +161,19 @@
                     }
                     let that = this;
                     that.loading = true;
+                  if (this.selectedOrder.newStatus === 1) {
+                    this.createSupplyOrder();
+                    this.createDeliveryArrangement()
+                  }
                     request('/work/invoke', body, "POST").then(response => {
+                      //handleOrder的时候一起把创建supplyOrder和DeliveryArrangement
                         ElMessage({
                             message: '修改成功',
                             type: 'success',
                         });
                         that.loading = false;
                         that.getOrders();
+
                     }).catch(error => {
                         that.loading = false;
                     });
@@ -191,7 +197,60 @@
             },
             getUser() {
                 this.user = JSON.parse(window.localStorage.getItem("user"));
-            }
+            },
+          //在middleman对order进行handle的同时进行创建supplyOrder
+            createSupplyOrder(){
+              let body={
+                channelName: "mischannel",
+                contractName: "mischaincode",
+                function:  "CreateSupplyOrder",
+                transient:{
+                  order:{
+                    TradeId: this.selectedOrder.tradeID,
+                    AssetId: this.selectedOrder.assetID,
+                    Quantity: this.selectedOrder.quantity,
+                    Note: "create supplyerOrder"
+                  }
+                }
+              };
+                  request('/work/invoke', body, "POST").then(response => {
+                ElMessage({
+                  message: '创建supplyorder成功',
+                  type: 'success',
+                });
+                console.log('创建supplyorder成功')
+              }).catch(error => {
+                    console.log('创建supplyorder失败')
+              });
+            },
+          createDeliveryArrangement(){
+              let body={
+                channelName: "micchannel",
+                contractName: "micchaincode",
+                function: "CreateDeliveryArrangement",
+                transient: {
+                  arrangement:{
+                    TradeID: this.selectedOrder.tradeID,
+                    AssetName: this.selectedOrder.assetName,
+                    Quantity: this.selectedOrder.quantity,
+                    StartPlace: this.selectedOrder.shippingAddress,
+                    EndPlace: this.selectedOrder.receivingAddress,
+                    Fee: 250.4,
+                    Note: "create arrangement"
+                  }
+                }
+              };
+            request('/work/invoke', body, "POST").then(response => {
+              ElMessage({
+                message: '创建arrangement成功',
+                type: 'success',
+              });
+              console.log('创建arranmement成功')
+            }).catch(error => {
+              console.log('创建arrangement失败')
+            });
+          },
+
         },
         data() {
             return {
@@ -217,7 +276,7 @@
                         value: 3,
                         label: '确认完成'
                     }
-                ]
+                ],
             }
         },
         mounted() {

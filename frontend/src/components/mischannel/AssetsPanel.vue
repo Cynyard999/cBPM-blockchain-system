@@ -120,6 +120,8 @@
                     that.loading = false;
                 });
             },
+
+
             // get index of asset in orders(sort function causes the returning index is not correct)
             getAssetIndex(assetID) {
                 let index = -1;

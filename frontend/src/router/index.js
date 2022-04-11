@@ -99,7 +99,7 @@ const router = createRouter({
             children: [
                 {
                     path: "assets",
-                    name: "supplier-orders",
+                    name: "supplier-assets",
                     components: {
                         supplierSubpage: () => import("../components/mischannel/AssetsPanel.vue")
                     }
@@ -138,7 +138,7 @@ const router = createRouter({
             children: [
                 {
                     path: "assets",
-                    name: "middleman-orders",
+                    name: "middleman-assets",
                     components: {
                         middlemanSubpage: () => import("../components/mischannel/AssetsPanel.vue")
                     }

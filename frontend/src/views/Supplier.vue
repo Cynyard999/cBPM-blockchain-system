@@ -17,7 +17,7 @@
                                 </el-icon>
                                 <span>与中间商</span>
                             </template>
-                            <el-menu-item index="/supplier/orders">货物信息</el-menu-item>
+                            <el-menu-item index="/supplier/assets">货物信息</el-menu-item>
                             <el-menu-item index="/supplier/supply-orders">进货订单</el-menu-item>
                         </el-sub-menu>
 
