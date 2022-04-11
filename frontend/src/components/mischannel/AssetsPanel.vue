@@ -66,7 +66,7 @@
         name: "assets",
         methods: {
             deleteAsset(assetProxy) {
-                let index = this.getAssetIndexIndex(assetProxy.assetID);
+                let index = this.getAssetIndex(assetProxy.assetID);
                 let body = {
                     channelName: "mischannel",
                     contractName: "mischaincode",
@@ -120,8 +120,8 @@
                     that.loading = false;
                 });
             },
-            // get index of asset in assets(sort function causes the returning index is not correct)
-            getAssetIndexIndex(assetID) {
+            // get index of asset in orders(sort function causes the returning index is not correct)
+            getAssetIndex(assetID) {
                 let index = -1;
                 this.assets.forEach((asset, i) => {
                     if (assetID === asset["assetID"]) {

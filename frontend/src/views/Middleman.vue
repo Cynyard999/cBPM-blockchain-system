@@ -17,7 +17,7 @@
                                 </el-icon>
                                 <span>与供应商</span>
                             </template>
-                            <el-menu-item index="/middleman/assets">货物信息</el-menu-item>
+                            <el-menu-item index="/middleman/orders">货物信息</el-menu-item>
                             <el-menu-item index="/middleman/supply-orders">进货订单</el-menu-item>
                         </el-sub-menu>
 
