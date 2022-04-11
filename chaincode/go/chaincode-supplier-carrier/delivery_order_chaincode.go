@@ -86,7 +86,7 @@ func (t *CBPMChaincode) CreateDeliveryOrder(ctx contractapi.TransactionContextIn
 	}
 
 	deliveryOrder := &DeliveryOrder{
-		ObjectType: "deliveryOrder",
+		ObjectType: "DeliveryOrder",
 		TradeID:    orderInput.TradeID,
 		AssetName:  orderInput.AssetName,
 		CreateTime: time.Now().Format("2006-01-02 15:04:05"),

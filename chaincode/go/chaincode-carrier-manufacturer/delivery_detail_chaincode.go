@@ -101,7 +101,7 @@ func (t *CBPMChaincode) CreateDeliveryDetail(ctx contractapi.TransactionContextI
 	}
 
 	deliveryDetail := &DeliveryDetail{
-		ObjectType: "deliveryDetail",
+		ObjectType: "DeliveryDetail",
 		TradeID:    detailInput.TradeID,
 		AssetName:  detailInput.AssetName,
 		StartPlace: detailInput.StartPlace,

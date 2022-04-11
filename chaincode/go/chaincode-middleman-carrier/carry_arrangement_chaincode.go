@@ -107,7 +107,7 @@ func (t *CBPMChaincode) CreateDeliveryArrangement(ctx contractapi.TransactionCon
 	}
 
 	deliveryArrangement := &DeliveryArrangement{
-		ObjectType: "deliveryArrangement",
+		ObjectType: "DeliveryArrangement",
 		TradeID:    arrangementInput.TradeID,
 		AssetName:  arrangementInput.AssetName,
 		Quantity:   arrangementInput.Quantity,
@@ -119,6 +119,7 @@ func (t *CBPMChaincode) CreateDeliveryArrangement(ctx contractapi.TransactionCon
 		Status:     0,
 		OwnerOrg:   clientOrgID,
 		HandlerOrg: "",
+		Note: 		arrangementInput.Note,
 	}
 
 	deliveryArrangementBytes, err := json.Marshal(deliveryArrangement)
