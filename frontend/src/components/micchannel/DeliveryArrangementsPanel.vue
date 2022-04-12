@@ -42,7 +42,7 @@
     </el-table-column>
   </el-table>
   <el-dialog center width="500px" v-model="deliveryArrangementFormVisible" title="Change deliveryArrangement Status Confirm">
-    <el-form label-position="right" label-width="80px">
+    <el-form label-position="right" label-width="135px">
       <el-form-item label="创建时间: ">
         {{selectedDeliveryArrangement.createTime}}
       </el-form-item>
@@ -64,7 +64,10 @@
       <el-form-item label="备注: ">
         {{selectedDeliveryArrangement.note}}
       </el-form-item>
-      <el-select v-model="selectedDeliveryArrangement.newStatus" placeholder="Select">
+      <el-form-item v-show="noteDeliveryDetailVisible" label="DeliveryDetailNote:">
+        <el-input placeholder="note for DeliveryDetail" v-model=this.noteDeliveryDetail />
+      </el-form-item>
+      <el-select @change="showNoteDeliveryDetail" style="margin-left: 135px" v-model="selectedDeliveryArrangement.newStatus" placeholder="Select">
         <el-option
             v-for="item in statusOptions"
             :key="item"
@@ -90,7 +93,13 @@ import {ElMessage, ElNotification} from 'element-plus';
 export default {
   name: "DeliveryArrangements",
   methods: {
-
+    showNoteDeliveryDetail(){
+      if(this.selectedDeliveryArrangement.newStatus===1){
+        this.noteDeliveryDetailVisible=true;
+      }else{
+        this.noteDeliveryDetailVisible=false;
+      }
+    },
     getDeliveryArrangementForm(deliveryArrangementProxy) {
       this.selectedDeliveryArrangement = JSON.parse(JSON.stringify(deliveryArrangementProxy));
       this.selectedDeliveryArrangement.newStatus = this.selectedDeliveryArrangement.status;
@@ -195,6 +204,7 @@ export default {
             type: 'success',
           });
           that.loading = false;
+          that.noteDeliveryDetailVisible=false;
           that.getDeliveryArrangements();
         }).catch(error => {
           that.loading = false;
@@ -236,7 +246,7 @@ export default {
             StartPlace: this.selectedDeliveryArrangement.startPlace,
             EndPlace: this.selectedDeliveryArrangement.endPlace,
             Contact: "beijing",
-            note: "create DeliveryDetail",
+            note: this.noteDeliveryDetail,
           }
         }
       };
@@ -259,6 +269,8 @@ export default {
       loading: true,
       user: {},
       deliveryArrangementFormVisible: false,
+      noteDeliveryDetail: "",
+      noteDeliveryDetailVisible: false,
       selectedDeliveryArrangement: {},
       statusOptions: [
         {

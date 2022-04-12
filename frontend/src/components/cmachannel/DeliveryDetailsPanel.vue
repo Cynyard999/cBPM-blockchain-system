@@ -177,7 +177,7 @@ export default {
         args: []
       };
       let that = this;
-      this.loading = true;
+      this.loading=true;
       request('/work/query', body, "POST").then(response => {
         that.deliveryDetails = response.data.result;
         that.loading = false;

@@ -42,7 +42,7 @@
         </el-table-column>
     </el-table>
     <el-dialog center width="500px" v-model="orderFormVisible" title="Change Order Status Confirm">
-        <el-form label-position="right" label-width="80px">
+        <el-form label-position="right" label-width="100px">
             <el-form-item label="创建时间: ">
                 {{selectedOrder.createTime}}
             </el-form-item>
@@ -61,7 +61,13 @@
             <el-form-item label="备注: ">
                 {{selectedOrder.note}}
             </el-form-item>
-            <el-select v-model="selectedOrder.newStatus" placeholder="Select">
+          <el-form-item v-show="noteForOtherVisible" label="SupplyNote:">
+            <el-input placeholder="note for supplyOrder" v-model=this.noteForSupplyOrder />
+          </el-form-item>
+          <el-form-item v-show="noteForOtherVisible" label="DeliveryNote: ">
+            <el-input placeholder="note for deliveryArrangement" v-model=this.noteForDeliveryArrangement />
+          </el-form-item>
+            <el-select style="margin-left: 100px" @change="this.showNoteForOtherOrder()" v-model="selectedOrder.newStatus" placeholder="Select">
                 <el-option
                         v-for="item in statusOptions"
                         :key="item"
@@ -70,10 +76,11 @@
                         :disabled="checkDisabled(item.value)"
                 />
             </el-select>
+
         </el-form>
         <template #footer>
           <span>
-            <el-button @click="orderFormVisible = false">取消</el-button>
+            <el-button @click="orderFormVisible = false;noteForOtherVisible=false">取消</el-button>
             <el-button type="primary" @click="changeOrderStatus()">确定</el-button>
           </span>
         </template>
@@ -87,7 +94,13 @@
     export default {
         name: "orders",
         methods: {
-
+            showNoteForOtherOrder(){
+              if(this.selectedOrder.newStatus===1){
+                this.noteForOtherVisible=true;
+              }else {
+                this.noteForOtherVisible=false;
+              }
+            },
             getOrderForm(orderProxy) {
                 this.selectedOrder = JSON.parse(JSON.stringify(orderProxy));
                 this.selectedOrder.newStatus = this.selectedOrder.status;
@@ -151,6 +164,8 @@
                         args: [this.selectedOrder.tradeID]
                     };
                     if (this.selectedOrder.newStatus === 1) {
+                        this.createSupplyOrder();
+                        this.createDeliveryArrangement()
                         body.function = "HandleOrder";
                     }
                     if (this.selectedOrder.newStatus === 2) {
@@ -161,10 +176,6 @@
                     }
                     let that = this;
                     that.loading = true;
-                  if (this.selectedOrder.newStatus === 1) {
-                    this.createSupplyOrder();
-                    this.createDeliveryArrangement()
-                  }
                     request('/work/invoke', body, "POST").then(response => {
                       //handleOrder的时候一起把创建supplyOrder和DeliveryArrangement
                         ElMessage({
@@ -172,6 +183,7 @@
                             type: 'success',
                         });
                         that.loading = false;
+                        that.noteForOtherVisible=false;
                         that.getOrders();
 
                     }).catch(error => {
@@ -209,7 +221,7 @@
                     TradeId: this.selectedOrder.tradeID,
                     AssetId: this.selectedOrder.assetID,
                     Quantity: this.selectedOrder.quantity,
-                    Note: "create supplyerOrder"
+                    Note: this.noteForSupplyOrder,
                   }
                 }
               };
@@ -236,7 +248,7 @@
                     StartPlace: this.selectedOrder.shippingAddress,
                     EndPlace: this.selectedOrder.receivingAddress,
                     Fee: 250.4,
-                    Note: "create arrangement"
+                    Note: this.noteForDeliveryArrangement
                   }
                 }
               };
@@ -258,6 +270,9 @@
                 loading: true,
                 user: {},
                 orderFormVisible: false,
+                noteForOtherVisible: false,
+                noteForSupplyOrder: "",
+                noteForDeliveryArrangement: "",
                 selectedOrder: {},
                 statusOptions: [
                     {

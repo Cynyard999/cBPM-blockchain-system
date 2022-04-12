@@ -41,8 +41,9 @@
       </template>
     </el-table-column>
   </el-table>
+
   <el-dialog center width="500px" v-model="supplyOrderFormVisible" title="Change Order Status Confirm">
-    <el-form label-position="right" label-width="80px">
+    <el-form label-position="right" label-width="100px">
       <el-form-item label="创建时间: ">
         {{selectedSupplyOrder.createTime}}
       </el-form-item>
@@ -61,7 +62,10 @@
       <el-form-item label="备注: ">
         {{selectedSupplyOrder.note}}
       </el-form-item>
-      <el-select v-model="selectedSupplyOrder.newStatus" placeholder="Select">
+      <el-form-item v-show="noteDeliveryOrderVisible" label="DeliveryNote:">
+        <el-input placeholder="note for deliveryOrder" v-model=this.noteForDeliveryOrder />
+      </el-form-item>
+      <el-select @change="showNoteDelivery" style="margin-left: 100px" v-model="selectedSupplyOrder.newStatus" placeholder="Select">
         <el-option
             v-for="item in statusOptions"
             :key="item"
@@ -87,7 +91,13 @@ import {ElMessage, ElNotification} from 'element-plus';
 export default {
   name: "SupplyOrders",
   methods: {
-
+    showNoteDelivery(){
+      if(this.selectedSupplyOrder.newStatus===2){
+        this.noteDeliveryOrderVisible=true;
+      }else{
+        this.noteDeliveryOrderVisible=false;
+      }
+    },
     getSupplyOrderForm(orderProxy) {
       this.selectedSupplyOrder = JSON.parse(JSON.stringify(orderProxy));
       this.selectedSupplyOrder.newStatus = this.selectedSupplyOrder.status;
@@ -171,6 +181,7 @@ export default {
             type: 'success',
           });
           that.loading = false;
+          that.noteDeliveryOrderVisible=false;
           that.getSupplyOrders();
         }).catch(error => {
           that.loading = false;
@@ -205,7 +216,7 @@ export default {
             order:{
               tradeID: this.selectedSupplyOrder.tradeID,
               assetName: this.selectedSupplyOrder.assetName,
-              note: "create deliveryOrder"
+              note: this.noteForDeliveryOrder,
             }
 
         }
@@ -227,6 +238,8 @@ export default {
       loading: true,
       user: {},
       supplyOrderFormVisible: false,
+      noteDeliveryOrderVisible: false,
+      noteForDeliveryOrder:"",
       selectedSupplyOrder: {},
       statusOptions: [
         {

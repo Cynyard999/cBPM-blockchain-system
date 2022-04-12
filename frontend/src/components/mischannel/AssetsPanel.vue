@@ -292,12 +292,14 @@
               this.addAssetFormVisiable=false;
               return;
             }
+            let that=this;
             request('/work/invoke', body, "POST").then(response => {
               ElMessage({
                 message: '创建newAsset成功',
                 type: 'success',
               });
               console.log('创建newAsset成功');
+              that.getAssets();
               this.addAssetFormVisiable=false;
               this.newAsset.assetPrice="";
               this.newAsset.assetName="";
