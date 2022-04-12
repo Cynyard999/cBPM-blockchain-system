@@ -37,8 +37,8 @@
       </template>
     </el-table-column>
   </el-table>
-  <el-dialog center width="500px" v-model="deliveryOrderFormVisible" title="Change Order Status Confirm">
-    <el-form label-position="right" label-width="190px">
+  <el-dialog center width="600px" v-model="deliveryOrderFormVisible" title="Change Order Status Confirm">
+    <el-form label-position="right" label-width="170px">
       <el-form-item label="创建时间: ">
         {{selectedDeliveryOrder.createTime}}
       </el-form-item>
@@ -48,7 +48,13 @@
       <el-form-item label="备注: ">
         {{selectedDeliveryOrder.note}}
       </el-form-item>
-      <el-select style="margin-left: 120px" v-model="selectedDeliveryOrder.newStatus" placeholder="Select">
+      <el-form-item v-show="noteDeliveryDetailVisible" label="DeliveryDetailNote:">
+        <el-input placeholder="note for DeliveryDetail" v-model=this.noteDeliveryDetail />
+      </el-form-item>
+      <el-form-item v-show="noteDeliveryDetailVisible" label="contactForDeliveryDetail:">
+        <el-input placeholder="contact for DeliveryDetail" v-model=this.contact />
+      </el-form-item>
+      <el-select @change="showNoteDeliveryDetail" style="margin-left: 170px" v-model="selectedDeliveryOrder.newStatus" placeholder="Select">
         <el-option
             v-for="item in statusOptions"
             :key="item"
@@ -74,7 +80,14 @@ import {ElMessage, ElNotification} from 'element-plus';
 export default {
   name: "DeliveryOrders",
   methods: {
-
+    showNoteDeliveryDetail(){
+      if(this.selectedDeliveryOrder.newStatus===1){
+        // 无法创建暂时永远设置为false
+        this.noteDeliveryDetailVisible=false;
+      }else{
+        this.noteDeliveryDetailVisible=false;
+      }
+    },
     getDeliveryOrderForm(orderProxy) {
       this.selectedDeliveryOrder = JSON.parse(JSON.stringify(orderProxy));
       this.selectedDeliveryOrder.newStatus = this.selectedDeliveryOrder.status;
@@ -148,6 +161,8 @@ export default {
         if (this.selectedDeliveryOrder.newStatus === 1) {
           body.function = "HandleDeliveryOrder";
           bodyDeliveryDetail.function = "HandleDeliveryArrangement";
+          // 无法通过deliveryOrder这边创建deliveryDetail
+          // this.createDeliveryDetail();
         }
         if (this.selectedDeliveryOrder.newStatus === 2) {
           body.function = "FinishDeliveryOrder";
@@ -163,7 +178,7 @@ export default {
         //先修改DeliveryArrangement的status
         request('/work/invoke', bodyDeliveryDetail, "POST").then(response => {
           ElMessage({
-            message: '修改DeliveryDetail成功',
+            message: '修改DeliveryArrangement成功',
             type: 'success',
           });
         }).catch(error => {
@@ -201,7 +216,33 @@ export default {
     getUser() {
       this.user = JSON.parse(window.localStorage.getItem("user"));
     },
-
+    createDeliveryDetail(){
+      let body={
+        channelName: "cmachannel",
+        contractName: "cmachaincode",
+        function:  "CreateDeliveryDetail",
+        transient:{
+          detail:{
+            TradeId: this.selectedDeliveryOrder.tradeID,
+            AssetName: this.selectedDeliveryOrder.assetName,
+            // 这两个属性deliveryorder并没有
+            StartPlace: this.selectedDeliveryOrder.startPlace,
+            EndPlace: this.selectedDeliveryOrder.endPlace,
+            Contact: this.contact,
+            note: this.noteDeliveryDetail,
+          }
+        }
+      };
+      request('/work/invoke', body, "POST").then(response => {
+        ElMessage({
+          message: '创建DeliveryDetail成功',
+          type: 'success',
+        });
+        console.log('创建DeliveryDetail成功')
+      }).catch(error => {
+        console.log('创建DeliveryDetail失败')
+      });
+    },
   },
   data() {
     return {
@@ -209,6 +250,9 @@ export default {
       loading: true,
       user: {},
       deliveryOrderFormVisible: false,
+      noteDeliveryDetail: "",
+      contact:"",
+      noteDeliveryDetailVisible: false,
       selectedDeliveryOrder: {},
       statusOptions: [
         {

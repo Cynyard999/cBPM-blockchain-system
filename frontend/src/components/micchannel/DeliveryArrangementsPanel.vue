@@ -41,8 +41,8 @@
       </template>
     </el-table-column>
   </el-table>
-  <el-dialog center width="500px" v-model="deliveryArrangementFormVisible" title="Change deliveryArrangement Status Confirm">
-    <el-form label-position="right" label-width="135px">
+  <el-dialog center width="600px" v-model="deliveryArrangementFormVisible" title="Change deliveryArrangement Status Confirm">
+    <el-form label-position="right" label-width="170px">
       <el-form-item label="创建时间: ">
         {{selectedDeliveryArrangement.createTime}}
       </el-form-item>
@@ -67,7 +67,10 @@
       <el-form-item v-show="noteDeliveryDetailVisible" label="DeliveryDetailNote:">
         <el-input placeholder="note for DeliveryDetail" v-model=this.noteDeliveryDetail />
       </el-form-item>
-      <el-select @change="showNoteDeliveryDetail" style="margin-left: 135px" v-model="selectedDeliveryArrangement.newStatus" placeholder="Select">
+      <el-form-item v-show="noteDeliveryDetailVisible" label="contactForDeliveryDetail:">
+        <el-input placeholder="contact for DeliveryDetail" v-model=this.contact />
+      </el-form-item>
+      <el-select @change="showNoteDeliveryDetail" style="margin-left: 170px" v-model="selectedDeliveryArrangement.newStatus" placeholder="Select">
         <el-option
             v-for="item in statusOptions"
             :key="item"
@@ -245,7 +248,7 @@ export default {
             AssetName: this.selectedDeliveryArrangement.assetName,
             StartPlace: this.selectedDeliveryArrangement.startPlace,
             EndPlace: this.selectedDeliveryArrangement.endPlace,
-            Contact: "beijing",
+            Contact: this.contact,
             note: this.noteDeliveryDetail,
           }
         }
@@ -272,6 +275,7 @@ export default {
       noteDeliveryDetail: "",
       noteDeliveryDetailVisible: false,
       selectedDeliveryArrangement: {},
+      contact:"",
       statusOptions: [
         {
           value: 0,

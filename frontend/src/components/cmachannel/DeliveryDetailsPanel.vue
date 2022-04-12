@@ -10,7 +10,10 @@
     <el-table-column prop="createTime" label="创建时间"/>
     <el-table-column prop="assetName" label="名称"/>
     <el-table-column prop="note" label="备注" overflow/>
-    <el-table-column prop="ownerOrg" label="所属组织"/>
+<!--    <el-table-column prop="ownerOrg" label="所属组织"/>-->
+    <el-table-column prop="contact" label="contact"/>
+    <el-table-column prop="startPlace" label="发货地"/>
+    <el-table-column prop="endPlace" label="收货地"/>
     <el-table-column prop="updateTime" label="修改时间"/>
     <el-table-column
         prop="tag"
@@ -124,6 +127,7 @@ export default {
         return true;
       }
       if (this.user.orgType === 'manufacturer') {
+        //生产商无法操作deliveryDetail
         return true;
       } else {
         return !(status === 1 || status === 2 || status === 0);
