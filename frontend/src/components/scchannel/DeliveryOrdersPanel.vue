@@ -31,7 +31,7 @@
     </el-table-column>
     <el-table-column label="Operations" width="120">
       <template #default="scope">
-        <el-button type="text" size="small" @click="getDeliveryOrderForm(scope.row)">
+        <el-button v-if="this.user.orgType==='supplier'" type="text" size="small" @click="getDeliveryOrderForm(scope.row)">
           修改状态
         </el-button>
       </template>
@@ -129,7 +129,7 @@ export default {
         return true;
       }
       if (this.user.orgType === 'supplier') {
-        return !(status === 3);
+        return true;
       } else {
         return !(status === 1 || status === 2 || status === 0);
       }
@@ -267,10 +267,6 @@ export default {
           value: 2,
           label: '处理完成'
         },
-        {
-          value: 3,
-          label: '确认完成'
-        }
       ]
     }
   },

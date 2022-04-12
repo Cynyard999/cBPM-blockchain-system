@@ -116,6 +116,7 @@ import {ElMessage, ElNotification} from 'element-plus';
 export default {
   name: "DeliveryDetails",
   methods: {
+    //获取对应order的详细信息以方便生产商确认收到货
     getOrderWithMiddleman(orderProxy){
       this.selectedDeliveryDetail = JSON.parse(JSON.stringify(orderProxy));
       let body={
