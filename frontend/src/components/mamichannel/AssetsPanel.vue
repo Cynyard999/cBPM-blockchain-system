@@ -34,7 +34,7 @@
         </el-table-column>
     </el-table>
     <el-dialog center width="500px" v-model="orderFormVisible" title="Create Order Confirm">
-        <el-form>
+        <el-form label-position="right" label-width="60px">
             <el-form-item label="名称: ">
                 <el-input disabled v-model="selectedAsset.assetName"/>
             </el-form-item>

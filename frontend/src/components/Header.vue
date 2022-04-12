@@ -21,7 +21,7 @@
                   <el-button type="text">Logout</el-button>
                 </li>
                 <el-dialog title="登录" v-model="loginFormVisible" center width="500px">
-                    <el-form :model="userInput">
+                    <el-form :model="userInput" label-position="right" label-width="75px">
                         <el-form-item label="Email">
                             <el-input v-model="userInput.email" prefix-icon="User"></el-input>
                         </el-form-item>
@@ -71,7 +71,7 @@
                         title: '登录成功',
                         message: response.data.result.name,
                         type: 'success',
-                        duration: 2000
+                        duration: 1000
                     });
                     this.loginFormVisible = false;
                     this.checkUserLogin();

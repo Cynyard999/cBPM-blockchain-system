@@ -42,7 +42,7 @@
     </el-table-column>
   </el-table>
   <el-dialog center width="500px" v-model="deliveryArrangementFormVisible" title="Change deliveryArrangement Status Confirm">
-    <el-form>
+    <el-form label-position="right" label-width="80px">
       <el-form-item label="创建时间: ">
         {{selectedDeliveryArrangement.createTime}}
       </el-form-item>

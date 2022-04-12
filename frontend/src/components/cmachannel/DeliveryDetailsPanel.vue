@@ -37,7 +37,7 @@
     </el-table-column>
   </el-table>
   <el-dialog center width="500px" v-model="deliveryDetailFormVisible" title="Change Detail Status Confirm">
-    <el-form>
+    <el-form label-position="right" label-width="80px">
       <el-form-item label="创建时间: ">
         {{selectedDeliveryDetail.createTime}}
       </el-form-item>

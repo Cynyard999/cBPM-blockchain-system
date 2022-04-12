@@ -36,7 +36,7 @@
         </el-table-column>
     </el-table>
     <el-dialog center width="500px" v-model="publishAssetFormVisible" title="Publish Asset Confirm">
-        <el-form>
+        <el-form label-position="right" label-width="60px">
             <el-form-item label="名称: ">
                 <el-input disabled v-model="selectedAsset.assetName"/>
             </el-form-item>
@@ -59,7 +59,7 @@
     </el-dialog>
 <!--createAsset的form-->
   <el-dialog center width="500px"  v-model="addAssetFormVisiable" title="add new asset">
-    <el-form>
+    <el-form label-position="right" label-width="60px">
       <el-form-item label="名称: ">
         <el-input  v-model=newAsset.assetName />
       </el-form-item>
@@ -82,7 +82,7 @@
   </el-dialog>
   <!--updateAsset的form-->
   <el-dialog center width="500px"  v-model="updateAssetFormVisiable" title="update asset">
-    <el-form>
+    <el-form label-position="right" label-width="60px">
       <el-form-item label="名称: ">
         <el-input  v-model="updateAssetData.assetName" />
       </el-form-item>
