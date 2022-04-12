@@ -33,8 +33,11 @@
     </el-table-column>
     <el-table-column label="Operations" width="120">
       <template #default="scope">
-        <el-button type="text" size="small" @click="getDeliveryDetailForm(scope.row)">
+        <el-button v-if="this.user.orgType==='carrier'" type="text" size="small" @click="getDeliveryDetailForm(scope.row)">
           修改状态
+        </el-button>
+        <el-button v-if="this.user.orgType==='manufacturer'" type="text" size="small" @click="getOrderWithMiddleman(scope.row)">
+          查看
         </el-button>
       </template>
     </el-table-column>
@@ -76,6 +79,34 @@
           </span>
     </template>
   </el-dialog>
+
+<el-dialog center width="500px" v-model="orderDetailFormVisible" title="show orderDetail">
+  <el-form label-position="right" label-width="187px">
+    <el-form-item label="创建时间: ">
+      {{orderDetails.createTime}}
+    </el-form-item>
+    <el-form-item label="商品名称: ">
+      {{orderDetails.assetName}}
+    </el-form-item>
+    <el-form-item label="数量: ">
+      {{orderDetails.quantity}}
+    </el-form-item>
+    <el-form-item label="发货地: ">
+      {{orderDetails.shippingAddress}}
+    </el-form-item>
+    <el-form-item label="收货地: ">
+      {{orderDetails.receivingAddress}}
+    </el-form-item>
+    <el-form-item label="备注: ">
+      {{orderDetails.note}}
+    </el-form-item>
+  </el-form>
+  <template #footer>
+          <span>
+            <el-button @click="orderDetailFormVisible = false">完成</el-button>
+          </span>
+  </template>
+</el-dialog>
 </template>
 
 <script>
@@ -85,7 +116,24 @@ import {ElMessage, ElNotification} from 'element-plus';
 export default {
   name: "DeliveryDetails",
   methods: {
-
+    getOrderWithMiddleman(orderProxy){
+      this.selectedDeliveryDetail = JSON.parse(JSON.stringify(orderProxy));
+      let body={
+        channelName: "mamichannel",
+        contractName: "mamichaincode",
+        function: "GetOrder",
+        args:[this.selectedDeliveryDetail.tradeID]
+      };
+      let that = this;
+      this.loading=true;
+      request('/work/query', body, "POST").then(response => {
+        that.orderDetails = response.data.result;
+        that.loading = false;
+        that.orderDetailFormVisible=true;
+      }).catch(error => {
+        that.loading = false;
+      });
+    },
     getDeliveryDetailForm(orderProxy) {
       this.selectedDeliveryDetail = JSON.parse(JSON.stringify(orderProxy));
       this.selectedDeliveryDetail.newStatus = this.selectedDeliveryDetail.status;
@@ -197,9 +245,11 @@ export default {
   data() {
     return {
       deliveryDetails: [],
+      orderDetails:[],
       loading: true,
       user: {},
       deliveryDetailFormVisible: false,
+      orderDetailFormVisible: false,
       selectedDeliveryDetail: {},
       statusOptions: [
         {
