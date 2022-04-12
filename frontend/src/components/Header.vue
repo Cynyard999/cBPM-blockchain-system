@@ -18,9 +18,7 @@
                     </el-tooltip>
                 </li>
                 <li v-show="isLogin" @click="logout">
-                    <el-icon>
-                        <close/>
-                    </el-icon>
+                  <el-button type="text">Logout</el-button>
                 </li>
                 <el-dialog title="登录" v-model="loginFormVisible" center width="500px">
                     <el-form :model="userInput">

@@ -87,7 +87,7 @@
         -ms-user-select: none;
         user-select: none;
         text-align: center;
-        margin-top: 5%;
+        margin-top: 4%;
         margin-left: auto;
         margin-right: auto;
         font-size: 40px;
@@ -109,8 +109,8 @@
     }
 
     .el-card {
-        height: 400px;
-        width: 400px;
+        height: 388px;
+        width: 388px;
         border-radius: 1rem;
         text-align: center;
     }
