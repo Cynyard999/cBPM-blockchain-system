@@ -171,7 +171,7 @@ export default {
             type: 'success',
           });
           that.loading = false;
-          that.getOrders();
+          that.getSupplyOrders();
         }).catch(error => {
           that.loading = false;
         });

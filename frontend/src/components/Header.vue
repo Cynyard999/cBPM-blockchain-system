@@ -80,7 +80,7 @@
                         title: '登录失败',
                         message: error.data.result.message,
                         type: 'success',
-                        duration: 2000
+                        duration: 1000
                     });
                 });
             },

@@ -163,7 +163,7 @@ export default {
             type: 'success',
           });
           that.loading = false;
-          that.getDetails();
+          that.getDeliveryDetails();
         }).catch(error => {
           that.loading = false;
         });

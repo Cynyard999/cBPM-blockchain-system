@@ -171,7 +171,6 @@ export default {
         }
         if (this.selectedDeliveryArrangement.newStatus === 3) {
           body.function = "ConfirmFinishDeliveryArrangement";
-          bodyDeliveryOeder.function = "ConfirmDeliveryOrder";
         }
         let that = this;
         that.loading = true;
@@ -180,15 +179,16 @@ export default {
           this.createDeliveryDetail();
         }
         //同时修改deliveryOrder的status
-        request('/work/invoke', bodyDeliveryOeder, "POST").then(response => {
-          ElMessage({
-            message: '修改DeliveryStatus成功',
-            type: 'success',
+        if(this.selectedDeliveryArrangement.newStatus !== 3) {
+          request('/work/invoke', bodyDeliveryOeder, "POST").then(response => {
+            ElMessage({
+              message: '修改DeliveryStatus成功',
+              type: 'success',
+            });
+          }).catch(error => {
+            that.loading = false;
           });
-        }).catch(error => {
-          that.loading = false;
-        });
-
+        }
         request('/work/invoke', body, "POST").then(response => {
           ElMessage({
             message: '修改成功',
