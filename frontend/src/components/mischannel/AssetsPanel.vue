@@ -1,4 +1,5 @@
 <template>
+  <el-button @click="this.addAssetFormVisable=true" v-if="user.orgType === 'supplier'" type="primary" style="margin-left: 1040px" plain>创建新Asset</el-button>
     <el-table
             :data="assets"
             :default-sort="{ prop: '单价', order: 'descending' }"
@@ -56,6 +57,29 @@
           </span>
         </template>
     </el-dialog>
+<!--createAsset的form-->
+  <el-dialog center width="500px"  v-model="addAssetFormVisable" title="add new asset">
+    <el-form>
+      <el-form-item label="名称: ">
+        <el-input  v-model=newAsset.assetName />
+      </el-form-item>
+      <el-form-item label="单价: ">
+        <el-input v-model=newAsset.assetPrice />
+      </el-form-item>
+      <el-form-item label="发货地: ">
+        <el-input v-model=newAsset.shippingAddress />
+        </el-form-item>
+        <el-form-item label="描述: ">
+          <el-input v-model=newAsset.publicDescription />
+        </el-form-item>
+    </el-form>
+    <template #footer>
+          <span>
+            <el-button @click="addAssetFormVisable = false">取消</el-button>
+            <el-button type="primary" @click="createAsset()">确定</el-button>
+          </span>
+    </template>
+  </el-dialog>
 </template>
 
 <script>
@@ -150,7 +174,38 @@
             },
             getUser() {
                 this.user = JSON.parse(window.localStorage.getItem("user"));
-            }
+            },
+          createAsset(){
+            this.addAssetFormVisable=true;
+            let body={
+              channelName: "mischannel",
+              contractName: "mischaincode",
+              function: "CreateAsset",
+              transient:{
+                asset:{
+                  assetName: this.newAsset.assetName,
+                  assetPrice: this.newAsset.assetPrice*1,
+                  shippingAddress: this.newAsset.shippingAddress,
+                  publicDescription: this.newAsset.publicDescription
+                }
+              }
+
+            };
+            request('/work/invoke', body, "POST").then(response => {
+              ElMessage({
+                message: '创建newAsset成功',
+                type: 'success',
+              });
+              console.log('创建newAsset成功');
+              this.addAssetFormVisable=false;
+              this.newAsset.assetPrice="";
+              this.newAsset.assetName="";
+              this.newAsset.shippingAddress="";
+              this.newAsset.publicDescription="";
+            }).catch(error => {
+              console.log('创建newAsset失败')
+            });
+          }
         },
         data() {
             return {
@@ -159,6 +214,14 @@
                 user: {},
                 publishAssetFormVisible: false,
                 selectedAsset: {},
+                addAssetFormVisable: false,
+// 创建新asset的数据结构
+                newAsset:{
+                  assetName:"",
+                  assetPrice:"",
+                  shippingAddress:"",
+                  publicDescription:""
+              }
             }
         },
         mounted() {
