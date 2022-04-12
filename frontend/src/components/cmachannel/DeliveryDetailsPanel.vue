@@ -37,7 +37,7 @@
     </el-table-column>
   </el-table>
   <el-dialog center width="500px" v-model="deliveryDetailFormVisible" title="Change Detail Status Confirm">
-    <el-form label-position="right" label-width="80px">
+    <el-form label-position="right" label-width="187px">
       <el-form-item label="创建时间: ">
         {{selectedDeliveryDetail.createTime}}
       </el-form-item>
@@ -56,7 +56,7 @@
       <el-form-item label="备注: ">
         {{selectedDeliveryDetail.note}}
       </el-form-item>
-      <el-select v-model="selectedDeliveryDetail.newStatus" placeholder="Select">
+      <el-select style="margin-left: 120px" v-model="selectedDeliveryDetail.newStatus" placeholder="Select">
         <el-option
             v-for="item in statusOptions"
             :key="item"
@@ -124,7 +124,7 @@ export default {
         return true;
       }
       if (this.user.orgType === 'manufacturer') {
-        return !( status === 2);
+        return true;
       } else {
         return !(status === 1 || status === 2 || status === 0);
       }

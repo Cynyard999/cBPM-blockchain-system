@@ -142,7 +142,7 @@
                     return true;
                 }
                 if (this.user.orgType === 'manufacturer') {
-                    return !(status === 3 || status === 2);
+                    return !(status === 3);
                 } else {
                     return !(status === 1 || status === 2 || status === 0);
                 }
