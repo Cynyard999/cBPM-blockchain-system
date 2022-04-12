@@ -1,5 +1,5 @@
 <template>
-  <el-button @click="this.addAssetFormVisable=true" v-if="user.orgType === 'supplier'" type="primary" style="margin-left: 1040px" plain>创建新Asset</el-button>
+  <el-button @click="this.addAssetFormVisiable=true" v-if="user.orgType === 'supplier'" type="primary" style="margin-left: 1040px" plain>创建新Asset</el-button>
     <el-table
             :data="assets"
             :default-sort="{ prop: '单价', order: 'descending' }"
@@ -22,8 +22,8 @@
                         </el-button>
                     </template>
                 </el-popconfirm>
-                <el-button type="text" size="small">
-
+                <el-button @click="beforeUpdateAsset(scope.row)" type="text" size="small">
+                    修改
                 </el-button>
             </template>
         </el-table-column>
@@ -58,7 +58,7 @@
         </template>
     </el-dialog>
 <!--createAsset的form-->
-  <el-dialog center width="500px"  v-model="addAssetFormVisable" title="add new asset">
+  <el-dialog center width="500px"  v-model="addAssetFormVisiable" title="add new asset">
     <el-form>
       <el-form-item label="名称: ">
         <el-input  v-model=newAsset.assetName />
@@ -75,8 +75,31 @@
     </el-form>
     <template #footer>
           <span>
-            <el-button @click="addAssetFormVisable = false">取消</el-button>
+            <el-button @click="addAssetFormVisiable = false">取消</el-button>
             <el-button type="primary" @click="createAsset()">确定</el-button>
+          </span>
+    </template>
+  </el-dialog>
+  <!--updateAsset的form-->
+  <el-dialog center width="500px"  v-model="updateAssetFormVisiable" title="update asset">
+    <el-form>
+      <el-form-item label="名称: ">
+        <el-input  v-model="updateAssetData.assetName" />
+      </el-form-item>
+      <el-form-item label="单价: ">
+        <el-input v-model=updateAssetData.assetPrice />
+      </el-form-item>
+      <el-form-item label="发货地: ">
+        <el-input v-model=updateAssetData.shippingAddress />
+      </el-form-item>
+      <el-form-item label="描述: ">
+        <el-input v-model=updateAssetData.publicDescription />
+      </el-form-item>
+    </el-form>
+    <template #footer>
+          <span>
+            <el-button @click="updateAssetFormVisiable = false">取消</el-button>
+            <el-button type="primary" @click="updateAsset()">确定</el-button>
           </span>
     </template>
   </el-dialog>
@@ -114,7 +137,62 @@
             // TODO 创建完成后显示创建的东西
             // TODO 值校验 非空 数字
             // TODO 前后端自定义返回的状态，从而打印不同的消息
+            beforeUpdateAsset(assetProxy){
+              this.selectedAsset = JSON.parse(JSON.stringify(assetProxy));
+              this.updateAssetFormVisiable=true;
+              this.updateAssetData.assetID=this.selectedAsset.assetID;
+              this.updateAssetData.assetName=this.selectedAsset.assetName;
+              this.updateAssetData.assetPrice=this.selectedAsset.assetPrice;
+              this.updateAssetData.shippingAddress=this.selectedAsset.shippingAddress;
+              this.updateAssetData.publicDescription=this.selectedAsset.publicDescription;
+            },
 
+            updateAsset(){
+              let body = {
+                channelName: "mischannel",
+                contractName: "mischaincode",
+                function: "UpdateAsset",
+                args: [
+                  this.updateAssetData.assetID,
+                  this.updateAssetData.assetName,
+                  this.updateAssetData.assetPrice*1,
+                  this.updateAssetData.shippingAddress,
+                  this.updateAssetData.publicDescription]
+              };
+              if(this.updateAssetData.assetName.length===0){
+                ElMessage({
+                  message: 'assetName不能为空',
+                  type: 'warning',
+                });
+                this.updateAssetFormVisiable=false;
+                return;
+              }
+              if(this.updateAssetData.assetPrice*1<0){
+                ElMessage({
+                  message: 'assetPrice必须>=0',
+                  type: 'warning',
+                });
+                this.updateAssetFormVisiable=false;
+                return;
+              }
+              if(this.updateAssetData.shippingAddress.length===0){
+                ElMessage({
+                  message: '发货地不能为空',
+                  type: 'warning',
+                });
+                this.updateAssetFormVisiable=false;
+                return;
+              }
+              request('/work/invoke', body, "POST").then(response => {
+                ElMessage({
+                  message: '修改成功',
+                  type: 'success',
+                });
+                this.updateAssetFormVisiable=false;
+              }).catch(error=>{
+                this.loading = false;
+              })
+            },
             getPublishAssetForm(assetProxy) {
                 this.selectedAsset = JSON.parse(JSON.stringify(assetProxy));
                 delete this.selectedAsset.ownerOrg;
@@ -176,7 +254,7 @@
                 this.user = JSON.parse(window.localStorage.getItem("user"));
             },
           createAsset(){
-            this.addAssetFormVisable=true;
+            this.addAssetFormVisiable=true;
             let body={
               channelName: "mischannel",
               contractName: "mischaincode",
@@ -189,15 +267,38 @@
                   publicDescription: this.newAsset.publicDescription
                 }
               }
-
             };
+            if(this.newAsset.assetName.length===0){
+              ElMessage({
+                message: 'assetName不能为空',
+                type: 'warning',
+              });
+              this.addAssetFormVisiable=false;
+              return;
+            }
+            if(this.newAsset.assetPrice*1<0){
+              ElMessage({
+                message: 'assetPrice必须>=0',
+                type: 'warning',
+              });
+              this.addAssetFormVisiable=false;
+              return;
+            }
+            if(this.newAsset.shippingAddress.length===0){
+              ElMessage({
+                message: '发货地不能为空',
+                type: 'warning',
+              });
+              this.addAssetFormVisiable=false;
+              return;
+            }
             request('/work/invoke', body, "POST").then(response => {
               ElMessage({
                 message: '创建newAsset成功',
                 type: 'success',
               });
               console.log('创建newAsset成功');
-              this.addAssetFormVisable=false;
+              this.addAssetFormVisiable=false;
               this.newAsset.assetPrice="";
               this.newAsset.assetName="";
               this.newAsset.shippingAddress="";
@@ -214,14 +315,23 @@
                 user: {},
                 publishAssetFormVisible: false,
                 selectedAsset: {},
-                addAssetFormVisable: false,
+                addAssetFormVisiable: false,
 // 创建新asset的数据结构
                 newAsset:{
                   assetName:"",
                   assetPrice:"",
                   shippingAddress:"",
                   publicDescription:""
-              }
+              },
+              updateAssetFormVisiable:false,
+               updateAssetData:{
+                  assetID:"",
+                 assetName:"",
+                 assetPrice:"",
+                 shippingAddress:"",
+                 publicDescription:""
+               }
+
             }
         },
         mounted() {
