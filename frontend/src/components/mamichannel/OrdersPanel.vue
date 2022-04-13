@@ -61,13 +61,14 @@
             <el-form-item label="备注: ">
                 {{selectedOrder.note}}
             </el-form-item>
-          <el-form-item v-show="noteForOtherVisible" label="SupplyNote:">
-            <el-input placeholder="note for supplyOrder" v-model=this.noteForSupplyOrder />
-          </el-form-item>
-          <el-form-item v-show="noteForOtherVisible" label="DeliveryNote: ">
-            <el-input placeholder="note for deliveryArrangement" v-model=this.noteForDeliveryArrangement />
-          </el-form-item>
-            <el-select style="margin-left: 100px" @change="this.showNoteForOtherOrder()" v-model="selectedOrder.newStatus" placeholder="Select">
+            <el-form-item v-show="noteForOtherVisible" label="SupplyNote:">
+                <el-input placeholder="note for supplyOrder" v-model=this.noteForSupplyOrder></el-input>
+            </el-form-item>
+            <el-form-item v-show="noteForOtherVisible" label="DeliveryNote: ">
+                <el-input placeholder="note for deliveryArrangement" v-model=this.noteForDeliveryArrangement></el-input>
+            </el-form-item>
+            <el-select style="margin-left: 100px" @change="this.showNoteForOtherOrder()"
+                       v-model="selectedOrder.newStatus" placeholder="Select">
                 <el-option
                         v-for="item in statusOptions"
                         :key="item"
@@ -80,7 +81,7 @@
         </el-form>
         <template #footer>
           <span>
-            <el-button @click="orderFormVisible = false;noteForOtherVisible=false">取消</el-button>
+            <el-button @click="orderFormVisible = false; noteForOtherVisible=false">取消</el-button>
             <el-button type="primary" @click="changeOrderStatus()">确定</el-button>
           </span>
         </template>
@@ -94,12 +95,8 @@
     export default {
         name: "orders",
         methods: {
-            showNoteForOtherOrder(){
-              if(this.selectedOrder.newStatus===1){
-                this.noteForOtherVisible=true;
-              }else {
-                this.noteForOtherVisible=false;
-              }
+            showNoteForOtherOrder() {
+                this.noteForOtherVisible = this.selectedOrder.newStatus === 1;
             },
             getOrderForm(orderProxy) {
                 this.selectedOrder = JSON.parse(JSON.stringify(orderProxy));
@@ -165,7 +162,7 @@
                     };
                     if (this.selectedOrder.newStatus === 1) {
                         this.createSupplyOrder();
-                        this.createDeliveryArrangement()
+                        this.createDeliveryArrangement();
                         body.function = "HandleOrder";
                     }
                     if (this.selectedOrder.newStatus === 2) {
@@ -177,13 +174,13 @@
                     let that = this;
                     that.loading = true;
                     request('/work/invoke', body, "POST").then(response => {
-                      //handleOrder的时候一起把创建supplyOrder和DeliveryArrangement
+                        //handleOrder的时候一起把创建supplyOrder和DeliveryArrangement
                         ElMessage({
                             message: '修改成功',
                             type: 'success',
                         });
                         that.loading = false;
-                        that.noteForOtherVisible=false;
+                        that.noteForOtherVisible = false;
                         that.getOrders();
 
                     }).catch(error => {
@@ -210,58 +207,58 @@
             getUser() {
                 this.user = JSON.parse(window.localStorage.getItem("user"));
             },
-          //在middleman对order进行handle的同时进行创建supplyOrder
-            createSupplyOrder(){
-              let body={
-                channelName: "mischannel",
-                contractName: "mischaincode",
-                function:  "CreateSupplyOrder",
-                transient:{
-                  order:{
-                    TradeId: this.selectedOrder.tradeID,
-                    AssetId: this.selectedOrder.assetID,
-                    Quantity: this.selectedOrder.quantity,
-                    Note: this.noteForSupplyOrder,
-                  }
-                }
-              };
-                  request('/work/invoke', body, "POST").then(response => {
-                ElMessage({
-                  message: '创建supplyorder成功',
-                  type: 'success',
-                });
-                console.log('创建supplyorder成功')
-              }).catch(error => {
+            //在middleman对order进行handle的同时进行创建supplyOrder
+            createSupplyOrder() {
+                let body = {
+                    channelName: "mischannel",
+                    contractName: "mischaincode",
+                    function: "CreateSupplyOrder",
+                    transient: {
+                        order: {
+                            TradeId: this.selectedOrder.tradeID,
+                            AssetId: this.selectedOrder.assetID,
+                            Quantity: this.selectedOrder.quantity,
+                            Note: this.noteForSupplyOrder,
+                        }
+                    }
+                };
+                request('/work/invoke', body, "POST").then(response => {
+                    ElMessage({
+                        message: '创建supplyorder成功',
+                        type: 'success',
+                    });
+                    console.log('创建supplyorder成功')
+                }).catch(error => {
                     console.log('创建supplyorder失败')
-              });
+                });
             },
-          createDeliveryArrangement(){
-              let body={
-                channelName: "micchannel",
-                contractName: "micchaincode",
-                function: "CreateDeliveryArrangement",
-                transient: {
-                  arrangement:{
-                    TradeID: this.selectedOrder.tradeID,
-                    AssetName: this.selectedOrder.assetName,
-                    Quantity: this.selectedOrder.quantity,
-                    StartPlace: this.selectedOrder.shippingAddress,
-                    EndPlace: this.selectedOrder.receivingAddress,
-                    Fee: 250.4,
-                    Note: this.noteForDeliveryArrangement
-                  }
-                }
-              };
-            request('/work/invoke', body, "POST").then(response => {
-              ElMessage({
-                message: '创建arrangement成功',
-                type: 'success',
-              });
-              console.log('创建arranmement成功')
-            }).catch(error => {
-              console.log('创建arrangement失败')
-            });
-          },
+            createDeliveryArrangement() {
+                let body = {
+                    channelName: "micchannel",
+                    contractName: "micchaincode",
+                    function: "CreateDeliveryArrangement",
+                    transient: {
+                        arrangement: {
+                            TradeID: this.selectedOrder.tradeID,
+                            AssetName: this.selectedOrder.assetName,
+                            Quantity: this.selectedOrder.quantity,
+                            StartPlace: this.selectedOrder.shippingAddress,
+                            EndPlace: this.selectedOrder.receivingAddress,
+                            Fee: 250.4,
+                            Note: this.noteForDeliveryArrangement
+                        }
+                    }
+                };
+                request('/work/invoke', body, "POST").then(response => {
+                    ElMessage({
+                        message: '创建arrangement成功',
+                        type: 'success',
+                    });
+                    console.log('创建arranmement成功')
+                }).catch(error => {
+                    console.log('创建arrangement失败')
+                });
+            },
 
         },
         data() {

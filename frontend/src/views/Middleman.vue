@@ -31,7 +31,6 @@
                             <el-menu-item index="/middleman/goods" >供应商品</el-menu-item>
                             <el-menu-item index="/middleman/orders" >商品订单</el-menu-item>
                         </el-sub-menu>
-
                         <el-sub-menu index="3">
                             <template #title>
                                 <el-icon>
