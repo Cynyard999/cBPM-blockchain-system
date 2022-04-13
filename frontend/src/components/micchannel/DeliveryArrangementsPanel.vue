@@ -225,7 +225,9 @@
                 this.loading = true;
                 request('/work/query', body, "POST").then(response => {
                     that.deliveryArrangements = response.data.result;
-
+                    if (that.deliveryArrangements === null) {
+                        that.deliveryArrangements = [];
+                    }
                     that.loading = false;
                 }).catch(error => {
                     that.loading = false;
@@ -256,7 +258,6 @@
                         message: '创建DeliveryDetail成功',
                         type: 'success',
                     });
-                    console.log('创建DeliveryDetail成功')
                 }).catch(error => {
                     console.log('创建DeliveryDetail失败')
                 });

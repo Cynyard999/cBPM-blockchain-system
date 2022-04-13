@@ -147,6 +147,9 @@
                 let that = this;
                 request('/work/query', body, "POST").then(response => {
                     that.assets = response.data.result;
+                    if (that.assets === null) {
+                        that.assets = [];
+                    }
                     that.loading = false;
                 }).catch(error => {
                     that.loading = false;

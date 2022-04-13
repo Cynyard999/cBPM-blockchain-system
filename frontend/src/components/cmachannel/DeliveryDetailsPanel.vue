@@ -235,6 +235,9 @@
                 this.loading = true;
                 request('/work/query', body, "POST").then(response => {
                     that.deliveryDetails = response.data.result;
+                    if (that.deliveryDetails === null) {
+                        that.deliveryDetails = [];
+                    }
                     that.loading = false;
                 }).catch(error => {
                     that.loading = false;

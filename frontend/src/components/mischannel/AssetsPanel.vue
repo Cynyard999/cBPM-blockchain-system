@@ -247,6 +247,9 @@
                 let that = this;
                 request('/work/query', body, "POST").then(response => {
                     that.assets = response.data.result;
+                    if (that.assets === null) {
+                        that.assets = [];
+                    }
                     that.loading = false;
                 }).catch(error => {
                     that.loading = false;
@@ -300,7 +303,6 @@
                         message: '创建newAsset成功',
                         type: 'success',
                     });
-                    console.log('创建newAsset成功');
                     that.getAssets();
                     this.addAssetFormVisiable = false;
                     this.newAsset.assetPrice = "";

@@ -210,6 +210,9 @@
                 this.loading = true;
                 request('/work/query', body, "POST").then(response => {
                     that.deliveryOrders = response.data.result;
+                    if (that.deliveryOrders === null) {
+                        that.deliveryOrders = [];
+                    }
                     that.loading = false;
                 }).catch(error => {
                     that.loading = false;
