@@ -1,0 +1,63 @@
+[
+  {
+    "name": "SupplyOrderCollection",
+    "policy": "OR('SupplierMSP.member', 'MiddlemanMSP.member')",
+    "maxPeerCount": 3,
+    "blockToLive": 0,
+    "memberOnlyRead": true,
+    "memberOnlyWrite": true
+  },
+  {
+    "name": "SupplyAssetCollection",
+    "policy": "OR('SupplierMSP.member', 'MiddlemanMSP.member')",
+    "maxPeerCount": 3,
+    "blockToLive": 0,
+    "memberOnlyRead": true,
+    "memberOnlyWrite": true
+  },
+  {
+    "name": "CarryArrangementCollection",
+    "policy": "OR('MiddlemanMSP.member', 'CarrierMSP.member')",
+    "requiredPeerCount": 0,
+    "maxPeerCount": 3,
+    "blockToLive": 0,
+    "memberOnlyRead": true,
+    "memberOnlyWrite": true
+  },
+  {
+    "name": "DeliveryDetailCollection",
+    "policy": "OR('CarrierMSP.member','ManufacturerMSP.member')",
+    "requiredPeerCount": 0,
+    "maxPeerCount": 3,
+    "blockToLive": 0,
+    "memberOnlyRead": true,
+    "memberOnlyWrite": true
+  },
+  {
+    "name": "DeliveryOrderCollection",
+    "policy": "OR('SupplierMSP.member','CarrierMSP.member')",
+    "requiredPeerCount": 0,
+    "maxPeerCount": 3,
+    "blockToLive": 0,
+    "memberOnlyRead": true,
+    "memberOnlyWrite": true
+  },
+  {
+    "name": "OrderCollection",
+    "policy": "OR('ManufacturerMSP.member','MiddlemanMSP.member')",
+    "requiredPeerCount": 0,
+    "maxPeerCount": 3,
+    "blockToLive": 0,
+    "memberOnlyRead": true,
+    "memberOnlyWrite": true
+  },
+  {
+    "name": "AssetCollection",
+    "policy": "OR('MiddlemanMSP.member','MiddlemanMSP.member')",
+    "requiredPeerCount": 0,
+    "maxPeerCount": 3,
+    "blockToLive": 0,
+    "memberOnlyRead": true,
+    "memberOnlyWrite": true
+  }
+]

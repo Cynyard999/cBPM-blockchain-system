@@ -12,7 +12,7 @@
         <el-table-column prop="assetPrice" label="单价" sortable/>
         <el-table-column prop="quantity" label="数量"/>
         <el-table-column prop="totalPrice" label="总价"/>
-        <el-table-column prop="shippingAddress" label="货地"/>
+        <el-table-column prop="shippingAddress" label="发货地"/>
         <el-table-column prop="receivingAddress" label="收货地"/>
         <el-table-column prop="note" label="备注" overflow/>
         <el-table-column prop="ownerOrg" label="所属组织"/>
