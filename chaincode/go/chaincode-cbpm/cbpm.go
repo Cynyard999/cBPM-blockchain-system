@@ -87,13 +87,6 @@ func (t *CBPMChaincode) CreateAsset(ctx contractapi.TransactionContextInterface)
 	if exists {
 		return nil, fmt.Errorf("fail to create Asset: asset already exists")
 	}
-	exists, err = t.assetNameExists(ctx, assetInput.AssetName)
-	if err != nil {
-		return nil, fmt.Errorf("fail to create Asset: %v", err)
-	}
-	if exists {
-		return nil, fmt.Errorf("fail to create Asset: asset name already exists")
-	}
 
 	clientOrgID, err := getClientOrgID(ctx, false)
 	if err != nil {
@@ -195,27 +188,25 @@ func (t *CBPMChaincode) QueryAssets(ctx contractapi.TransactionContextInterface,
 }
 
 func (t *CBPMChaincode) assetExists(ctx contractapi.TransactionContextInterface, assetID string) (bool, error) {
-	queryString := fmt.Sprintf("{\"selector\":{\"objectType\":\"Asset\",\"assetID\":\"%s\"}}", assetID)
-	queryResults, err := t.getSupplyAssetQueryResultForQueryString(ctx, queryString)
+	assetBytes, err := ctx.GetStub().GetPrivateData("AssetOrderCollection", assetID)
 	if err != nil {
-		return false, fmt.Errorf("fail to check whether asset exists: %v", err)
+		return false, fmt.Errorf("fail to read asset %s from world state. %v", assetID, err)
 	}
-	if len(queryResults) == 0 {
-		return false, nil
-	}
-	return true, nil
+	return assetBytes != nil, nil
 }
-func (t *CBPMChaincode) assetNameExists(ctx contractapi.TransactionContextInterface, assetName string) (bool, error) {
-	queryString := fmt.Sprintf("{\"selector\":{\"objectType\":\"Asset\",\"assetName\":\"%s\"}}", assetName)
-	queryResults, err := t.getSupplyAssetQueryResultForQueryString(ctx, queryString)
-	if err != nil {
-		return false, fmt.Errorf("fail to check whether asset name exists: %v", err)
-	}
-	if len(queryResults) == 0 {
-		return false, nil
-	}
-	return true, nil
-}
+
+// 私有数据中不能在put State的同时query State
+//func (t *CBPMChaincode) assetNameExists(ctx contractapi.TransactionContextInterface, assetName string) (bool, error) {
+//	queryString := fmt.Sprintf("{\"selector\":{\"objectType\":\"Asset\",\"assetName\":\"%s\"}}", assetName)
+//	queryResults, err := t.getAssetQueryResultForQueryString(ctx, queryString)
+//	if err != nil {
+//		return false, fmt.Errorf("fail to check whether asset name exists: %v", err)
+//	}
+//	if len(queryResults) == 0 {
+//		return false, nil
+//	}
+//	return true, nil
+//}
 
 // CreateOrder 创建Order，transient传入assetID，quantity，receivingAddress，note，链码生成UUID，返回创建好的Order
 func (t *CBPMChaincode) CreateOrder(ctx contractapi.TransactionContextInterface) (*Order, error) {
@@ -430,16 +421,13 @@ func (t *CBPMChaincode) ConfirmFinishOrder(ctx contractapi.TransactionContextInt
 	return ctx.GetStub().PutPrivateData("AssetOrderCollection", tradeID, orderBytes)
 }
 
+// TODO 把order和asset放到不同的私有数据集合里面
 func (t *CBPMChaincode) orderExists(ctx contractapi.TransactionContextInterface, tradeID string) (bool, error) {
-	queryString := fmt.Sprintf("{\"selector\":{\"objectType\":\"Order\",\"tradeID\":\"%s\"}}", tradeID)
-	queryResults, err := t.getSupplyOrderQueryResultForQueryString(ctx, queryString)
+	orderBytes, err := ctx.GetStub().GetPrivateData("AssetOrderCollection", tradeID)
 	if err != nil {
-		return false, fmt.Errorf("fail to check whether order for trade %s exists: %v", tradeID, err)
+		return false, fmt.Errorf("fail to read order for trade %s from world state. %v", tradeID, err)
 	}
-	if len(queryResults) == 0 {
-		return false, nil
-	}
-	return true, nil
+	return orderBytes != nil, nil
 }
 func (s *CBPMChaincode) getAssetQueryResultForQueryString(ctx contractapi.TransactionContextInterface, queryString string) ([]*Asset, error) {
 
@@ -547,13 +535,13 @@ func (t *CBPMChaincode) CreateSupplyAsset(ctx contractapi.TransactionContextInte
 		return nil, fmt.Errorf("fail to create supplyAsset: supplyAsset price field must be a positive number")
 	}
 
-	//exists, err := t.supplyAssetNameExists(ctx, assetInput.AssetName)
-	//if err != nil {
-	//	return nil, fmt.Errorf("fail to create SupplyAsset: %v", err)
-	//}
-	//if exists {
-	//	return nil, fmt.Errorf("fail to create SupplyAsset: supplyAsset name already exists")
-	//}
+	exists, err := t.supplyAssetExists(ctx, assetInput.AssetName)
+	if err != nil {
+		return nil, fmt.Errorf("fail to create SupplyAsset: %v", err)
+	}
+	if exists {
+		return nil, fmt.Errorf("fail to create SupplyAsset: supplyAsset name already exists")
+	}
 
 	assetIDUUID, err := uuid.NewV4()
 	if err != nil {
@@ -629,10 +617,10 @@ func (t *CBPMChaincode) GetSupplyAsset(ctx contractapi.TransactionContextInterfa
 	queryString := fmt.Sprintf("{\"selector\":{\"objectType\":\"SupplyAsset\",\"assetID\":\"%s\"}}", assetID)
 	queryResults, err := t.getSupplyAssetQueryResultForQueryString(ctx, queryString)
 	if err != nil {
-		return nil, fmt.Errorf("fail to get asset: %v", err)
+		return nil, fmt.Errorf("fail to get supplyAsset: %v", err)
 	}
 	if len(queryResults) == 0 {
-		return nil, fmt.Errorf("fail to get asset: %s does not exist", assetID)
+		return nil, fmt.Errorf("fail to get supplyAsset: %s does not exist", assetID)
 	}
 	return queryResults[0], nil
 }
@@ -659,28 +647,24 @@ func (t *CBPMChaincode) QuerySupplyAssets(ctx contractapi.TransactionContextInte
 }
 
 func (t *CBPMChaincode) supplyAssetExists(ctx contractapi.TransactionContextInterface, assetID string) (bool, error) {
-	queryString := fmt.Sprintf("{\"selector\":{\"objectType\":\"SupplyAsset\",\"assetID\":\"%s\"}}", assetID)
-	queryResults, err := t.getSupplyAssetQueryResultForQueryString(ctx, queryString)
+	assetBytes, err := ctx.GetStub().GetPrivateData("SupplyAssetOrderCollection", assetID)
 	if err != nil {
-		return false, fmt.Errorf("fail to check whether asset exists: %v", err)
+		return false, fmt.Errorf("fail to read supplyAsset %s from world state. %v", assetID, err)
 	}
-	if len(queryResults) == 0 {
-		return false, nil
-	}
-	return true, nil
+	return assetBytes != nil, nil
 }
 
-func (t *CBPMChaincode) supplyAssetNameExists(ctx contractapi.TransactionContextInterface, assetName string) (bool, error) {
-	queryString := fmt.Sprintf("{\"selector\":{\"objectType\":\"SupplyAsset\",\"assetName\":\"%s\"}}", assetName)
-	queryResults, err := t.getSupplyAssetQueryResultForQueryString(ctx, queryString)
-	if err != nil {
-		return false, fmt.Errorf("fail to check whether asset name exists: %v", err)
-	}
-	if len(queryResults) == 0 {
-		return false, nil
-	}
-	return true, nil
-}
+//func (t *CBPMChaincode) supplyAssetNameExists(ctx contractapi.TransactionContextInterface, assetName string) (bool, error) {
+//	queryString := fmt.Sprintf("{\"selector\":{\"objectType\":\"SupplyAsset\",\"assetName\":\"%s\"}}", assetName)
+//	queryResults, err := t.getSupplyAssetQueryResultForQueryString(ctx, queryString)
+//	if err != nil {
+//		return false, fmt.Errorf("fail to check whether asset name exists: %v", err)
+//	}
+//	if len(queryResults) == 0 {
+//		return false, nil
+//	}
+//	return true, nil
+//}
 
 // CreateSupplyOrder 创建supplyOrder，需要transient传入tradeID,assetID,quantity,note，返回创建好的对象
 func (t *CBPMChaincode) CreateSupplyOrder(ctx contractapi.TransactionContextInterface) (*SupplyOrder, error) {
@@ -896,15 +880,11 @@ func (t *CBPMChaincode) ConfirmFinishSupplyOrder(ctx contractapi.TransactionCont
 	return ctx.GetStub().PutPrivateData("SupplyAssetOrderCollection", tradeID, orderBytes)
 }
 func (t *CBPMChaincode) supplyOrderExists(ctx contractapi.TransactionContextInterface, tradeID string) (bool, error) {
-	queryString := fmt.Sprintf("{\"selector\":{\"objectType\":\"SupplyOrder\",\"tradeID\":\"%s\"}}", tradeID)
-	queryResults, err := t.getSupplyOrderQueryResultForQueryString(ctx, queryString)
+	supplyOrderBytes, err := ctx.GetStub().GetPrivateData("SupplyAssetOrderCollection", tradeID)
 	if err != nil {
-		return false, fmt.Errorf("fail to check whether order for trade %s exists: %v", tradeID, err)
+		return false, fmt.Errorf("fail to read supplyOrder for trade %s from world state. %v", tradeID, err)
 	}
-	if len(queryResults) == 0 {
-		return false, nil
-	}
-	return true, nil
+	return supplyOrderBytes != nil, nil
 }
 
 func (s *CBPMChaincode) getSupplyAssetQueryResultForQueryString(ctx contractapi.TransactionContextInterface, queryString string) ([]*SupplyAsset, error) {
