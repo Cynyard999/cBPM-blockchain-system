@@ -21,12 +21,13 @@
 
 ```shell
 ### 更新链码
+docker exec -it cli /bin/bash
 # 在容器中
-export CHANNEL=mamichannel
-export CHAINCODE=chaincode-manufacturer-middleman
+export CHANNEL=cbpmchannel
+export CHAINCODE=chaincode-cbpm
 export CHAINCODE_LANG=golang
 export CHAINCODE_VERSION=1.1
-export CHAINCODE_NAME=mamichaincode
+export CHAINCODE_NAME=cbpmchaincode
 
 ./scripts/upgrade-chaincode.sh
 
@@ -36,13 +37,14 @@ export CHAINCODE_NAME=mamichaincode
 
 # 测试网络
 
-## Create a supplier- carrier channel
+## Create a supplier-carrier channel
 
 ### 创建并进入通道
 
 启动cli并且进入
 
 ```shell
+configtxgen -profile SCChannel -outputCreateChannelTx ./channel-artifacts/scchannel.tx -channelID scchannel
 docker exec -it cli /bin/bash
 ```
 
@@ -172,12 +174,34 @@ peer chaincode install -n $CHAINCODE_NAME -v $CHAINCODE_VERSION  -p $CHAINCODE -
 
 
 
+
+
+
+
+
+
 #### chaincode-supplier-carrier
 
 ```shell
 peer chaincode instantiate -o orderer-cbpm:7050 --tls --cafile "/tmp/hyperledger/fabric/peer/cbpm/orderer/tls/tlscacerts/tls-0-0-0-0-7052.pem" -C $CHANNEL -n $CHAINCODE_NAME -l $CHAINCODE_LANG -v $CHAINCODE_VERSION -c '{"Args":[""]}' -P "OR('SupplierMSP.peer','CarrierMSP.peer')"
 
 peer chaincode upgrade -o orderer-cbpm:7050 --tls --cafile "/tmp/hyperledger/fabric/peer/cbpm/orderer/tls/tlscacerts/tls-0-0-0-0-7052.pem" -C $CHANNEL -n $CHAINCODE_NAME -l $CHAINCODE_LANG -v $CHAINCODE_VERSION -c '{"Args":[""]}' -P "OR('SupplierMSP.peer','CarrierMSP.peer')"
+```
+
+
+
+```shell
+export CORE_PEER_MSPCONFIGPATH=/tmp/hyperledger/fabric/peer/supplier/admin/msp
+export CORE_PEER_TLS_ROOTCERT_FILE=/tmp/hyperledger/fabric/peer/supplier/peer1/tls/tlscacerts/tls-0-0-0-0-7052.pem
+export CORE_PEER_LOCALMSPID=SupplierMSP
+export CORE_PEER_ADDRESS=peer1-supplier:7051
+
+export SupplyAsset=$(echo -n "{\"assetName\":\"asset1\",\"assetPrice\":1000,\"shippingAddress\":\"PlaceA\",\"publicDescription\":\"tom's\"}" | base64 | tr -d \\n)
+
+
+
+peer chaincode invoke -o orderer-cbpm:7050 --tls --cafile "/tmp/hyperledger/fabric/peer/cbpm/orderer/tls/tlscacerts/tls-0-0-0-0-7052.pem" -C cbpmchannel -n cbpmchaincode -c '{"Args":["CreateSupplyAsset"]}' --transient "{\"asset\":\"$SupplyAsset\"}"
+
 ```
 
 

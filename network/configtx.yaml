@@ -191,69 +191,80 @@ Profiles:
                     - *CarrierOrg
                     - *ManufacturerOrg
                     - *MiddlemanOrg
-            SCConsortium:
-                Organizations:
-                    - *SupplierOrg
-                    - *CarrierOrg
-            MaMiConsortium:
-                Organizations:
-                    - *ManufacturerOrg
-                    - *MiddlemanOrg
-            MiSConsortium:
-                Organizations:
-                    - *MiddlemanOrg
-                    - *SupplierOrg   
-            MiCConsortium:
-                Organizations:
-                    - *MiddlemanOrg
-                    - *CarrierOrg 
-            CMaConsortium:
-                Organizations:
-                    - *CarrierOrg
-                    - *ManufacturerOrg
-    SCChannel:
+            # SCConsortium:
+            #     Organizations:
+            #         - *SupplierOrg
+            #         - *CarrierOrg
+            # MaMiConsortium:
+            #     Organizations:
+            #         - *ManufacturerOrg
+            #         - *MiddlemanOrg
+            # MiSConsortium:
+            #     Organizations:
+            #         - *MiddlemanOrg
+            #         - *SupplierOrg   
+            # MiCConsortium:
+            #     Organizations:
+            #         - *MiddlemanOrg
+            #         - *CarrierOrg 
+            # CMaConsortium:
+            #     Organizations:
+            #         - *CarrierOrg
+            #         - *ManufacturerOrg
+    CBPMChannel:
         <<: *ChannelDefaults
-        Consortium: SCConsortium
+        Consortium: CBPMConsortium
         Application:
             <<: *ApplicationDefaults
             Organizations:
+                - *ManufacturerOrg
+                - *MiddlemanOrg
                 - *SupplierOrg
                 - *CarrierOrg
             Capabilities: *ApplicationCapabilities
+    # SCChannel:
+    #     <<: *ChannelDefaults
+    #     Consortium: SCConsortium
+    #     Application:
+    #         <<: *ApplicationDefaults
+    #         Organizations:
+    #             - *SupplierOrg
+    #             - *CarrierOrg
+    #         Capabilities: *ApplicationCapabilities
 
-    MaMiChannel:
-        <<: *ChannelDefaults
-        Consortium: MaMiConsortium
-        Application:
-            <<: *ApplicationDefaults
-            Organizations:
-                - *ManufacturerOrg
-                - *MiddlemanOrg
-            Capabilities: *ApplicationCapabilities
-    MiSChannel:
-        <<: *ChannelDefaults
-        Consortium: MiSConsortium
-        Application:
-            <<: *ApplicationDefaults
-            Organizations:
-                - *MiddlemanOrg
-                - *SupplierOrg
-            Capabilities: *ApplicationCapabilities
-    MiCChannel:
-        <<: *ChannelDefaults
-        Consortium: MiCConsortium
-        Application:
-            <<: *ApplicationDefaults
-            Organizations:
-                - *MiddlemanOrg
-                - *CarrierOrg
-            Capabilities: *ApplicationCapabilities
-    CMaChannel:
-        <<: *ChannelDefaults
-        Consortium: CMaConsortium
-        Application:
-            <<: *ApplicationDefaults
-            Organizations:
-                - *CarrierOrg
-                - *ManufacturerOrg
-            Capabilities: *ApplicationCapabilities
+    # MaMiChannel:
+    #     <<: *ChannelDefaults
+    #     Consortium: MaMiConsortium
+    #     Application:
+    #         <<: *ApplicationDefaults
+    #         Organizations:
+    #             - *ManufacturerOrg
+    #             - *MiddlemanOrg
+    #         Capabilities: *ApplicationCapabilities
+    # MiSChannel:
+    #     <<: *ChannelDefaults
+    #     Consortium: MiSConsortium
+    #     Application:
+    #         <<: *ApplicationDefaults
+    #         Organizations:
+    #             - *MiddlemanOrg
+    #             - *SupplierOrg
+    #         Capabilities: *ApplicationCapabilities
+    # MiCChannel:
+    #     <<: *ChannelDefaults
+    #     Consortium: MiCConsortium
+    #     Application:
+    #         <<: *ApplicationDefaults
+    #         Organizations:
+    #             - *MiddlemanOrg
+    #             - *CarrierOrg
+    #         Capabilities: *ApplicationCapabilities
+    # CMaChannel:
+    #     <<: *ChannelDefaults
+    #     Consortium: CMaConsortium
+    #     Application:
+    #         <<: *ApplicationDefaults
+    #         Organizations:
+    #             - *CarrierOrg
+    #             - *ManufacturerOrg
+    #         Capabilities: *ApplicationCapabilities

@@ -207,24 +207,36 @@ func (t *CBPMChaincode) GetDeliveryOrder(ctx contractapi.TransactionContextInter
 // GetAllDeliveryOrders 获取所有DeliveryOrder
 func (t *CBPMChaincode) GetAllDeliveryOrders(ctx contractapi.TransactionContextInterface) ([]*DeliveryOrder, error) {
 	queryString := "{\"selector\":{\"objectType\":\"DeliveryOrder\"}}"
-	return getQueryResultForQueryString(ctx, queryString)
+	return getDeliveryOrderQueryResultForQueryString(ctx, queryString)
 }
 
 // QueryDeliveryOrders 查询满足条件的deliveryOrders，args传入查询语句
 func (t *CBPMChaincode) QueryDeliveryOrders(ctx contractapi.TransactionContextInterface, queryString string) ([]*DeliveryOrder, error) {
-	return getQueryResultForQueryString(ctx, queryString)
+	return getDeliveryOrderQueryResultForQueryString(ctx, queryString)
 }
 
-// getQueryResultForQueryString executes the passed in query string.
+// getDeliveryOrderQueryResultForQueryString executes the passed in query string.
 // The result set is built and returned as a byte array containing the JSON results.
-func getQueryResultForQueryString(ctx contractapi.TransactionContextInterface, queryString string) ([]*DeliveryOrder, error) {
+func getDeliveryOrderQueryResultForQueryString(ctx contractapi.TransactionContextInterface, queryString string) ([]*DeliveryOrder, error) {
 	resultsIterator, err := ctx.GetStub().GetQueryResult(queryString)
 	if err != nil {
 		return nil, err
 	}
 	defer resultsIterator.Close()
-
-	return constructQueryResponseFromIterator(resultsIterator)
+	var deliveryOrderList []*DeliveryOrder
+	for resultsIterator.HasNext() {
+		queryResult, err := resultsIterator.Next()
+		if err != nil {
+			return nil, err
+		}
+		var deliveryOrder DeliveryOrder
+		err = json.Unmarshal(queryResult.Value, &deliveryOrder)
+		if err != nil {
+			return nil, err
+		}
+		deliveryOrderList = append(deliveryOrderList, &deliveryOrder)
+	}
+	return deliveryOrderList, nil
 }
 
 func constructQueryResponseFromIterator(resultsIterator shim.StateQueryIteratorInterface) ([]*DeliveryOrder, error) {
@@ -244,7 +256,7 @@ func constructQueryResponseFromIterator(resultsIterator shim.StateQueryIteratorI
 	return deliveryOrderList, nil
 }
 
-// getQueryResultForQueryString executes the passed in query string.
+// getDeliveryOrderQueryResultForQueryString executes the passed in query string.
 // The result set is built and returned as a byte array containing the JSON results.
 func getQueryResultForQueryStringWithPagination(ctx contractapi.TransactionContextInterface, queryString string, pageSize int32, bookmark string) (*PaginatedQueryResult, error) {
 

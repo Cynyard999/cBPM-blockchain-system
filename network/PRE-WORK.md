@@ -764,102 +764,96 @@ Profiles:
                     - *CarrierOrg
                     - *ManufacturerOrg
                     - *MiddlemanOrg
-            SCConsortium:
-                Organizations:
-                    - *SupplierOrg
-                    - *CarrierOrg
-            MaMiConsortium:
-                Organizations:
-                    - *ManufacturerOrg
-                    - *MiddlemanOrg
-            MiSConsortium:
-                Organizations:
-                    - *MiddlemanOrg
-                    - *SupplierOrg   
-            MiCConsortium:
-                Organizations:
-                    - *MiddlemanOrg
-                    - *CarrierOrg 
-            CMaConsortium:
-                Organizations:
-                    - *CarrierOrg
-                    - *ManufacturerOrg
-    SCChannel:
+            # SCConsortium:
+            #     Organizations:
+            #         - *SupplierOrg
+            #         - *CarrierOrg
+            # MaMiConsortium:
+            #     Organizations:
+            #         - *ManufacturerOrg
+            #         - *MiddlemanOrg
+            # MiSConsortium:
+            #     Organizations:
+            #         - *MiddlemanOrg
+            #         - *SupplierOrg   
+            # MiCConsortium:
+            #     Organizations:
+            #         - *MiddlemanOrg
+            #         - *CarrierOrg 
+            # CMaConsortium:
+            #     Organizations:
+            #         - *CarrierOrg
+            #         - *ManufacturerOrg
+    CBPMChannel:
         <<: *ChannelDefaults
-        Consortium: SCConsortium
+        Consortium: CBPMConsortium
         Application:
             <<: *ApplicationDefaults
             Organizations:
+                - *ManufacturerOrg
+                - *MiddlemanOrg
                 - *SupplierOrg
                 - *CarrierOrg
             Capabilities: *ApplicationCapabilities
-    SCChannel:
-        <<: *ChannelDefaults
-        Consortium: SCConsortium
-        Application:
-            <<: *ApplicationDefaults
-            Organizations:
-                - *SupplierOrg
-                - *CarrierOrg
-            Capabilities: *ApplicationCapabilities
+    # SCChannel:
+    #     <<: *ChannelDefaults
+    #     Consortium: SCConsortium
+    #     Application:
+    #         <<: *ApplicationDefaults
+    #         Organizations:
+    #             - *SupplierOrg
+    #             - *CarrierOrg
+    #         Capabilities: *ApplicationCapabilities
 
-    MaMiChannel:
-        <<: *ChannelDefaults
-        Consortium: MaMiConsortium
-        Application:
-            <<: *ApplicationDefaults
-            Organizations:
-                - *ManufacturerOrg
-                - *MiddlemanOrg
-            Capabilities: *ApplicationCapabilities
-    MiSChannel:
-        <<: *ChannelDefaults
-        Consortium: MiSConsortium
-        Application:
-            <<: *ApplicationDefaults
-            Organizations:
-                - *MiddlemanOrg
-                - *SupplierOrg
-            Capabilities: *ApplicationCapabilities
-    MiCChannel:
-        <<: *ChannelDefaults
-        Consortium: MiCConsortium
-        Application:
-            <<: *ApplicationDefaults
-            Organizations:
-                - *MiddlemanOrg
-                - *CarrierOrg
-            Capabilities: *ApplicationCapabilities
-    CMaChannel:
-        <<: *ChannelDefaults
-        Consortium: CMaConsortium
-        Application:
-            <<: *ApplicationDefaults
-            Organizations:
-                - *CarrierOrg
-                - *ManufacturerOrg
-            Capabilities: *ApplicationCapabilities
+    # MaMiChannel:
+    #     <<: *ChannelDefaults
+    #     Consortium: MaMiConsortium
+    #     Application:
+    #         <<: *ApplicationDefaults
+    #         Organizations:
+    #             - *ManufacturerOrg
+    #             - *MiddlemanOrg
+    #         Capabilities: *ApplicationCapabilities
+    # MiSChannel:
+    #     <<: *ChannelDefaults
+    #     Consortium: MiSConsortium
+    #     Application:
+    #         <<: *ApplicationDefaults
+    #         Organizations:
+    #             - *MiddlemanOrg
+    #             - *SupplierOrg
+    #         Capabilities: *ApplicationCapabilities
+    # MiCChannel:
+    #     <<: *ChannelDefaults
+    #     Consortium: MiCConsortium
+    #     Application:
+    #         <<: *ApplicationDefaults
+    #         Organizations:
+    #             - *MiddlemanOrg
+    #             - *CarrierOrg
+    #         Capabilities: *ApplicationCapabilities
+    # CMaChannel:
+    #     <<: *ChannelDefaults
+    #     Consortium: CMaConsortium
+    #     Application:
+    #         <<: *ApplicationDefaults
+    #         Organizations:
+    #             - *CarrierOrg
+    #             - *ManufacturerOrg
+    #         Capabilities: *ApplicationCapabilities
+
 ```
-
-
-
-
 
 生成创世区块
 
 ```shell
-export FABRIC_CFG_PATH=$PWD
 configtxgen -profile CBPMOrdererGenesis -outputBlock ./channel-artifacts/genesis.block -channelID syschannel
 ```
 
 生成通道信息
 
 ```shell
-configtxgen -profile SCChannel -outputCreateChannelTx ./channel-artifacts/scchannel.tx -channelID scchannel
-configtxgen -profile MaMiChannel -outputCreateChannelTx ./channel-artifacts/mamichannel.tx -channelID mamichannel
-configtxgen -profile MiSChannel -outputCreateChannelTx ./channel-artifacts/mischannel.tx -channelID mischannel
-configtxgen -profile MiCChannel -outputCreateChannelTx ./channel-artifacts/micchannel.tx -channelID micchannel
-configtxgen -profile CMaChannel -outputCreateChannelTx ./channel-artifacts/cmachannel.tx -channelID cmachannel
+configtxgen -profile CBPMChannel -outputCreateChannelTx ./channel-artifacts/cbpmchannel.tx -channelID cbpmchannel
 ```
 
 配置config.yml

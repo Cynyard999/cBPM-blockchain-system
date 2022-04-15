@@ -71,7 +71,7 @@ func (t *CBPMChaincode) CreateAsset(ctx contractapi.TransactionContextInterface)
 	}
 	transientAssetJSON, ok := transMap["asset"]
 	if !ok {
-		return nil, fmt.Errorf("asset not found in the transient map")
+		return nil, fmt.Errorf("asset field not found in the transient map")
 	}
 	type assetTransientInput struct {
 		AssetID           string  `json:"assetID"`

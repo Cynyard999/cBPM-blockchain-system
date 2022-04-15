@@ -215,17 +215,17 @@ func (t *CBPMChaincode) GetDeliveryDetail(ctx contractapi.TransactionContextInte
 // GetAllDeliveryDetails 获取所有DeliveryDetails
 func (t *CBPMChaincode) GetAllDeliveryDetails(ctx contractapi.TransactionContextInterface) ([]*DeliveryDetail, error) {
 	queryString := "{\"selector\":{\"objectType\":\"DeliveryDetail\"}}"
-	return getQueryResultForQueryString(ctx, queryString)
+	return getDeliveryDetailQueryResultForQueryString(ctx, queryString)
 }
 
 // QueryDeliveryDetails 查询满足条件的DeliveryDetails,args传入查询语句
 func (t *CBPMChaincode) QueryDeliveryDetails(ctx contractapi.TransactionContextInterface, queryString string) ([]*DeliveryDetail, error) {
-	return getQueryResultForQueryString(ctx, queryString)
+	return getDeliveryDetailQueryResultForQueryString(ctx, queryString)
 }
 
-// getQueryResultForQueryString executes the passed in query string.
+// getDeliveryDetailQueryResultForQueryString executes the passed in query string.
 // The result set is built and returned as a byte array containing the JSON results.
-func getQueryResultForQueryString(ctx contractapi.TransactionContextInterface, queryString string) ([]*DeliveryDetail, error) {
+func getDeliveryDetailQueryResultForQueryString(ctx contractapi.TransactionContextInterface, queryString string) ([]*DeliveryDetail, error) {
 	resultsIterator, err := ctx.GetStub().GetQueryResult(queryString)
 	if err != nil {
 		return nil, err
@@ -252,7 +252,7 @@ func constructQueryResponseFromIterator(resultsIterator shim.StateQueryIteratorI
 	return deliveryDetailList, nil
 }
 
-// getQueryResultForQueryString executes the passed in query string.
+// getDeliveryDetailQueryResultForQueryString executes the passed in query string.
 // The result set is built and returned as a byte array containing the JSON results.
 func getQueryResultForQueryStringWithPagination(ctx contractapi.TransactionContextInterface, queryString string, pageSize int32, bookmark string) (*PaginatedQueryResult, error) {
 

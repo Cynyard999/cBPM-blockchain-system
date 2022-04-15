@@ -14,7 +14,7 @@ type CBPMChaincode struct {
 	contractapi.Contract
 }
 
-type Asset struct {
+type SupplyAsset struct {
 	ObjectType        string  `json:"objectType"`
 	AssetID           string  `json:"assetID"`
 	AssetName         string  `json:"assetName"`
@@ -56,15 +56,15 @@ type PaginatedQueryResult struct {
 	Bookmark            string         `json:"bookmark"`
 }
 
-// CreateAsset 创建asset，需要transient传入assetName，assetPrice，shippingAddress，publicDescription 会生成一个UUID表示asset的名称，最终返回创建的asset对象
-func (t *CBPMChaincode) CreateAsset(ctx contractapi.TransactionContextInterface) (*Asset, error) {
+// CreateSupplyAsset 创建asset，需要transient传入assetName，assetPrice，shippingAddress，publicDescription 会生成一个UUID表示asset的名称，最终返回创建的asset对象
+func (t *CBPMChaincode) CreateSupplyAsset(ctx contractapi.TransactionContextInterface) (*SupplyAsset, error) {
 	transMap, err := ctx.GetStub().GetTransient()
 	if err != nil {
 		return nil, fmt.Errorf("Error getting transient: " + err.Error())
 	}
-	transientAssetJSON, ok := transMap["asset"]
+	transientAssetJSON, ok := transMap["supplyAsset"]
 	if !ok {
-		return nil, fmt.Errorf("asset not found in the transient map")
+		return nil, fmt.Errorf("supplyAsset field not found in the transient map")
 	}
 	type assetTransientInput struct {
 		AssetName         string  `json:"assetName"`
@@ -75,40 +75,40 @@ func (t *CBPMChaincode) CreateAsset(ctx contractapi.TransactionContextInterface)
 	var assetInput assetTransientInput
 	err = json.Unmarshal(transientAssetJSON, &assetInput)
 	if err != nil {
-		return nil, fmt.Errorf("fail to create asset: fail to unmarshal JSON: %s", err.Error())
+		return nil, fmt.Errorf("fail to create supplyAsset: fail to unmarshal JSON: %s", err.Error())
 	}
 	if len(assetInput.ShippingAddress) == 0 {
-		return nil, fmt.Errorf("fail to create asset: shipping address must be a non-empty string")
+		return nil, fmt.Errorf("fail to create supplyAsset: shipping address must be a non-empty string")
 	}
 	if len(assetInput.AssetName) == 0 {
-		return nil, fmt.Errorf("fail to create asset: asset name must be a non-empty string")
+		return nil, fmt.Errorf("fail to create supplyAsset: supplyAsset name must be a non-empty string")
 	}
 	if assetInput.AssetPrice <= 0 {
-		return nil, fmt.Errorf("fail to create asset: asset price field must be a positive number")
+		return nil, fmt.Errorf("fail to create supplyAsset: supplyAsset price field must be a positive number")
 	}
 
 	exists, err := t.assetNameExists(ctx, assetInput.AssetName)
 	if err != nil {
-		return nil, fmt.Errorf("fail to create Asset: %v", err)
+		return nil, fmt.Errorf("fail to create SupplyAsset: %v", err)
 	}
 	if exists {
-		return nil, fmt.Errorf("fail to create Asset: asset name already exists")
+		return nil, fmt.Errorf("fail to create SupplyAsset: supplyAsset name already exists")
 	}
 
 	assetIDUUID, err := uuid.NewV4()
 	if err != nil {
-		return nil, fmt.Errorf("fail to create asset: fail to generate asset ID: %v", err)
+		return nil, fmt.Errorf("fail to create supplyAsset: fail to generate supplyAsset ID: %v", err)
 	}
 	assetID := assetIDUUID.String()
 
 	clientOrgID, err := getClientOrgID(ctx, false)
 	if err != nil {
-		return nil, fmt.Errorf("fail to create asset: %v", err)
+		return nil, fmt.Errorf("fail to create supplyAsset: %v", err)
 	}
 
-	// create asset
-	asset := &Asset{
-		ObjectType:        "Asset",
+	// create supplyAsset
+	supplyAsset := &SupplyAsset{
+		ObjectType:        "SupplyAsset",
 		AssetID:           assetID,
 		AssetName:         assetInput.AssetName,
 		AssetPrice:        assetInput.AssetPrice,
@@ -116,21 +116,21 @@ func (t *CBPMChaincode) CreateAsset(ctx contractapi.TransactionContextInterface)
 		OwnerOrg:          clientOrgID,
 		PublicDescription: assetInput.PublicDescription,
 	}
-	assetJSONasBytes, err := json.Marshal(asset)
+	assetJSONasBytes, err := json.Marshal(supplyAsset)
 	if err != nil {
-		return nil, fmt.Errorf("fail to create asset: %v", err)
+		return nil, fmt.Errorf("fail to create supplyAsset: %v", err)
 	}
 
-	err = ctx.GetStub().PutState(asset.AssetID, assetJSONasBytes)
+	err = ctx.GetStub().PutState(supplyAsset.AssetID, assetJSONasBytes)
 	if err != nil {
-		return nil, fmt.Errorf("fail to create asset: %v", err)
+		return nil, fmt.Errorf("fail to create supplyAsset: %v", err)
 	}
-	return asset, nil
+	return supplyAsset, nil
 }
 
-// UpdateAsset 更新指定的asset，需要args传入assetID，assetName，assetPrice，shippingAddress，desc，只有owner能够更新
-func (t *CBPMChaincode) UpdateAsset(ctx contractapi.TransactionContextInterface, assetID string, assetName string, assetPrice float32, shippingAddress string, desc string) error {
-	asset, err := t.GetAsset(ctx, assetID)
+// UpdateSupplyAsset 更新指定的asset，需要args传入assetID，assetName，assetPrice，shippingAddress，desc，只有owner能够更新
+func (t *CBPMChaincode) UpdateSupplyAsset(ctx contractapi.TransactionContextInterface, assetID string, assetName string, assetPrice float32, shippingAddress string, desc string) error {
+	asset, err := t.GetSupplyAsset(ctx, assetID)
 	if err != nil {
 		return fmt.Errorf("fail to update asset: %v", err)
 	}
@@ -139,7 +139,7 @@ func (t *CBPMChaincode) UpdateAsset(ctx contractapi.TransactionContextInterface,
 		return fmt.Errorf("fail to update asset: %v", err)
 	}
 	if asset.OwnerOrg != clientOrgID {
-		return fmt.Errorf("fail to update Asset: unauthorized updater %s", clientOrgID)
+		return fmt.Errorf("fail to update SupplyAsset: unauthorized updater %s", clientOrgID)
 	}
 	asset.ShippingAddress = shippingAddress
 	asset.AssetPrice = assetPrice
@@ -152,8 +152,8 @@ func (t *CBPMChaincode) UpdateAsset(ctx contractapi.TransactionContextInterface,
 	return ctx.GetStub().PutState(assetID, newAssetBytes)
 }
 
-// DeleteAsset 删除指定的asset，需要args传入assetID
-func (t *CBPMChaincode) DeleteAsset(ctx contractapi.TransactionContextInterface, assetID string) error {
+// DeleteSupplyAsset 删除指定的asset，需要args传入assetID
+func (t *CBPMChaincode) DeleteSupplyAsset(ctx contractapi.TransactionContextInterface, assetID string) error {
 	exist, err := t.assetExists(ctx, assetID)
 	if !exist {
 		return fmt.Errorf("fail to delete asset: asset does not exist")
@@ -164,9 +164,9 @@ func (t *CBPMChaincode) DeleteAsset(ctx contractapi.TransactionContextInterface,
 	return ctx.GetStub().DelState(assetID)
 }
 
-// GetAsset 获取指定的asset，需要args传入assetID
-func (t *CBPMChaincode) GetAsset(ctx contractapi.TransactionContextInterface, assetID string) (*Asset, error) {
-	queryString := fmt.Sprintf("{\"selector\":{\"objectType\":\"Asset\",\"assetID\":\"%s\"}}", assetID)
+// GetSupplyAsset 获取指定的asset，需要args传入assetID
+func (t *CBPMChaincode) GetSupplyAsset(ctx contractapi.TransactionContextInterface, assetID string) (*SupplyAsset, error) {
+	queryString := fmt.Sprintf("{\"selector\":{\"objectType\":\"SupplyAsset\",\"assetID\":\"%s\"}}", assetID)
 	queryResults, err := t.getAssetQueryResultForQueryString(ctx, queryString)
 	if err != nil {
 		return nil, fmt.Errorf("fail to get asset: %v", err)
@@ -177,10 +177,10 @@ func (t *CBPMChaincode) GetAsset(ctx contractapi.TransactionContextInterface, as
 	return queryResults[0], nil
 }
 
-// GetAllAssets 获取所有的asset
-func (t *CBPMChaincode) GetAllAssets(ctx contractapi.TransactionContextInterface) ([]*Asset, error) {
+// GetAllSupplyAssets 获取所有的asset
+func (t *CBPMChaincode) GetAllSupplyAssets(ctx contractapi.TransactionContextInterface) ([]*SupplyAsset, error) {
 
-	queryString := "{\"selector\":{\"objectType\":\"Asset\"}}"
+	queryString := "{\"selector\":{\"objectType\":\"SupplyAsset\"}}"
 
 	queryResults, err := t.getAssetQueryResultForQueryString(ctx, queryString)
 	if err != nil {
@@ -189,8 +189,8 @@ func (t *CBPMChaincode) GetAllAssets(ctx contractapi.TransactionContextInterface
 	return queryResults, nil
 }
 
-// QueryAssets 查询assets，需要args传入查询语句
-func (t *CBPMChaincode) QueryAssets(ctx contractapi.TransactionContextInterface, queryString string) ([]*Asset, error) {
+// QuerySupplyAssets 查询assets，需要args传入查询语句
+func (t *CBPMChaincode) QuerySupplyAssets(ctx contractapi.TransactionContextInterface, queryString string) ([]*SupplyAsset, error) {
 	queryResults, err := t.getAssetQueryResultForQueryString(ctx, queryString)
 	if err != nil {
 		return nil, err
@@ -199,7 +199,7 @@ func (t *CBPMChaincode) QueryAssets(ctx contractapi.TransactionContextInterface,
 }
 
 func (t *CBPMChaincode) assetExists(ctx contractapi.TransactionContextInterface, assetID string) (bool, error) {
-	queryString := fmt.Sprintf("{\"selector\":{\"objectType\":\"Asset\",\"assetID\":\"%s\"}}", assetID)
+	queryString := fmt.Sprintf("{\"selector\":{\"objectType\":\"SupplyAsset\",\"assetID\":\"%s\"}}", assetID)
 	queryResults, err := t.getAssetQueryResultForQueryString(ctx, queryString)
 	if err != nil {
 		return false, fmt.Errorf("fail to check whether asset exists: %v", err)
@@ -211,7 +211,7 @@ func (t *CBPMChaincode) assetExists(ctx contractapi.TransactionContextInterface,
 }
 
 func (t *CBPMChaincode) assetNameExists(ctx contractapi.TransactionContextInterface, assetName string) (bool, error) {
-	queryString := fmt.Sprintf("{\"selector\":{\"objectType\":\"Asset\",\"assetName\":\"%s\"}}", assetName)
+	queryString := fmt.Sprintf("{\"selector\":{\"objectType\":\"SupplyAsset\",\"assetName\":\"%s\"}}", assetName)
 	queryResults, err := t.getAssetQueryResultForQueryString(ctx, queryString)
 	if err != nil {
 		return false, fmt.Errorf("fail to check whether asset name exists: %v", err)
@@ -264,7 +264,7 @@ func (t *CBPMChaincode) CreateSupplyOrder(ctx contractapi.TransactionContextInte
 	if err != nil {
 		return nil, fmt.Errorf("fail to create supply order: %v", err)
 	}
-	asset, err := t.GetAsset(ctx, orderInput.AssetID)
+	asset, err := t.GetSupplyAsset(ctx, orderInput.AssetID)
 	if err != nil {
 		return nil, fmt.Errorf("fail to create supply order: %v", err)
 	}
@@ -481,20 +481,20 @@ func verifyClientOrgMatchesPeerOrg(clientOrgID string) error {
 	return nil
 }
 
-func (s *CBPMChaincode) getAssetQueryResultForQueryString(ctx contractapi.TransactionContextInterface, queryString string) ([]*Asset, error) {
+func (s *CBPMChaincode) getAssetQueryResultForQueryString(ctx contractapi.TransactionContextInterface, queryString string) ([]*SupplyAsset, error) {
 
 	resultsIterator, err := ctx.GetStub().GetQueryResult(queryString)
 	if err != nil {
 		return nil, err
 	}
 	defer resultsIterator.Close()
-	var results []*Asset
+	var results []*SupplyAsset
 	for resultsIterator.HasNext() {
 		response, err := resultsIterator.Next()
 		if err != nil {
 			return nil, err
 		}
-		newAsset := new(Asset)
+		newAsset := new(SupplyAsset)
 		err = json.Unmarshal(response.Value, newAsset)
 		if err != nil {
 			return nil, err
