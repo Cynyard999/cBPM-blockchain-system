@@ -36,6 +36,9 @@ for ORG in manufacturer middleman carrier supplier; do
         fatalln "$CORE_PEER_ADDRESS fail to join channel $channel"
     fi
     successln "$CORE_PEER_ADDRESS successfully join channel $channel "
+    
+    peer channel update -o orderer-cbpm:7050 --tls --cafile /tmp/hyperledger/fabric/peer/cbpm/orderer/tls/tlscacerts/tls-0-0-0-0-7052.pem  -c $channel -f /tmp/hyperledger/fabric/channel-artifacts/${ORG_MSP}anchors.tx
+
 
     export CORE_PEER_ADDRESS=peer2-$ORG:7051
     peer channel join -b /tmp/hyperledger/fabric/channel-artifacts/$channel.block 
@@ -43,4 +46,5 @@ for ORG in manufacturer middleman carrier supplier; do
         fatalln "$CORE_PEER_ADDRESS fail to join channel $channel"
     fi
     successln "$CORE_PEER_ADDRESS successfully join channel $channel "
+
 done

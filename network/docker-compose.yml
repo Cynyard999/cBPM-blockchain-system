@@ -6,7 +6,7 @@ services:
   couchdb1:
     container_name: couchdb1
     image: hyperledger/fabric-couchdb
-    environment: 
+    environment:
       - COUCHDB_USER=admin
       - COUCHDB_PASSWORD=123456
     # Comment/Uncomment the port mapping if you want to hide/expose the CouchDB service,
@@ -16,44 +16,44 @@ services:
     networks:
       - cbpm-network
 
-   # couchdb2:
-   #  container_name: couchdb
-   #  image: hyperledger/fabric-couchdb
-   #  environment: 
-   #   - COUCHDB_USER=admin
-   #   - COUCHDB_PASSWORD=123456
-   #  # Comment/Uncomment the port mapping if you want to hide/expose the CouchDB service,
-   #  # for example map it to utilize Fauxton User Interface in dev environments.
-   #  ports:
-   #    - "6984:5984"
-   #  networks:
-   #    - cbpm-network
+  couchdb2:
+    container_name: couchdb2
+    image: hyperledger/fabric-couchdb
+    environment:
+      - COUCHDB_USER=admin
+      - COUCHDB_PASSWORD=123456
+    # Comment/Uncomment the port mapping if you want to hide/expose the CouchDB service,
+    # for example map it to utilize Fauxton User Interface in dev environments.
+    ports:
+      - "6984:5984"
+    networks:
+      - cbpm-network
 
-   # couchdb3:
-   #  container_name: couchdb
-   #  image: hyperledger/fabric-couchdb
-   #  environment: 
-   #   - COUCHDB_USER=admin
-   #   - COUCHDB_PASSWORD=123456
-   #  # Comment/Uncomment the port mapping if you want to hide/expose the CouchDB service,
-   #  # for example map it to utilize Fauxton User Interface in dev environments.
-   #  ports:
-   #    - "7984:5984"
-   #  networks:
-   #    - cbpm-network
+  couchdb3:
+    container_name: couchdb3
+    image: hyperledger/fabric-couchdb
+    environment:
+      - COUCHDB_USER=admin
+      - COUCHDB_PASSWORD=123456
+    # Comment/Uncomment the port mapping if you want to hide/expose the CouchDB service,
+    # for example map it to utilize Fauxton User Interface in dev environments.
+    ports:
+      - "7984:5984"
+    networks:
+      - cbpm-network
 
-   # couchdb4:
-   #  container_name: couchdb
-   #  image: hyperledger/fabric-couchdb
-   #  environment: 
-   #   - COUCHDB_USER=admin
-   #   - COUCHDB_PASSWORD=123456
-   #  # Comment/Uncomment the port mapping if you want to hide/expose the CouchDB service,
-   #  # for example map it to utilize Fauxton User Interface in dev environments.
-   #  ports:
-   #    - "8984:5984"
-   #  networks:
-   #    - cbpm-network
+  couchdb4:
+    container_name: couchdb4
+    image: hyperledger/fabric-couchdb
+    environment:
+      - COUCHDB_USER=admin
+      - COUCHDB_PASSWORD=123456
+    # Comment/Uncomment the port mapping if you want to hide/expose the CouchDB service,
+    # for example map it to utilize Fauxton User Interface in dev environments.
+    ports:
+      - "8984:5984"
+    networks:
+      - cbpm-network
 
   ca-tls:
     container_name: ca
@@ -209,8 +209,9 @@ services:
       - CORE_PEER_TLS_ROOTCERT_FILE=/tmp/hyperledger/manufacturer/peer1/tls/tlscacerts/tls-0-0-0-0-7052.pem
       - CORE_PEER_GOSSIP_USELEADERELECTION=true
       - CORE_PEER_GOSSIP_ORGLEADER=false
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer2-manufacturer:7051
       - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1-manufacturer:7051
-      - CORE_PEER_GOSSIP_SKIPHANDSHAKE=true
+      # - CORE_PEER_GOSSIP_SKIPHANDSHAKE=true
     working_dir: /tmp/hyperledger/manufacturer/peer1
     command: peer node start
     volumes:
@@ -244,8 +245,9 @@ services:
       - CORE_PEER_TLS_ROOTCERT_FILE=/tmp/hyperledger/manufacturer/peer2/tls/tlscacerts/tls-0-0-0-0-7052.pem
       - CORE_PEER_GOSSIP_USELEADERELECTION=true
       - CORE_PEER_GOSSIP_ORGLEADER=false
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer1-manufacturer:7051
       - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer2-manufacturer:7051
-      - CORE_PEER_GOSSIP_SKIPHANDSHAKE=true
+      # - CORE_PEER_GOSSIP_SKIPHANDSHAKE=true
     working_dir: /tmp/hyperledger/manufacturer/peer2
     command: peer node start
     volumes:
@@ -258,13 +260,12 @@ services:
     ports:
       - 8151:7051
 
-
   peer1-supplier:
     container_name: peer1-supplier
     image: hyperledger/fabric-peer
     environment:
       - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
-      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb1:5984
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb2:5984
       - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=admin
       - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=123456
       - CORE_PEER_ID=peer1-supplier
@@ -280,8 +281,9 @@ services:
       - CORE_PEER_TLS_ROOTCERT_FILE=/tmp/hyperledger/supplier/peer1/tls/tlscacerts/tls-0-0-0-0-7052.pem
       - CORE_PEER_GOSSIP_USELEADERELECTION=true
       - CORE_PEER_GOSSIP_ORGLEADER=false
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer2-supplier:7051
       - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1-supplier:7051
-      - CORE_PEER_GOSSIP_SKIPHANDSHAKE=true
+      # - CORE_PEER_GOSSIP_SKIPHANDSHAKE=true
     working_dir: /tmp/hyperledger/supplier/peer1
     command: peer node start
     volumes:
@@ -290,7 +292,7 @@ services:
     networks:
       - cbpm-network
     depends_on:
-      - couchdb1
+      - couchdb2
     ports:
       - 8251:7051
 
@@ -299,7 +301,7 @@ services:
     image: hyperledger/fabric-peer
     environment:
       - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
-      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb1:5984
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb2:5984
       - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=admin
       - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=123456
       - CORE_PEER_ID=peer2-supplier
@@ -315,8 +317,9 @@ services:
       - CORE_PEER_TLS_ROOTCERT_FILE=/tmp/hyperledger/supplier/peer2/tls/tlscacerts/tls-0-0-0-0-7052.pem
       - CORE_PEER_GOSSIP_USELEADERELECTION=true
       - CORE_PEER_GOSSIP_ORGLEADER=false
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer1-supplier:7051
       - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer2-supplier:7051
-      - CORE_PEER_GOSSIP_SKIPHANDSHAKE=true
+      # - CORE_PEER_GOSSIP_SKIPHANDSHAKE=true
     working_dir: /tmp/hyperledger/supplier/peer2
     command: peer node start
     volumes:
@@ -325,7 +328,7 @@ services:
     networks:
       - cbpm-network
     depends_on:
-      - couchdb1
+      - couchdb2
     ports:
       - 8351:7051
 
@@ -334,7 +337,7 @@ services:
     image: hyperledger/fabric-peer
     environment:
       - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
-      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb1:5984
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb3:5984
       - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=admin
       - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=123456
       - CORE_PEER_ID=peer1-carrier
@@ -350,8 +353,9 @@ services:
       - CORE_PEER_TLS_ROOTCERT_FILE=/tmp/hyperledger/carrier/peer1/tls/tlscacerts/tls-0-0-0-0-7052.pem
       - CORE_PEER_GOSSIP_USELEADERELECTION=true
       - CORE_PEER_GOSSIP_ORGLEADER=false
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer2-carrier:7051      
       - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1-carrier:7051
-      - CORE_PEER_GOSSIP_SKIPHANDSHAKE=true
+      # - CORE_PEER_GOSSIP_SKIPHANDSHAKE=true
     working_dir: /tmp/hyperledger/carrier/peer1
     command: peer node start
     volumes:
@@ -360,7 +364,7 @@ services:
     networks:
       - cbpm-network
     depends_on:
-      - couchdb1
+      - couchdb3
     ports:
       - 8451:7051
 
@@ -369,7 +373,7 @@ services:
     image: hyperledger/fabric-peer
     environment:
       - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
-      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb1:5984
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb3:5984
       - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=admin
       - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=123456
       - CORE_PEER_ID=peer2-carrier
@@ -385,8 +389,9 @@ services:
       - CORE_PEER_TLS_ROOTCERT_FILE=/tmp/hyperledger/carrier/peer2/tls/tlscacerts/tls-0-0-0-0-7052.pem
       - CORE_PEER_GOSSIP_USELEADERELECTION=true
       - CORE_PEER_GOSSIP_ORGLEADER=false
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer1-carrier:7051 
       - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer2-carrier:7051
-      - CORE_PEER_GOSSIP_SKIPHANDSHAKE=true
+      # - CORE_PEER_GOSSIP_SKIPHANDSHAKE=true
     working_dir: /tmp/hyperledger/carrier/peer2
     command: peer node start
     volumes:
@@ -395,7 +400,7 @@ services:
     networks:
       - cbpm-network
     depends_on:
-      - couchdb1
+      - couchdb3
     ports:
       - 8551:7051
 
@@ -404,7 +409,7 @@ services:
     image: hyperledger/fabric-peer
     environment:
       - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
-      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb1:5984
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb4:5984
       - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=admin
       - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=123456
       - CORE_PEER_ID=peer1-middleman
@@ -420,8 +425,9 @@ services:
       - CORE_PEER_TLS_ROOTCERT_FILE=/tmp/hyperledger/middleman/peer1/tls/tlscacerts/tls-0-0-0-0-7052.pem
       - CORE_PEER_GOSSIP_USELEADERELECTION=true
       - CORE_PEER_GOSSIP_ORGLEADER=false
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer2-middleman:7051 
       - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer1-middleman:7051
-      - CORE_PEER_GOSSIP_SKIPHANDSHAKE=true
+      # - CORE_PEER_GOSSIP_SKIPHANDSHAKE=true
     working_dir: /tmp/hperledger/middleman/peer1
     command: peer node start
     volumes:
@@ -430,7 +436,7 @@ services:
     networks:
       - cbpm-network
     depends_on:
-      - couchdb1
+      - couchdb4
     ports:
       - 8651:7051
 
@@ -439,7 +445,7 @@ services:
     image: hyperledger/fabric-peer
     environment:
       - CORE_LEDGER_STATE_STATEDATABASE=CouchDB
-      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb1:5984
+      - CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb4:5984
       - CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=admin
       - CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=123456
       - CORE_PEER_ID=peer2-middleman
@@ -455,8 +461,9 @@ services:
       - CORE_PEER_TLS_ROOTCERT_FILE=/tmp/hyperledger/middleman/peer2/tls/tlscacerts/tls-0-0-0-0-7052.pem
       - CORE_PEER_GOSSIP_USELEADERELECTION=true
       - CORE_PEER_GOSSIP_ORGLEADER=false
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer1-middleman:7051 
       - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer2-middleman:7051
-      - CORE_PEER_GOSSIP_SKIPHANDSHAKE=true
+      # - CORE_PEER_GOSSIP_SKIPHANDSHAKE=true
     working_dir: /tmp/hyperledger/middleman/peer2
     command: peer node start
     volumes:
@@ -465,7 +472,7 @@ services:
     networks:
       - cbpm-network
     depends_on:
-      - couchdb1
+      - couchdb4
     ports:
       - 8751:7051
 
@@ -504,4 +511,3 @@ services:
       - peer2-supplier
       - peer1-middleman
       - peer2-middleman
-

@@ -856,6 +856,20 @@ configtxgen -profile CBPMOrdererGenesis -outputBlock ./channel-artifacts/genesis
 configtxgen -profile CBPMChannel -outputCreateChannelTx ./channel-artifacts/cbpmchannel.tx -channelID cbpmchannel
 ```
 
+配置anchor-peers
+
+```shell
+configtxgen -profile CBPMChannel -outputAnchorPeersUpdate ./channel-artifacts/ManufacturerMSPanchors.tx -channelID cbpmchannel -asOrg ManufacturerOrg
+
+configtxgen -profile CBPMChannel -outputAnchorPeersUpdate ./channel-artifacts/MiddlemanMSPanchors.tx -channelID cbpmchannel -asOrg MiddlemanOrg
+
+configtxgen -profile CBPMChannel -outputAnchorPeersUpdate ./channel-artifacts/CarrierMSPanchors.tx -channelID cbpmchannel -asOrg CarrierOrg
+
+configtxgen -profile CBPMChannel -outputAnchorPeersUpdate ./channel-artifacts/SupplierMSPanchors.tx -channelID cbpmchannel -asOrg SupplierOrg
+```
+
+
+
 配置config.yml
 
 在\$PROJECT_PATH/\$ORG/admin/msp下面统一创建并配置（不用配置orderer的组织）
@@ -887,3 +901,260 @@ NodeOUs:
 docker-compose up -d orderer-cbpm
 ```
 
+
+
+# 测试网络
+
+## Create a supplier-carrier channel
+
+### 创建并进入通道
+
+生成scchannel.tx启动cli并且进入
+
+```shell
+configtxgen -profile SCChannel -outputCreateChannelTx ./channel-artifacts/scchannel.tx -channelID scchannel
+docker exec -it cli /bin/bash
+```
+
+
+
+用supplier创建scchannel通道
+
+```shell
+# 配置通道名
+export CHANNEL=scchannel
+
+
+# 配置supplier-peer1环境 MSPCONFIGPATH设置为admin的
+export CORE_PEER_MSPCONFIGPATH=/tmp/hyperledger/fabric/peer/supplier/admin/msp
+export CORE_PEER_TLS_ROOTCERT_FILE=/tmp/hyperledger/fabric/peer/supplier/peer1/tls/tlscacerts/tls-0-0-0-0-7052.pem
+export CORE_PEER_TLS_CERT_FILE=/tmp/hyperledger/fabric/peer/supplier/peer1/tls/signcerts/cert.pem
+export CORE_PEER_TLS_KEY_FILE=/tmp/hyperledger/fabric/peer/supplier/peer1/tls/keystore/key.pem
+export CORE_PEER_LOCALMSPID=SupplierMSP
+
+
+peer channel create -c $CHANNEL -f /tmp/hyperledger/fabric/channel-artifacts/$CHANNEL.tx -o orderer-cbpm:7050 --outputBlock /tmp/hyperledger/fabric/channel-artifacts/$CHANNEL.block --tls --cafile /tmp/hyperledger/fabric/peer/supplier/peer1/tls/tlscacerts/tls-0-0-0-0-7052.pem
+
+#### 或者
+peer channel create -c $CHANNEL -f /tmp/hyperledger/fabric/channel-artifacts/$CHANNEL.tx -o orderer-cbpm:7050 --outputBlock /tmp/hyperledger/fabric/channel-artifacts/$CHANNEL.block --tls --cafile /tmp/hyperledger/fabric/peer/cbpm/orderer/tls/tlscacerts/tls-0-0-0-0-7052.pem
+```
+
+Supplier节点加入通道
+
+```shell
+# cli
+export CORE_PEER_ADDRESS=peer1-supplier:7051
+peer channel join -b /tmp/hyperledger/fabric/channel-artifacts/$CHANNEL.block
+export CORE_PEER_ADDRESS=peer2-supplier:7051
+peer channel join -b /tmp/hyperledger/fabric/channel-artifacts/$CHANNEL.block
+```
+
+Carrier节点加入通道
+
+```shell
+# cli
+# 配置carrier-peer1环境 MSPCONFIGPATH设置为admin的
+export CORE_PEER_MSPCONFIGPATH=/tmp/hyperledger/fabric/peer/carrier/admin/msp
+export CORE_PEER_TLS_ROOTCERT_FILE=/tmp/hyperledger/fabric/peer/carrier/peer1/tls/tlscacerts/tls-0-0-0-0-7052.pem
+export CORE_PEER_TLS_CERT_FILE=/tmp/hyperledger/fabric/peer/carrier/peer1/tls/signcerts/cert.pem
+export CORE_PEER_TLS_KEY_FILE=/tmp/hyperledger/fabric/peer/carrier/peer1/tls/keystore/key.pem
+export CORE_PEER_LOCALMSPID=CarrierMSP
+
+export CORE_PEER_ADDRESS=peer1-carrier:7051
+peer channel join -b /tmp/hyperledger/fabric/channel-artifacts/$CHANNEL.block
+export CORE_PEER_ADDRESS=peer2-carrier:7051
+peer channel join -b /tmp/hyperledger/fabric/channel-artifacts/$CHANNEL.block
+```
+
+检测（如果没有的话会报错
+
+```shell
+peer channel list
+```
+
+### 选择链码
+
+链码路径-链码语言
+
+- chaincode-supplier-carrier: golang
+- test-go : golang
+- test-go-asset-transfer : golang
+- test-go-private-data : golang
+
+### 安装链码
+
+```shell
+# 输入想要安装的链码路径以及语言版本
+export CHAINCODE=chaincode-supplier-carrier
+export CHAINCODE_LANG=golang
+export CHAINCODE_VERSION=1.0
+export CHAINCODE_NAME=scchaincode
+
+
+export CORE_PEER_TLS_ROOTCERT_FILE=/tmp/hyperledger/fabric/peer/supplier/peer1/tls/tlscacerts/tls-0-0-0-0-7052.pem
+export CORE_PEER_TLS_CERT_FILE=/tmp/hyperledger/fabric/peer/supplier/peer1/tls/signcerts/cert.pem
+export CORE_PEER_TLS_KEY_FILE=/tmp/hyperledger/fabric/peer/supplier/peer1/tls/keystore/key.pem
+export CORE_PEER_MSPCONFIGPATH=/tmp/hyperledger/fabric/peer/supplier/admin/msp
+export CORE_PEER_LOCALMSPID=SupplierMSP
+
+export CORE_PEER_ADDRESS=peer1-supplier:7051
+peer chaincode install -n $CHAINCODE_NAME -v $CHAINCODE_VERSION  -p $CHAINCODE -l $CHAINCODE_LANG
+
+export CORE_PEER_ADDRESS=peer2-supplier:7051
+peer chaincode install -n $CHAINCODE_NAME -v $CHAINCODE_VERSION  -p $CHAINCODE -l $CHAINCODE_LANG
+
+
+export CORE_PEER_TLS_ROOTCERT_FILE=/tmp/hyperledger/fabric/peer/carrier/peer1/tls/tlscacerts/tls-0-0-0-0-7052.pem
+export CORE_PEER_TLS_CERT_FILE=/tmp/hyperledger/fabric/peer/carrier/peer1/tls/signcerts/cert.pem
+export CORE_PEER_TLS_KEY_FILE=/tmp/hyperledger/fabric/peer/carrier/peer1/tls/keystore/key.pem
+export CORE_PEER_MSPCONFIGPATH=/tmp/hyperledger/fabric/peer/carrier/admin/msp
+export CORE_PEER_LOCALMSPID=CarrierMSP
+
+export CORE_PEER_ADDRESS=peer1-carrier:7051
+peer chaincode install -n $CHAINCODE_NAME -v $CHAINCODE_VERSION  -p $CHAINCODE -l $CHAINCODE_LANG
+
+
+export CORE_PEER_ADDRESS=peer2-carrier:7051
+peer chaincode install -n $CHAINCODE_NAME -v $CHAINCODE_VERSION  -p $CHAINCODE -l $CHAINCODE_LANG
+
+```
+
+### 初始化并调用链码
+
+如果报错`Error: could not assemble transaction, err proposal response was not successful, error code 500, msg failed to execute transaction 8e95ab096404723808c9b0d2350db55dae5d81964f3b02176d10ac5639316e12: error sending: timeout expired while executing transaction`
+
+对于gradle的项目，可以在宿主机执行`gradle build` 
+
+对于go的项目，可以先在宿主机执行`export GO111MODULE=auto && go mod vendor` 
+
+
+
+如果invoke成功执行了，但是查询发现没有数据增加到数据库中，检查-P参数的设置
+
+
+
+
+
+如果一直报错`Error: endorsement failure during query. response: status:500 message:"Received unknown function invocation" ` 
+
+请删除本地docker中的名为`dev-peer*` 的所有镜像，因为可能如果scchannel和scchaincode名字相同的话，可能会用到之前的智能合约的镜像...导致函数调用不成功
+
+
+
+
+
+#### chaincode-supplier-carrier
+
+```shell
+peer chaincode instantiate -o orderer-cbpm:7050 --tls --cafile "/tmp/hyperledger/fabric/peer/cbpm/orderer/tls/tlscacerts/tls-0-0-0-0-7052.pem" -C $CHANNEL -n $CHAINCODE_NAME -l $CHAINCODE_LANG -v $CHAINCODE_VERSION -c '{"Args":[""]}' -P "OR('SupplierMSP.peer','CarrierMSP.peer')"
+
+peer chaincode upgrade -o orderer-cbpm:7050 --tls --cafile "/tmp/hyperledger/fabric/peer/cbpm/orderer/tls/tlscacerts/tls-0-0-0-0-7052.pem" -C $CHANNEL -n $CHAINCODE_NAME -l $CHAINCODE_LANG -v $CHAINCODE_VERSION -c '{"Args":[""]}' -P "OR('SupplierMSP.peer','CarrierMSP.peer')"
+```
+
+#### test-go-private-data
+
+```shell
+export CORE_PEER_MSPCONFIGPATH=/tmp/hyperledger/fabric/peer/supplier/admin/msp
+export CORE_PEER_TLS_ROOTCERT_FILE=/tmp/hyperledger/fabric/peer/supplier/peer1/tls/tlscacerts/tls-0-0-0-0-7052.pem
+export CORE_PEER_LOCALMSPID=SupplierMSP
+export CORE_PEER_ADDRESS=peer1-supplier:7051
+
+peer chaincode instantiate -o orderer-cbpm:7050 --tls --cafile "/tmp/hyperledger/fabric/peer/cbpm/orderer/tls/tlscacerts/tls-0-0-0-0-7052.pem" -C $CHANNEL -n $CHAINCODE_NAME -l $CHAINCODE_LANG -v $CHAINCODE_VERSION -c '{"Args":[""]}' -P "OR('SupplierMSP.peer','CarrierMSP.peer')" --collections-config $GOPATH/src/$CHAINCODE/collections_config.json
+
+export MARBLE=$(echo -n "{\"name\":\"marble1\",\"color\":\"blue\",\"size\":35,\"owner\":\"tom\",\"price\":99}" | base64 | tr -d \\n)
+
+
+peer chaincode invoke -o orderer-cbpm:7050 --tls --cafile "/tmp/hyperledger/fabric/peer/cbpm/orderer/tls/tlscacerts/tls-0-0-0-0-7052.pem" -C $CHANNEL -n $CHAINCODE_NAME -c '{"Args":["InitMarble"]}' --transient "{\"marble\":\"$MARBLE\"}"
+
+export MARBLE=$(echo -n "{\"name\":\"marble2\",\"color\":\"red\",\"size\":50,\"owner\":\"tom\",\"price\":102}" | base64 | tr -d \\n)
+
+peer chaincode invoke -o orderer-cbpm:7050 --tls --cafile "/tmp/hyperledger/fabric/peer/cbpm/orderer/tls/tlscacerts/tls-0-0-0-0-7052.pem" -C $CHANNEL -n $CHAINCODE_NAME -c '{"Args":["InitMarble"]}' --transient "{\"marble\":\"$MARBLE\"}"
+
+
+peer chaincode query -C $CHANNEL -n $CHAINCODE_NAME -c '{"Args":["readMarble","marble1"]}'
+
+
+peer chaincode query -C $CHANNEL -n $CHAINCODE_NAME -c '{"Args":["readMarblePrivateDetails","marble1"]}'
+
+
+
+# switch to carrier
+export CORE_PEER_MSPCONFIGPATH=/tmp/hyperledger/fabric/peer/carrier/admin/msp
+export CORE_PEER_TLS_ROOTCERT_FILE=/tmp/hyperledger/fabric/peer/carrier/peer1/tls/tlscacerts/tls-0-0-0-0-7052.pem
+export CORE_PEER_LOCALMSPID=CarrierMSP
+export CORE_PEER_ADDRESS=peer1-carrier:7051
+
+export MARBLE=$(echo -n "{\"name\":\"marble3\",\"color\":\"red\",\"size\":50,\"owner\":\"tom\",\"price\":222}" | base64 | tr -d \\n)
+
+peer chaincode invoke -o orderer-cbpm:7050 --tls --cafile "/tmp/hyperledger/fabric/peer/cbpm/orderer/tls/tlscacerts/tls-0-0-0-0-7052.pem" -C $CHANNEL -n $CHAINCODE_NAME -c '{"Args":["InitMarble"]}' --transient "{\"marble\":\"$MARBLE\"}"
+
+peer chaincode query -C $CHANNEL -n $CHAINCODE_NAME -c '{"Args":["readMarble","marble1"]}'
+
+
+peer chaincode query -C $CHANNEL -n $CHAINCODE_NAME -c '{"Args":["readMarblePrivateDetails","marble1"]}'
+
+peer chaincode query -C $CHANNEL -n $CHAINCODE_NAME -c '{"Args":["GetMarbleHash","collectionMarbles","marble1"]}'
+
+peer chaincode query -C $CHANNEL -n $CHAINCODE_NAME -c '{"Args":["QueryMarblesByOwner","tom"]}'
+
+peer chaincode query -C $CHANNEL -n $CHAINCODE_NAME -c '{"Args":["QueryMarbles","{\"selector\":{\"owner\":\"tom\"}}"]}'
+
+```
+
+#### go-marbles-couchdb
+
+```shell
+export CORE_PEER_MSPCONFIGPATH=/tmp/hyperledger/fabric/peer/supplier/admin/msp
+export CORE_PEER_TLS_ROOTCERT_FILE=/tmp/hyperledger/fabric/peer/supplier/peer1/tls/tlscacerts/tls-0-0-0-0-7052.pem
+export CORE_PEER_TLS_CERT_FILE=/tmp/hyperledger/fabric/peer/supplier/peer1/tls/signcerts/cert.pem
+export CORE_PEER_TLS_KEY_FILE=/tmp/hyperledger/fabric/peer/supplier/peer1/tls/keystore/key.pem
+export CORE_PEER_LOCALMSPID=SupplierMSP
+export CORE_PEER_ADDRESS=peer1-supplier:7051
+
+
+peer chaincode instantiate -o orderer-cbpm:7050 --tls --cafile "/tmp/hyperledger/fabric/peer/cbpm/orderer/tls/tlscacerts/tls-0-0-0-0-7052.pem" -C $CHANNEL -n $CHAINCODE_NAME -l $CHAINCODE_LANG -v $CHAINCODE_VERSION -c '{"Args":[""]}' -P "OR('SupplierMSP.peer','CarrierMSP.peer')"
+
+```
+
+调用查询
+
+```shell
+peer chaincode invoke -o orderer-cbpm:7050 --tls --cafile "/tmp/hyperledger/fabric/peer/cbpm/orderer/tls/tlscacerts/tls-0-0-0-0-7052.pem" -C $CHANNEL -n $CHAINCODE_NAME -c '{"Args":["initMarble","marble1","blue","35","tom"]}'
+
+peer chaincode invoke -o orderer-cbpm:7050 --tls --cafile "/tmp/hyperledger/fabric/peer/cbpm/orderer/tls/tlscacerts/tls-0-0-0-0-7052.pem" -C $CHANNEL -n $CHAINCODE_NAME -c '{"function": "initMarble","Args":["marble1","blue","35","tom"]}'
+
+
+peer chaincode query -C $CHANNEL -n $CHAINCODE_NAME -c '{"function": "queryMarbles","Args":["{\"selector\":{\"owner\":\"tom\"}}"]}'
+
+
+peer chaincode query -C $CHANNEL -n $CHAINCODE_NAME -c '{"Args":["readMarble","marble1"]}'
+```
+
+#### test-go
+
+```shell
+export CORE_PEER_MSPCONFIGPATH=/tmp/hyperledger/fabric/peer/supplier/admin/msp
+export CORE_PEER_TLS_ROOTCERT_FILE=/tmp/hyperledger/fabric/peer/supplier/peer1/tls/tlscacerts/tls-0-0-0-0-7052.pem
+export CORE_PEER_TLS_CERT_FILE=/tmp/hyperledger/fabric/peer/supplier/peer1/tls/signcerts/cert.pem
+export CORE_PEER_TLS_KEY_FILE=/tmp/hyperledger/fabric/peer/supplier/peer1/tls/keystore/key.pem
+export CORE_PEER_LOCALMSPID=SupplierMSP
+export CORE_PEER_ADDRESS=peer1-supplier:7051
+
+peer chaincode instantiate -o orderer-cbpm:7050 --tls --cafile "/tmp/hyperledger/fabric/peer/cbpm/orderer/tls/tlscacerts/tls-0-0-0-0-7052.pem" -C $CHANNEL -n $CHAINCODE_NAME -l $CHAINCODE_LANG -v $CHAINCODE_VERSION -c '{"Args":["initLedger"]}' -P "OR('SupplierMSP.peer','CarrierMSP.peer')"
+
+```
+
+
+
+```shell
+
+peer chaincode query -C $CHANNEL -n $CHAINCODE_NAME -c '{"Args":["ReadAsset","asset1"]}'
+
+
+peer chaincode invoke -o orderer-cbpm:7050 --tls --cafile "/tmp/hyperledger/fabric/peer/cbpm/orderer/tls/tlscacerts/tls-0-0-0-0-7052.pem" -C $CHANNEL -n $CHAINCODE_NAME -c '{"Args":["CreateAsset","asset10","black","5","cynyard","10"]}'
+
+
+peer chaincode query -C $CHANNEL -n $CHAINCODE_NAME -c '{"Args":["ReadAsset","asset10"]}'
+
+
+```
