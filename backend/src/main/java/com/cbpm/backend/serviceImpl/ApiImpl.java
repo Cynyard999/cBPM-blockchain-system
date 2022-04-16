@@ -24,21 +24,21 @@ public class ApiImpl implements ApiService {
     @Resource
     GatewayConfig gatewayConfig;
 
+    private final String CHANNEL_NAME="cbpmchannel";
 
+    private final String CHAINCODE_NAME="cbpmchaincode";
 
     @Override
     public ResponseVo query(JSONObject jsonObject) {
         //提取信息
         String orgType = jsonObject.getString("orgType");
-        String channelName = jsonObject.getString("channelName");
-        String contractName = jsonObject.getString("contractName");
         try {
             //获取对应组织的gateway
             Gateway gateway = gatewayConfig.gatewayHashMap.get(orgType);
             //根据channelName获取网络中channel
-            Network network = gateway.getNetwork(channelName);
+            Network network = gateway.getNetwork(CHANNEL_NAME);
             //根据contractName获取channel上的contract
-            Contract contract = network.getContract(contractName);
+            Contract contract = network.getContract(CHAINCODE_NAME);
             String functionName = jsonObject.getString("function");
             //提取参数
             JSONArray argArray = jsonObject.getJSONArray("args");
@@ -70,12 +70,10 @@ public class ApiImpl implements ApiService {
     @Override
     public ResponseVo invoke(JSONObject jsonObject) {
         String orgType = jsonObject.getString("orgType");
-        String channelName = jsonObject.getString("channelName");
-        String contractName = jsonObject.getString("contractName");
         try {
             Gateway gateway = gatewayConfig.gatewayHashMap.get(orgType);
-            Network network = gateway.getNetwork(channelName);
-            Contract contract = network.getContract(contractName);
+            Network network = gateway.getNetwork(CHANNEL_NAME);
+            Contract contract = network.getContract(CHAINCODE_NAME);
             String functionName = jsonObject.getString("function");
             String[] args;
             JSONObject transientDetail = jsonObject.getJSONObject("transient");

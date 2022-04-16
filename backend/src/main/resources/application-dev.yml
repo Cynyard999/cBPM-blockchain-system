@@ -12,7 +12,7 @@ spring:
 
 backend:
   # 网络配置文件路径
-  networkConfigPath: src/main/resources/connection.json
+  networkConfigPath: src/main/resources/connection2.json
   #network path
   networkPath: ../network/
   #logPath
