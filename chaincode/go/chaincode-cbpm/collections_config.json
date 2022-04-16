@@ -1,6 +1,15 @@
 [
   {
-    "name": "SupplyAssetOrderCollection",
+    "name": "SupplyAssetCollection",
+    "policy": "OR('SupplierMSP.member', 'MiddlemanMSP.member')",
+    "requiredPeerCount": 0,
+    "maxPeerCount": 6,
+    "blockToLive": 0,
+    "memberOnlyRead": true,
+    "memberOnlyWrite": true
+  },
+  {
+    "name": "SupplyOrderCollection",
     "policy": "OR('SupplierMSP.member', 'MiddlemanMSP.member')",
     "requiredPeerCount": 0,
     "maxPeerCount": 6,
@@ -36,7 +45,16 @@
     "memberOnlyWrite": true
   },
   {
-    "name": "AssetOrderCollection",
+    "name": "AssetCollection",
+    "policy": "OR('ManufacturerMSP.member','MiddlemanMSP.member')",
+    "requiredPeerCount": 0,
+    "maxPeerCount": 6,
+    "blockToLive": 0,
+    "memberOnlyRead": true,
+    "memberOnlyWrite": true
+  },
+  {
+    "name": "OrderCollection",
     "policy": "OR('ManufacturerMSP.member','MiddlemanMSP.member')",
     "requiredPeerCount": 0,
     "maxPeerCount": 6,

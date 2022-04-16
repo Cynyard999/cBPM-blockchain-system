@@ -109,7 +109,7 @@ func (t *CBPMChaincode) CreateAsset(ctx contractapi.TransactionContextInterface)
 	}
 
 	// === Save marble to state ===
-	err = ctx.GetStub().PutPrivateData("AssetOrderCollection", asset.AssetID, assetJSONasBytes)
+	err = ctx.GetStub().PutPrivateData("AssetCollection", asset.AssetID, assetJSONasBytes)
 	if err != nil {
 		return nil, fmt.Errorf("fail to create Asset: %s", err.Error())
 	}
@@ -137,7 +137,7 @@ func (t *CBPMChaincode) UpdateAsset(ctx contractapi.TransactionContextInterface,
 	if err != nil {
 		return err
 	}
-	return ctx.GetStub().PutPrivateData("AssetOrderCollection", assetID, newAssetBytes)
+	return ctx.GetStub().PutPrivateData("AssetCollection", assetID, newAssetBytes)
 }
 
 // DeleteAsset 删除Asset
@@ -150,20 +150,24 @@ func (t *CBPMChaincode) DeleteAsset(ctx contractapi.TransactionContextInterface,
 	if err != nil {
 		return fmt.Errorf("fail to delete asset: %v", err)
 	}
-	return ctx.GetStub().DelPrivateData("AssetOrderCollection", assetID)
+	return ctx.GetStub().DelPrivateData("AssetCollection", assetID)
 }
 
 // GetAsset 获取Asset，args传入assetID
 func (t *CBPMChaincode) GetAsset(ctx contractapi.TransactionContextInterface, assetID string) (*Asset, error) {
-	queryString := fmt.Sprintf("{\"selector\":{\"objectType\":\"Asset\",\"assetID\":\"%s\"}}", assetID)
-	queryResults, err := t.getAssetQueryResultForQueryString(ctx, queryString)
+	assetBytes, err := ctx.GetStub().GetPrivateData("AssetCollection", assetID)
 	if err != nil {
-		return nil, fmt.Errorf("fail to get asset: %v", err)
+		return nil, fmt.Errorf("fail to get asset %s: %v", assetID, err)
 	}
-	if len(queryResults) == 0 {
-		return nil, fmt.Errorf("fail to get asset: %s does not exist", assetID)
+	if assetBytes == nil {
+		return nil, fmt.Errorf("fail to get asset %s: asset does not exist", assetBytes)
 	}
-	return queryResults[0], nil
+	var asset Asset
+	err = json.Unmarshal(assetBytes, &asset)
+	if err != nil {
+		return nil, err
+	}
+	return &asset, nil
 }
 
 // GetAllAssets 获取所有Assets
@@ -188,25 +192,12 @@ func (t *CBPMChaincode) QueryAssets(ctx contractapi.TransactionContextInterface,
 }
 
 func (t *CBPMChaincode) assetExists(ctx contractapi.TransactionContextInterface, assetID string) (bool, error) {
-	assetBytes, err := ctx.GetStub().GetPrivateData("AssetOrderCollection", assetID)
+	assetBytes, err := ctx.GetStub().GetPrivateData("AssetCollection", assetID)
 	if err != nil {
 		return false, fmt.Errorf("fail to read asset %s from world state. %v", assetID, err)
 	}
 	return assetBytes != nil, nil
 }
-
-// 私有数据中不能在put State的同时query State
-//func (t *CBPMChaincode) assetNameExists(ctx contractapi.TransactionContextInterface, assetName string) (bool, error) {
-//	queryString := fmt.Sprintf("{\"selector\":{\"objectType\":\"Asset\",\"assetName\":\"%s\"}}", assetName)
-//	queryResults, err := t.getAssetQueryResultForQueryString(ctx, queryString)
-//	if err != nil {
-//		return false, fmt.Errorf("fail to check whether asset name exists: %v", err)
-//	}
-//	if len(queryResults) == 0 {
-//		return false, nil
-//	}
-//	return true, nil
-//}
 
 // CreateOrder 创建Order，transient传入assetID，quantity，receivingAddress，note，链码生成UUID，返回创建好的Order
 func (t *CBPMChaincode) CreateOrder(ctx contractapi.TransactionContextInterface) (*Order, error) {
@@ -271,7 +262,7 @@ func (t *CBPMChaincode) CreateOrder(ctx contractapi.TransactionContextInterface)
 		Note:             orderInput.Note,
 	}
 	orderJSONasBytes, err := json.Marshal(order)
-	err = ctx.GetStub().PutPrivateData("AssetOrderCollection", order.TradeID, orderJSONasBytes)
+	err = ctx.GetStub().PutPrivateData("OrderCollection", order.TradeID, orderJSONasBytes)
 	if err != nil {
 		return nil, fmt.Errorf("fail to create Order: %s", err.Error())
 	}
@@ -280,15 +271,19 @@ func (t *CBPMChaincode) CreateOrder(ctx contractapi.TransactionContextInterface)
 
 // GetOrder 获取Order，args传入tradeID
 func (t *CBPMChaincode) GetOrder(ctx contractapi.TransactionContextInterface, tradeID string) (*Order, error) {
-	queryString := fmt.Sprintf("{\"selector\":{\"objectType\":\"Order\",\"tradeID\":\"%s\"}}", tradeID)
-	queryResults, err := t.getOrderQueryResultForQueryString(ctx, queryString)
+	orderBytes, err := ctx.GetStub().GetPrivateData("OrderCollection", tradeID)
+	if err != nil {
+		return nil, fmt.Errorf("fail to get order for trade %s: %v", tradeID, err)
+	}
+	if orderBytes == nil {
+		return nil, fmt.Errorf("fail to get order for trade %s: asset does not exist", orderBytes)
+	}
+	var order Order
+	err = json.Unmarshal(orderBytes, &order)
 	if err != nil {
 		return nil, err
 	}
-	if len(queryResults) == 0 {
-		return nil, fmt.Errorf("fail to get order for tradeID: %s does not exist", tradeID)
-	}
-	return queryResults[0], nil
+	return &order, nil
 }
 
 // GetAllOrders 获取所有Orders
@@ -321,7 +316,7 @@ func (t *CBPMChaincode) DeleteOrder(ctx contractapi.TransactionContextInterface,
 	if !exists {
 		return fmt.Errorf("fail to delete order: order for trade #{tradeID} does not exist")
 	}
-	return ctx.GetStub().DelPrivateData("AssetOrderCollection", tradeID)
+	return ctx.GetStub().DelPrivateData("OrderCollection", tradeID)
 }
 
 // HandleOrder 非Owner开始处理Order，args传入tradeID
@@ -350,7 +345,7 @@ func (t *CBPMChaincode) HandleOrder(ctx contractapi.TransactionContextInterface,
 	if err != nil {
 		return fmt.Errorf("fail to handle order: %v", err)
 	}
-	return ctx.GetStub().PutPrivateData("AssetOrderCollection", tradeID, orderBytes)
+	return ctx.GetStub().PutPrivateData("OrderCollection", tradeID, orderBytes)
 }
 
 // FinishOrder handler完成Order，args传入tradeID
@@ -384,7 +379,7 @@ func (t *CBPMChaincode) FinishOrder(ctx contractapi.TransactionContextInterface,
 	if err != nil {
 		return fmt.Errorf("fail to finish order: %v", err)
 	}
-	return ctx.GetStub().PutPrivateData("AssetOrderCollection", tradeID, orderBytes)
+	return ctx.GetStub().PutPrivateData("OrderCollection", tradeID, orderBytes)
 }
 
 // ConfirmFinishOrder owner确定完成，args传入tradeID
@@ -418,20 +413,19 @@ func (t *CBPMChaincode) ConfirmFinishOrder(ctx contractapi.TransactionContextInt
 	if err != nil {
 		return fmt.Errorf("fail to confirm finish order: %v", err)
 	}
-	return ctx.GetStub().PutPrivateData("AssetOrderCollection", tradeID, orderBytes)
+	return ctx.GetStub().PutPrivateData("OrderCollection", tradeID, orderBytes)
 }
 
-// TODO 把order和asset放到不同的私有数据集合里面
 func (t *CBPMChaincode) orderExists(ctx contractapi.TransactionContextInterface, tradeID string) (bool, error) {
-	orderBytes, err := ctx.GetStub().GetPrivateData("AssetOrderCollection", tradeID)
+	orderBytes, err := ctx.GetStub().GetPrivateData("OrderCollection", tradeID)
 	if err != nil {
 		return false, fmt.Errorf("fail to read order for trade %s from world state. %v", tradeID, err)
 	}
 	return orderBytes != nil, nil
 }
-func (s *CBPMChaincode) getAssetQueryResultForQueryString(ctx contractapi.TransactionContextInterface, queryString string) ([]*Asset, error) {
+func (t *CBPMChaincode) getAssetQueryResultForQueryString(ctx contractapi.TransactionContextInterface, queryString string) ([]*Asset, error) {
 
-	resultsIterator, err := ctx.GetStub().GetPrivateDataQueryResult("AssetOrderCollection", queryString)
+	resultsIterator, err := ctx.GetStub().GetPrivateDataQueryResult("AssetCollection", queryString)
 	if err != nil {
 		return nil, err
 	}
@@ -452,9 +446,9 @@ func (s *CBPMChaincode) getAssetQueryResultForQueryString(ctx contractapi.Transa
 	return results, nil
 }
 
-func (s *CBPMChaincode) getOrderQueryResultForQueryString(ctx contractapi.TransactionContextInterface, queryString string) ([]*Order, error) {
+func (t *CBPMChaincode) getOrderQueryResultForQueryString(ctx contractapi.TransactionContextInterface, queryString string) ([]*Order, error) {
 
-	resultsIterator, err := ctx.GetStub().GetPrivateDataQueryResult("AssetOrderCollection", queryString)
+	resultsIterator, err := ctx.GetStub().GetPrivateDataQueryResult("OrderCollection", queryString)
 	if err != nil {
 		return nil, err
 	}
@@ -569,7 +563,7 @@ func (t *CBPMChaincode) CreateSupplyAsset(ctx contractapi.TransactionContextInte
 		return nil, fmt.Errorf("fail to create supplyAsset: %v", err)
 	}
 
-	err = ctx.GetStub().PutPrivateData("SupplyAssetOrderCollection", supplyAsset.AssetID, assetJSONasBytes)
+	err = ctx.GetStub().PutPrivateData("SupplyAssetCollection", supplyAsset.AssetID, assetJSONasBytes)
 	if err != nil {
 		return nil, fmt.Errorf("fail to create supplyAsset: %v", err)
 	}
@@ -580,11 +574,11 @@ func (t *CBPMChaincode) CreateSupplyAsset(ctx contractapi.TransactionContextInte
 func (t *CBPMChaincode) UpdateSupplyAsset(ctx contractapi.TransactionContextInterface, assetID string, assetName string, assetPrice float32, shippingAddress string, desc string) error {
 	asset, err := t.GetSupplyAsset(ctx, assetID)
 	if err != nil {
-		return fmt.Errorf("fail to update asset: %v", err)
+		return fmt.Errorf("fail to update SupplyAsset: %v", err)
 	}
 	clientOrgID, err := getClientOrgID(ctx, false)
 	if err != nil {
-		return fmt.Errorf("fail to update asset: %v", err)
+		return fmt.Errorf("fail to update SupplyAsset: %v", err)
 	}
 	if asset.OwnerOrg != clientOrgID {
 		return fmt.Errorf("fail to update SupplyAsset: unauthorized updater %s", clientOrgID)
@@ -595,13 +589,14 @@ func (t *CBPMChaincode) UpdateSupplyAsset(ctx contractapi.TransactionContextInte
 	asset.PublicDescription = desc
 	newAssetBytes, err := json.Marshal(asset)
 	if err != nil {
-		return fmt.Errorf("fail to update asset: %v", err)
+		return fmt.Errorf("fail to update SupplyAsset: %v", err)
 	}
-	return ctx.GetStub().PutPrivateData("SupplyAssetOrderCollection", assetID, newAssetBytes)
+	return ctx.GetStub().PutPrivateData("SupplyAssetCollection", assetID, newAssetBytes)
 }
 
 // DeleteSupplyAsset 删除指定的asset，需要args传入assetID
 func (t *CBPMChaincode) DeleteSupplyAsset(ctx contractapi.TransactionContextInterface, assetID string) error {
+	// TODO owner删除
 	exist, err := t.supplyAssetExists(ctx, assetID)
 	if !exist {
 		return fmt.Errorf("fail to delete asset: asset does not exist")
@@ -609,20 +604,24 @@ func (t *CBPMChaincode) DeleteSupplyAsset(ctx contractapi.TransactionContextInte
 	if err != nil {
 		return fmt.Errorf("fail to delete asset: %v", err)
 	}
-	return ctx.GetStub().DelPrivateData("SupplyAssetOrderCollection", assetID)
+	return ctx.GetStub().DelPrivateData("SupplyAssetCollection", assetID)
 }
 
-// GetAsset 获取指定的asset，需要args传入assetID
+// GetSupplyAsset 获取指定的asset，需要args传入assetID
 func (t *CBPMChaincode) GetSupplyAsset(ctx contractapi.TransactionContextInterface, assetID string) (*SupplyAsset, error) {
-	queryString := fmt.Sprintf("{\"selector\":{\"objectType\":\"SupplyAsset\",\"assetID\":\"%s\"}}", assetID)
-	queryResults, err := t.getSupplyAssetQueryResultForQueryString(ctx, queryString)
+	supplyAssetBytes, err := ctx.GetStub().GetPrivateData("SupplyAssetCollection", assetID)
 	if err != nil {
-		return nil, fmt.Errorf("fail to get supplyAsset: %v", err)
+		return nil, fmt.Errorf("fail to get supply asset %s: %v", assetID, err)
 	}
-	if len(queryResults) == 0 {
-		return nil, fmt.Errorf("fail to get supplyAsset: %s does not exist", assetID)
+	if supplyAssetBytes == nil {
+		return nil, fmt.Errorf("fail to get supply asset %s: asset does not exist", assetID)
 	}
-	return queryResults[0], nil
+	var supplyAsset SupplyAsset
+	err = json.Unmarshal(supplyAssetBytes, &supplyAsset)
+	if err != nil {
+		return nil, err
+	}
+	return &supplyAsset, nil
 }
 
 // GetAllSupplyAssets 获取所有的asset
@@ -647,7 +646,7 @@ func (t *CBPMChaincode) QuerySupplyAssets(ctx contractapi.TransactionContextInte
 }
 
 func (t *CBPMChaincode) supplyAssetExists(ctx contractapi.TransactionContextInterface, assetID string) (bool, error) {
-	assetBytes, err := ctx.GetStub().GetPrivateData("SupplyAssetOrderCollection", assetID)
+	assetBytes, err := ctx.GetStub().GetPrivateData("SupplyAssetCollection", assetID)
 	if err != nil {
 		return false, fmt.Errorf("fail to read supplyAsset %s from world state. %v", assetID, err)
 	}
@@ -730,7 +729,7 @@ func (t *CBPMChaincode) CreateSupplyOrder(ctx contractapi.TransactionContextInte
 		Note:            orderInput.Note,
 	}
 	orderJSONasBytes, err := json.Marshal(order)
-	err = ctx.GetStub().PutPrivateData("SupplyAssetOrderCollection", order.TradeID, orderJSONasBytes)
+	err = ctx.GetStub().PutPrivateData("SupplyOrderCollection", order.TradeID, orderJSONasBytes)
 	if err != nil {
 		return nil, fmt.Errorf("fail to create supply order: %s", err.Error())
 	}
@@ -739,15 +738,19 @@ func (t *CBPMChaincode) CreateSupplyOrder(ctx contractapi.TransactionContextInte
 
 // GetSupplyOrder 获取supplyOrder，需要args传入tradeID
 func (t *CBPMChaincode) GetSupplyOrder(ctx contractapi.TransactionContextInterface, tradeID string) (*SupplyOrder, error) {
-	queryString := fmt.Sprintf("{\"selector\":{\"objectType\":\"SupplyOrder\",\"tradeID\":\"%s\"}}", tradeID)
-	queryResults, err := t.getSupplyOrderQueryResultForQueryString(ctx, queryString)
+	supplyOrderBytes, err := ctx.GetStub().GetPrivateData("SupplyOrderCollection", tradeID)
+	if err != nil {
+		return nil, fmt.Errorf("fail to get supply order for trade %s: %v", tradeID, err)
+	}
+	if supplyOrderBytes == nil {
+		return nil, fmt.Errorf("fail to get supply order for trade %s: order does not exist", supplyOrderBytes)
+	}
+	var supplyOrder SupplyOrder
+	err = json.Unmarshal(supplyOrderBytes, &supplyOrder)
 	if err != nil {
 		return nil, err
 	}
-	if len(queryResults) == 0 {
-		return nil, fmt.Errorf("fail to get supply order for tradeID: %s does not exist", tradeID)
-	}
-	return queryResults[0], nil
+	return &supplyOrder, nil
 }
 
 // GetAllSupplyOrders 获取所有supplyOrders
@@ -780,7 +783,7 @@ func (t *CBPMChaincode) DeleteSupplyOrder(ctx contractapi.TransactionContextInte
 		return fmt.Errorf("fail to delete supply order: order for trade #{tradeID} does not exist")
 	}
 	// TODO 只允许owner删除
-	return ctx.GetStub().DelPrivateData("SupplyAssetOrderCollection", tradeID)
+	return ctx.GetStub().DelPrivateData("SupplyOrderCollection", tradeID)
 }
 
 // HandleSupplyOrder 供应商接单，需要args传入tradeID，Owner并不能进行这一步操作
@@ -809,7 +812,7 @@ func (t *CBPMChaincode) HandleSupplyOrder(ctx contractapi.TransactionContextInte
 	if err != nil {
 		return fmt.Errorf("fail to handle supply order: %v", err)
 	}
-	return ctx.GetStub().PutPrivateData("SupplyAssetOrderCollection", tradeID, orderBytes)
+	return ctx.GetStub().PutPrivateData("SupplyOrderCollection", tradeID, orderBytes)
 }
 
 // FinishSupplyOrder Handler完成订单，需要args传入TradeID，Owner并不能进行这一步操作
@@ -843,7 +846,7 @@ func (t *CBPMChaincode) FinishSupplyOrder(ctx contractapi.TransactionContextInte
 	if err != nil {
 		return fmt.Errorf("fail to finish supply order: %v", err)
 	}
-	return ctx.GetStub().PutPrivateData("SupplyAssetOrderCollection", tradeID, orderBytes)
+	return ctx.GetStub().PutPrivateData("SupplyOrderCollection", tradeID, orderBytes)
 }
 
 // ConfirmFinishSupplyOrder Owner确认供应商完成订单，需要args传入tradeID，
@@ -877,19 +880,19 @@ func (t *CBPMChaincode) ConfirmFinishSupplyOrder(ctx contractapi.TransactionCont
 	if err != nil {
 		return fmt.Errorf("fail to confirm finish supply order: %v", err)
 	}
-	return ctx.GetStub().PutPrivateData("SupplyAssetOrderCollection", tradeID, orderBytes)
+	return ctx.GetStub().PutPrivateData("SupplyOrderCollection", tradeID, orderBytes)
 }
 func (t *CBPMChaincode) supplyOrderExists(ctx contractapi.TransactionContextInterface, tradeID string) (bool, error) {
-	supplyOrderBytes, err := ctx.GetStub().GetPrivateData("SupplyAssetOrderCollection", tradeID)
+	supplyOrderBytes, err := ctx.GetStub().GetPrivateData("SupplyOrderCollection", tradeID)
 	if err != nil {
 		return false, fmt.Errorf("fail to read supplyOrder for trade %s from world state. %v", tradeID, err)
 	}
 	return supplyOrderBytes != nil, nil
 }
 
-func (s *CBPMChaincode) getSupplyAssetQueryResultForQueryString(ctx contractapi.TransactionContextInterface, queryString string) ([]*SupplyAsset, error) {
+func (t *CBPMChaincode) getSupplyAssetQueryResultForQueryString(ctx contractapi.TransactionContextInterface, queryString string) ([]*SupplyAsset, error) {
 
-	resultsIterator, err := ctx.GetStub().GetPrivateDataQueryResult("SupplyAssetOrderCollection", queryString)
+	resultsIterator, err := ctx.GetStub().GetPrivateDataQueryResult("SupplyAssetCollection", queryString)
 	if err != nil {
 		return nil, err
 	}
@@ -910,9 +913,9 @@ func (s *CBPMChaincode) getSupplyAssetQueryResultForQueryString(ctx contractapi.
 	return results, nil
 }
 
-func (s *CBPMChaincode) getSupplyOrderQueryResultForQueryString(ctx contractapi.TransactionContextInterface, queryString string) ([]*SupplyOrder, error) {
+func (t *CBPMChaincode) getSupplyOrderQueryResultForQueryString(ctx contractapi.TransactionContextInterface, queryString string) ([]*SupplyOrder, error) {
 
-	resultsIterator, err := ctx.GetStub().GetPrivateDataQueryResult("SupplyAssetOrderCollection", queryString)
+	resultsIterator, err := ctx.GetStub().GetPrivateDataQueryResult("SupplyOrderCollection", queryString)
 	if err != nil {
 		return nil, err
 	}
