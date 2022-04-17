@@ -21,8 +21,9 @@
                         </el-button>
                     </template>
                 </el-popconfirm>
-                <el-button type="text" size="small">
-                </el-button>
+              <el-button @click="beforeUpdateAsset(scope.row)" type="text" size="small">
+                修改
+              </el-button>
             </template>
         </el-table-column>
         <el-table-column v-if="user.orgType === 'manufacturer'" label="Operations" width="120">
@@ -67,6 +68,29 @@
           </span>
         </template>
     </el-dialog>
+  <!--updateAsset的form-->
+  <el-dialog center width="500px" v-model="updateAssetFormVisiable" title="update asset">
+    <el-form label-position="right" label-width="60px">
+      <el-form-item label="名称: ">
+        <el-input disabled v-model="updateAssetData.assetName"></el-input>
+      </el-form-item>
+      <el-form-item label="单价: ">
+        <el-input v-model=updateAssetData.assetPrice></el-input>
+      </el-form-item>
+      <el-form-item label="发货地: ">
+        <el-input disabled v-model=updateAssetData.shippingAddress></el-input>
+      </el-form-item>
+      <el-form-item label="描述: ">
+        <el-input v-model=updateAssetData.publicDescription></el-input>
+      </el-form-item>
+    </el-form>
+    <template #footer>
+          <span>
+            <el-button @click="updateAssetFormVisiable = false">取消</el-button>
+            <el-button type="primary" @click="updateAsset()">确定</el-button>
+          </span>
+    </template>
+  </el-dialog>
 </template>
 
 <script>
@@ -151,7 +175,64 @@
             },
             getUser() {
                 this.user = JSON.parse(window.localStorage.getItem("user"));
+            },
+          beforeUpdateAsset(assetProxy) {
+            this.selectedAsset = JSON.parse(JSON.stringify(assetProxy));
+            this.updateAssetFormVisiable = true;
+            this.updateAssetData.assetID = this.selectedAsset.assetID;
+            this.updateAssetData.assetName = this.selectedAsset.assetName;
+            this.updateAssetData.assetPrice = this.selectedAsset.assetPrice;
+            this.updateAssetData.shippingAddress = this.selectedAsset.shippingAddress;
+            this.updateAssetData.publicDescription = this.selectedAsset.publicDescription;
+          },
+          updateAsset() {
+            let body = {
+              function: "UpdateAsset",
+              args: [
+                this.updateAssetData.assetID,
+                this.updateAssetData.assetName,
+                this.updateAssetData.publicDescription,
+                this.updateAssetData.assetPrice * 1
+                ]
+            };
+            if (this.updateAssetData.assetName.length === 0) {
+              ElMessage({
+                message: 'assetName不能为空',
+                type: 'warning',
+              });
+              this.updateAssetFormVisiable = false;
+              return;
             }
+            if (this.updateAssetData.assetPrice * 1 < 0) {
+              ElMessage({
+                message: 'assetPrice必须>=0',
+                type: 'warning',
+              });
+              this.updateAssetFormVisiable = false;
+              return;
+            }
+            if (this.updateAssetData.shippingAddress.length === 0) {
+              ElMessage({
+                message: '发货地不能为空',
+                type: 'warning',
+              });
+              this.updateAssetFormVisiable = false;
+              return;
+            }
+            let that=this;
+            that.updateAssetFormVisiable = false;
+            that.loading=true;
+            request('/work/invoke', body, "POST").then(response => {
+              ElMessage({
+                message: '修改成功',
+                type: 'success',
+              });
+              that.loading=false;
+              that.getAssets();
+            }).catch(error => {
+              this.loading = false;
+            })
+          },
         },
         data() {
             return {
@@ -159,6 +240,14 @@
                 loading: true,
                 user: {},
                 orderFormVisible: false,
+                updateAssetFormVisiable: false,
+                updateAssetData: {
+                assetID: "",
+                assetName: "",
+                assetPrice: "",
+                shippingAddress: "",
+                publicDescription: ""
+                  },
                 selectedAsset: {},
                 order: {
                     assetID: "",
