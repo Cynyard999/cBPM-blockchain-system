@@ -12,8 +12,6 @@ spring:
 
 backend:
   # 网络配置文件路径
-  networkConfigPath: src/main/resources/connection2.json
+  networkConfigPathFormat: src/main/resources/connection-%s.json
   #network path
   networkPath: ../network/
-  #logPath
-  logPackagePath: src/main/logs/

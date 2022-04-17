@@ -2,24 +2,24 @@
     "name": "fabric-ca",
     "version": "3.7",
     "client": {
-        "organization": "CarrierOrg",
+        "organization": "MiddlemanOrg",
         "connection": {
             "timeout": {
                 "peer": {
-                    "endorser": "300"
+                    "endorser": "120000"
                 },
-                "orderer": "300"
+                "orderer": "120000"
             }
         }
     },
     "channels": {
-        "scchannel": {
+        "cbpmchannel": {
             "orderers": [
                 "orderer-cbpm"
             ],
             "peers": {
                 "peer1-supplier": {
-                    "endorsingPeer": true,
+                    "endorsingPeer": false,
                     "chaincodeQuery": true,
                     "ledgerQuery": true,
                     "eventSource": true
@@ -41,47 +41,9 @@
                     "chaincodeQuery": true,
                     "ledgerQuery": true,
                     "eventSource": true
-                }
-            }
-        },
-        "cmachannel": {
-            "orderers": [
-                "orderer-cbpm"
-            ],
-            "peers": {
+                },
                 "peer1-manufacturer": {
-                    "endorsingPeer": true,
-                    "chaincodeQuery": true,
-                    "ledgerQuery": true,
-                    "eventSource": true
-                },
-                "peer2-manufacturer": {
                     "endorsingPeer": false,
-                    "chaincodeQuery": true,
-                    "ledgerQuery": true,
-                    "eventSource": true
-                },
-                "peer1-carrier": {
-                    "endorsingPeer": false,
-                    "chaincodeQuery": true,
-                    "ledgerQuery": true,
-                    "eventSource": true
-                },
-                "peer2-carrier": {
-                    "endorsingPeer": false,
-                    "chaincodeQuery": true,
-                    "ledgerQuery": true,
-                    "eventSource": true
-                }
-            }
-        },
-        "mamichannel": {
-            "orderers": [
-                "orderer-cbpm"
-            ],
-            "peers": {
-                "peer1-manufacturer": {
-                    "endorsingPeer": true,
                     "chaincodeQuery": true,
                     "ledgerQuery": true,
                     "eventSource": true
@@ -93,74 +55,12 @@
                     "eventSource": true
                 },
                 "peer1-middleman": {
-                    "endorsingPeer": false,
-                    "chaincodeQuery": true,
-                    "ledgerQuery": true,
-                    "eventSource": true
-                },
-                "peer2-middleman": {
-                    "endorsingPeer": false,
-                    "chaincodeQuery": true,
-                    "ledgerQuery": true,
-                    "eventSource": true
-                }
-            }
-        },
-        "micchannel": {
-            "orderers": [
-                "orderer-cbpm"
-            ],
-            "peers": {
-                "peer1-middleman": {
                     "endorsingPeer": true,
                     "chaincodeQuery": true,
                     "ledgerQuery": true,
                     "eventSource": true
                 },
                 "peer2-middleman": {
-                    "endorsingPeer": false,
-                    "chaincodeQuery": true,
-                    "ledgerQuery": true,
-                    "eventSource": true
-                },
-                "peer1-carrier": {
-                    "endorsingPeer": false,
-                    "chaincodeQuery": true,
-                    "ledgerQuery": true,
-                    "eventSource": true
-                },
-                "peer2-carrier": {
-                    "endorsingPeer": false,
-                    "chaincodeQuery": true,
-                    "ledgerQuery": true,
-                    "eventSource": true
-                }
-            }
-        },
-        "mischannel": {
-            "orderers": [
-                "orderer-cbpm"
-            ],
-            "peers": {
-                "peer1-middleman": {
-                    "endorsingPeer": true,
-                    "chaincodeQuery": true,
-                    "ledgerQuery": true,
-                    "eventSource": true
-                },
-                "peer2-middleman": {
-                    "endorsingPeer": false,
-                    "chaincodeQuery": true,
-                    "ledgerQuery": true,
-                    "eventSource": true
-                },
-                "peer1-supplier": {
-                    "endorsingPeer": false,
-                    "chaincodeQuery": true,
-                    "ledgerQuery": true,
-                    "eventSource": true
-                },
-                "peer2-supplier": {
                     "endorsingPeer": false,
                     "chaincodeQuery": true,
                     "ledgerQuery": true,
@@ -168,7 +68,9 @@
                 }
             }
         }
-    },
+
+   },
+
     "organizations": {
 
         "SupplierOrg": {

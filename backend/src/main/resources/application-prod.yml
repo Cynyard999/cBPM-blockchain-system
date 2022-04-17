@@ -12,8 +12,6 @@ spring:
 
 backend:
   # 网络配置文件路径
-  networkConfigPath: /home/steve/homework/cBPM-blockchain-system/backend/connection-linux.json
+  networkConfigPathFormat: /home/steve/homework/cBPM-blockchain-system/backend/src/main/resources/connection-%s.json
   #network path
   networkPath: /home/steve/homework/cBPM-blockchain-system/network/
-  #logPath
-  logPackagePath: /home/steve/homework/cBPM-blockchain-system/backend/src/main/logs/
