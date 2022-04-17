@@ -117,9 +117,7 @@
             deleteAsset(assetProxy) {
                 let index = this.getAssetIndex(assetProxy.assetID);
                 let body = {
-                    channelName: "mischannel",
-                    contractName: "mischaincode",
-                    function: "DeleteAsset",
+                    function: "DeleteSupplyAsset",
                     args: [assetProxy.assetID]
                 };
                 let that = this;
@@ -151,9 +149,7 @@
 
             updateAsset() {
                 let body = {
-                    channelName: "mischannel",
-                    contractName: "mischaincode",
-                    function: "UpdateAsset",
+                    function: "UpdateSupplyAsset",
                     args: [
                         this.updateAssetData.assetID,
                         this.updateAssetData.assetName,
@@ -185,12 +181,16 @@
                     this.updateAssetFormVisiable = false;
                     return;
                 }
+                let that=this;
+                that.updateAssetFormVisiable = false;
+                that.loading=true;
                 request('/work/invoke', body, "POST").then(response => {
                     ElMessage({
                         message: '修改成功',
                         type: 'success',
                     });
-                    this.updateAssetFormVisiable = false;
+                    that.loading=false;
+                    that.getAssets();
                 }).catch(error => {
                     this.loading = false;
                 })
@@ -204,8 +204,6 @@
             publishAsset() {
                 this.selectedAsset.assetPrice = parseFloat(this.selectedAsset.assetPrice);
                 let body = {
-                    channelName: "mamichannel",
-                    contractName: "mamichaincode",
                     function: "CreateAsset",
                     transient: {
                         asset: this.selectedAsset
@@ -239,9 +237,7 @@
 
             getAssets() {
                 let body = {
-                    channelName: "mischannel",
-                    contractName: "mischaincode",
-                    function: "GetAllAssets",
+                    function: "GetAllSupplyAssets",
                     args: []
                 };
                 let that = this;
@@ -261,9 +257,7 @@
             createAsset() {
                 this.addAssetFormVisiable = true;
                 let body = {
-                    channelName: "mischannel",
-                    contractName: "mischaincode",
-                    function: "CreateAsset",
+                    function: "CreateSupplyAsset",
                     transient: {
                         asset: {
                             assetName: this.newAsset.assetName,
@@ -298,13 +292,16 @@
                     return;
                 }
                 let that = this;
+                that.addAssetFormVisiable = false;
+                that.loading=true;
                 request('/work/invoke', body, "POST").then(response => {
                     ElMessage({
                         message: '创建newAsset成功',
                         type: 'success',
                     });
                     that.getAssets();
-                    this.addAssetFormVisiable = false;
+                    that.loading=false;
+
                     this.newAsset.assetPrice = "";
                     this.newAsset.assetName = "";
                     this.newAsset.shippingAddress = "";

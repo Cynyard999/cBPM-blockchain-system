@@ -158,26 +158,22 @@
 
                 } else {
                     let body = {
-                        channelName: "micchannel",
-                        contractName: "micchaincode",
                         function: "",
                         args: [this.selectedDeliveryArrangement.tradeID]
                     };
                     //deliveryOrder的修改status的body
-                    let bodyDeliveryOeder = {
-                        channelName: "scchannel",
-                        contractName: "scchaincode",
+                    let bodyDeliveryOrder = {
                         function: "",
                         args: [this.selectedDeliveryArrangement.tradeID]
                     };
 
                     if (this.selectedDeliveryArrangement.newStatus === 1) {
                         body.function = "HandleDeliveryArrangement";
-                        bodyDeliveryOeder.function = "HandleDeliveryOrder";
+                        bodyDeliveryOrder.function = "HandleDeliveryOrder";
                     }
                     if (this.selectedDeliveryArrangement.newStatus === 2) {
                         body.function = "FinishDeliveryArrangement";
-                        bodyDeliveryOeder.function = "FinishDeliveryOrder";
+                        bodyDeliveryOrder.function = "FinishDeliveryOrder";
                     }
                     if (this.selectedDeliveryArrangement.newStatus === 3) {
                         body.function = "ConfirmFinishDeliveryArrangement";
@@ -190,7 +186,7 @@
                     }
                     //同时修改deliveryOrder的status
                     if (this.selectedDeliveryArrangement.newStatus !== 3) {
-                        request('/work/invoke', bodyDeliveryOeder, "POST").then(response => {
+                        request('/work/invoke', bodyDeliveryOrder, "POST").then(response => {
                             ElMessage({
                                 message: '修改DeliveryStatus成功',
                                 type: 'success',
@@ -216,8 +212,6 @@
             },
             getDeliveryArrangements() {
                 let body = {
-                    channelName: "micchannel",
-                    contractName: "micchaincode",
                     function: "GetAllDeliveryArrangements",
                     args: []
                 };
@@ -239,8 +233,6 @@
 
             createDeliveryDetail() {
                 let body = {
-                    channelName: "cmachannel",
-                    contractName: "cmachaincode",
                     function: "CreateDeliveryDetail",
                     transient: {
                         detail: {

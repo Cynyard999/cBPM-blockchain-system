@@ -191,8 +191,8 @@
             },
             getSupplyOrders() {
                 let body = {
-                    channelName: "mischannel",
-                    contractName: "mischaincode",
+                    channelName: "cbpmchannel",
+                    contractName: "cbpmchaincode",
                     function: "GetAllSupplyOrders",
                     args: []
                 };

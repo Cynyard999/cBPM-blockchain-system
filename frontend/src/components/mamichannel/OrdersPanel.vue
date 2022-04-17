@@ -155,8 +155,6 @@
 
                 } else {
                     let body = {
-                        channelName: "mamichannel",
-                        contractName: "mamichaincode",
                         function: "",
                         args: [this.selectedOrder.tradeID]
                     };
@@ -190,8 +188,6 @@
             },
             getOrders() {
                 let body = {
-                    channelName: "mamichannel",
-                    contractName: "mamichaincode",
                     function: "GetAllOrders",
                     args: []
                 };
@@ -205,6 +201,7 @@
                     that.loading = false;
                 }).catch(error => {
                     that.loading = false;
+
                 });
             },
             getUser() {
@@ -213,8 +210,6 @@
             //在middleman对order进行handle的同时进行创建supplyOrder
             createSupplyOrder() {
                 let body = {
-                    channelName: "mischannel",
-                    contractName: "mischaincode",
                     function: "CreateSupplyOrder",
                     transient: {
                         order: {
@@ -232,13 +227,11 @@
                     });
                     console.log('创建supplyorder成功')
                 }).catch(error => {
-                    console.log('创建supplyorder失败')
+                    console.log('创建supplyorder失败');
                 });
             },
             createDeliveryArrangement() {
                 let body = {
-                    channelName: "micchannel",
-                    contractName: "micchaincode",
                     function: "CreateDeliveryArrangement",
                     transient: {
                         arrangement: {

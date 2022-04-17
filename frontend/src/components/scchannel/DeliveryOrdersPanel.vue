@@ -147,15 +147,11 @@
 
                 } else {
                     let body = {
-                        channelName: "scchannel",
-                        contractName: "scchaincode",
                         function: "",
                         args: [this.selectedDeliveryOrder.tradeID]
                     };
                     //DeliveryDetail修改status的body
                     let bodyDeliveryDetail = {
-                        channelName: "micchannel",
-                        contractName: "micchaincode",
                         function: "",
                         args: [this.selectedDeliveryOrder.tradeID]
                     };
@@ -201,8 +197,6 @@
             },
             getDeliveryOrders() {
                 let body = {
-                    channelName: "scchannel",
-                    contractName: "scchaincode",
                     function: "GetAllDeliveryOrders",
                     args: []
                 };
@@ -223,8 +217,6 @@
             },
             createDeliveryDetail() {
                 let body = {
-                    channelName: "cmachannel",
-                    contractName: "cmachaincode",
                     function: "CreateDeliveryDetail",
                     transient: {
                         detail: {

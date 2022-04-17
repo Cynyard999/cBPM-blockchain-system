@@ -79,8 +79,6 @@
             deleteAsset(assetProxy) {
                 let index = this.getAssetIndex(assetProxy.assetID);
                 let body = {
-                    channelName: "mamichannel",
-                    contractName: "mamichaincode",
                     function: "DeleteAsset",
                     args: [assetProxy.assetID]
                 };
@@ -107,8 +105,6 @@
             createOrder() {
                 this.order.quantity = parseInt(this.order.quantity);
                 let body = {
-                    channelName: "mamichannel",
-                    contractName: "mamichaincode",
                     function: "CreateOrder",
                     transient: {
                         order: this.order
@@ -139,8 +135,6 @@
             },
             getAssets() {
                 let body = {
-                    channelName: "mamichannel",
-                    contractName: "mamichaincode",
                     function: "GetAllAssets",
                     args: []
                 };

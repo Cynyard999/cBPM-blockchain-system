@@ -122,8 +122,6 @@
             getOrderWithMiddleman(orderProxy) {
                 this.selectedDeliveryDetail = JSON.parse(JSON.stringify(orderProxy));
                 let body = {
-                    channelName: "mamichannel",
-                    contractName: "mamichaincode",
                     function: "GetOrder",
                     args: [this.selectedDeliveryDetail.tradeID]
                 };
@@ -195,8 +193,6 @@
 
                 } else {
                     let body = {
-                        channelName: "cmachannel",
-                        contractName: "cmachaincode",
                         function: "",
                         args: [this.selectedDeliveryDetail.tradeID]
                     };
@@ -226,8 +222,6 @@
             },
             getDeliveryDetails() {
                 let body = {
-                    channelName: "cmachannel",
-                    contractName: "cmachaincode",
                     function: "GetAllDeliveryDetails",
                     args: []
                 };
