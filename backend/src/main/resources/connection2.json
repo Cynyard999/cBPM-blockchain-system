@@ -2,13 +2,13 @@
     "name": "fabric-ca",
     "version": "3.7",
     "client": {
-        "organization": "CarrierOrg",
+        "organization": "MiddlemanOrg",
         "connection": {
             "timeout": {
                 "peer": {
-                    "endorser": "120001"
+                    "endorser": "3000"
                 },
-                "orderer": "120001"
+                "orderer": "3000"
             }
         }
     },
@@ -19,7 +19,7 @@
             ],
             "peers": {
                 "peer1-supplier": {
-                    "endorsingPeer": true,
+                    "endorsingPeer": false,
                     "chaincodeQuery": true,
                     "ledgerQuery": true,
                     "eventSource": true
@@ -55,7 +55,7 @@
                     "eventSource": true
                 },
                 "peer1-middleman": {
-                    "endorsingPeer": false,
+                    "endorsingPeer": true,
                     "chaincodeQuery": true,
                     "ledgerQuery": true,
                     "eventSource": true
@@ -106,7 +106,7 @@
             }
         },
         "ManufacturerOrg": {
-            "mspid": "ManufactureMSP",
+            "mspid": "ManufacturerMSP",
             "peers": [
                 "peer1-manufacturer",
                 "peer2-manufacturer"

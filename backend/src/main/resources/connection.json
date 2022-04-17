@@ -204,7 +204,7 @@
             }
         },
         "ManufacturerOrg": {
-            "mspid": "ManufactureMSP",
+            "mspid": "ManufacturerMSP",
             "peers": [
                 "peer1-manufacturer",
                 "peer2-manufacturer"
