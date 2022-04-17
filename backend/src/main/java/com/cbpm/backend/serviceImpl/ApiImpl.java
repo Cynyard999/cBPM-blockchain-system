@@ -24,9 +24,9 @@ public class ApiImpl implements ApiService {
     @Resource
     GatewayConfig gatewayConfig;
 
-    private final String CHANNEL_NAME="cbpmchannel";
+    private final String CHANNEL_NAME = "cbpmchannel";
 
-    private final String CHAINCODE_NAME="cbpmchaincode";
+    private final String CHAINCODE_NAME = "cbpmchaincode";
 
     @Override
     public ResponseVo query(JSONObject jsonObject) {
@@ -87,7 +87,6 @@ public class ApiImpl implements ApiService {
                 byte[] invokeResult = contract.createTransaction(functionName).setEndorsingPeers(
                         network.getChannel().getPeers(EnumSet.of(Peer.PeerRole.ENDORSING_PEER)))
                         .setTransient(argsMap).submit();
-
                 return ResponseVo
                         .buildSuccess(JSON.parse(new String(invokeResult, StandardCharsets.UTF_8)));
             }

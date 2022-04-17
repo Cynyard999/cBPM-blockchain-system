@@ -43,8 +43,8 @@ public class GatewayConfig {
      * 网络配置文件路径
      */
 
-    @Value("${backend.networkConfigPath}")
-    private String networkConfigPath;
+    @Value("${backend.networkConfigPathFormat}")
+    private String networkConfigPathFormat;
     /**
      * 四种组织名称
      */
@@ -115,9 +115,10 @@ public class GatewayConfig {
                     Identities.newX509Identity(orgMSPs[i], certificate, privateKey));
 
             //根据connection.json 获取Fabric网络连接对象
+            String networkConfigPath = String.format(this.networkConfigPathFormat, orgs[i]);
             Gateway.Builder builder = Gateway.createBuilder()
                     .identity(wallet, orgAdminNames[i])
-                    .networkConfig(Paths.get(this.networkConfigPath));
+                    .networkConfig(Paths.get(networkConfigPath));
             //把所有组织的连接的gateway存起来，以便后面直接调用
             this.gatewayHashMap.put(orgs[i], builder.connect());
             gateways.put(orgs[i], builder.connect());

@@ -23,8 +23,8 @@ public class JwtUtil {
     private static final Logger logger = LoggerFactory.getLogger(JwtUtil.class);
     //盐随机写的一个
     private static final String SERECT = "asfakjGUIYFGFASKJFGhasdgjkAFHzlksh";
-    //单位为秒,设置为30min
-    private static final Long EXPIRATION = 1800L;
+    //单位为秒
+    private static final Long EXPIRATION = 24*60*60L;
 
     /**
      * @param userVo
