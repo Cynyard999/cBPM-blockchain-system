@@ -905,6 +905,38 @@ docker-compose up -d orderer-cbpm
 
 # 测试网络
 
+## 环境切换
+
+在cli中，四个组织的环境变量
+
+```shell
+export CORE_PEER_MSPCONFIGPATH=/tmp/hyperledger/fabric/peer/carrier/admin/msp
+export CORE_PEER_TLS_ROOTCERT_FILE=/tmp/hyperledger/fabric/peer/carrier/peer1/tls/tlscacerts/tls-0-0-0-0-7052.pem
+export CORE_PEER_LOCALMSPID=CarrierMSP
+export CORE_PEER_ADDRESS=peer1-carrier:7051
+
+
+export CORE_PEER_MSPCONFIGPATH=/tmp/hyperledger/fabric/peer/manufacturer/admin/msp
+export CORE_PEER_TLS_ROOTCERT_FILE=/tmp/hyperledger/fabric/peer/manufacturer/peer1/tls/tlscacerts/tls-0-0-0-0-7052.pem
+export CORE_PEER_LOCALMSPID=ManufacturerMSP
+export CORE_PEER_ADDRESS=peer1-manufacturer:7051
+
+
+export CORE_PEER_MSPCONFIGPATH=/tmp/hyperledger/fabric/peer/supplier/admin/msp
+export CORE_PEER_TLS_ROOTCERT_FILE=/tmp/hyperledger/fabric/peer/supplier/peer1/tls/tlscacerts/tls-0-0-0-0-7052.pem
+export CORE_PEER_LOCALMSPID=SupplierMSP
+export CORE_PEER_ADDRESS=peer1-supplier:7051
+
+
+export CORE_PEER_MSPCONFIGPATH=/tmp/hyperledger/fabric/peer/middleman/admin/msp
+export CORE_PEER_TLS_ROOTCERT_FILE=/tmp/hyperledger/fabric/peer/middleman/peer1/tls/tlscacerts/tls-0-0-0-0-7052.pem
+export CORE_PEER_LOCALMSPID=MiddlemanMSP
+export CORE_PEER_ADDRESS=peer1-middleman:7051
+
+```
+
+
+
 ## Create a supplier-carrier channel
 
 ### 创建并进入通道

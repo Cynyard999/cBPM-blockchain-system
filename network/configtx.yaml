@@ -140,7 +140,6 @@ Application: &ApplicationDefaults
         <<: *ApplicationCapabilities
 Orderer: &OrdererDefaults
     OrdererType: solo
-
     Addresses:
         - orderer-cbpm:7050
     BatchTimeout: 2s
@@ -148,6 +147,29 @@ Orderer: &OrdererDefaults
         MaxMessageCount: 10
         AbsoluteMaxBytes: 99 MB
         PreferredMaxBytes: 512 KB
+    
+    EtcdRaft:
+        Consenters:
+            - Host: orderer-cbpm
+              Port: 7050
+              ClientTLSCert: ./cbpm/orderer/tls/signcerts/cert.pem
+              ServerTLSCert: ./cbpm/orderer/tls/signcerts/cert.pem
+            - Host: orderer2-cbpm
+              Port: 7050
+              ClientTLSCert: ./cbpm/orderer2/tls/signcerts/cert.pem
+              ServerTLSCert: ./cbpm/orderer2/tls/signcerts/cert.pem
+            - Host: orderer3-cbpm
+              Port: 7050
+              ClientTLSCert: ./cbpm/orderer3/tls/signcerts/cert.pem
+              ServerTLSCert: ./cbpm/orderer3/tls/signcerts/cert.pem
+            - Host: orderer4-cbpm
+              Port: 7050
+              ClientTLSCert: ./cbpm/orderer4/tls/signcerts/cert.pem
+              ServerTLSCert: ./cbpm/orderer4/tls/signcerts/cert.pem
+            - Host: orderer5-cbpm
+              Port: 7050
+              ClientTLSCert: ./cbpm/orderer5/tls/signcerts/cert.pem
+              ServerTLSCert: ./cbpm/orderer5/tls/signcerts/cert.pem
     Organizations:
     Policies:
         Readers:
@@ -222,6 +244,62 @@ Profiles:
                 - *SupplierOrg
                 - *CarrierOrg
             Capabilities: *ApplicationCapabilities
+
+    
+    CBPMMultiNodeEtcdRaft:
+        <<: *ChannelDefaults
+        Capabilities:
+            <<: *ChannelCapabilities
+        Orderer:
+            <<: *OrdererDefaults
+            OrdererType: etcdraft
+            EtcdRaft:
+                Consenters:
+                - Host: orderer-cbpm
+                  Port: 7050
+                  ClientTLSCert: ./cbpm/orderer/tls/signcerts/cert.pem
+                  ServerTLSCert: ./cbpm/orderer/tls/signcerts/cert.pem
+                - Host: orderer2-cbpm
+                  Port: 7050
+                  ClientTLSCert: ./cbpm/orderer2/tls/signcerts/cert.pem
+                  ServerTLSCert: ./cbpm/orderer2/tls/signcerts/cert.pem
+                - Host: orderer3-cbpm
+                  Port: 7050
+                  ClientTLSCert: ./cbpm/orderer3/tls/signcerts/cert.pem
+                  ServerTLSCert: ./cbpm/orderer3/tls/signcerts/cert.pem
+                - Host: orderer4-cbpm
+                  Port: 7050
+                  ClientTLSCert: ./cbpm/orderer4/tls/signcerts/cert.pem
+                  ServerTLSCert: ./cbpm/orderer4/tls/signcerts/cert.pem
+                - Host: orderer5-cbpm
+                  Port: 7050
+                  ClientTLSCert: ./cbpm/orderer5/tls/signcerts/cert.pem
+                  ServerTLSCert: ./cbpm/orderer5/tls/signcerts/cert.pem
+            Addresses:
+                - orderer-cbpm:7050
+                - orderer2-cbpm:7050
+                - orderer3-cbpm:7050
+                - orderer4-cbpm:7050
+                - orderer5-cbpm:7050
+            Organizations:
+            - *OrdererOrg
+            Capabilities:
+                <<: *OrdererCapabilities
+        Application:
+            <<: *ApplicationDefaults
+            Organizations:
+            - <<: *OrdererOrg
+        Consortiums:
+            CBPMConsortium:
+                Organizations:
+                - *ManufacturerOrg
+                - *MiddlemanOrg
+                - *SupplierOrg
+                - *CarrierOrg
+
+
+
+
     # SCChannel:
     #     <<: *ChannelDefaults
     #     Consortium: SCConsortium
