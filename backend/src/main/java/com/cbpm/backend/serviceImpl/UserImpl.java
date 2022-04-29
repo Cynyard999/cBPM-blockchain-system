@@ -117,7 +117,7 @@ public class UserImpl implements UserService {
             //设置创建新user的请求
             RegistrationRequest registrationRequest = new RegistrationRequest(userName);
             //设置所属affiliation
-            registrationRequest.setAffiliation("org1.department1");
+            registrationRequest.setAffiliation(orgType);
             //设置useraName
             registrationRequest.setEnrollmentID(userName);
             //user类型暂时无法调用链码，默认值为client
