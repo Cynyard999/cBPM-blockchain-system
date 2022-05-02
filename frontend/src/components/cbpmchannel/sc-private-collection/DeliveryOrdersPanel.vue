@@ -1,7 +1,7 @@
 <template>
     <el-table
-            :data="deliveryArrangements"
-            :default-sort="{ prop: 'createTime', deliveryArrangement: 'descending' }"
+            :data="deliveryOrders"
+            :default-sort="{ prop: 'createTime', order: 'descending' }"
             v-loading="loading"
             ref="tableRef"
             style='width: 100%'
@@ -9,13 +9,9 @@
     >
         <el-table-column prop="createTime" label="创建时间"/>
         <el-table-column prop="assetName" label="名称"/>
-        <el-table-column prop="quantity" label="数量"/>
-        <el-table-column prop="fee" label="运费"/>
-        <el-table-column prop="startPlace" label="发货地"/>
-        <el-table-column prop="endPlace" label="收货地"/>
         <el-table-column prop="note" label="备注" overflow/>
         <el-table-column prop="ownerOrg" label="所属组织"/>
-        <el-table-column prop="handler" label="处理组织"/>
+        <el-table-column prop="handlerOrg" label="处理组织"/>
         <el-table-column prop="updateTime" label="修改时间"/>
         <el-table-column
                 prop="tag"
@@ -35,35 +31,23 @@
         </el-table-column>
         <el-table-column label="Operations" width="120">
             <template #default="scope">
-                <el-button type="text" size="small" @click="getDeliveryArrangementForm(scope.row)">
+                <el-button v-if="this.user.orgType==='supplier'" type="text" size="small"
+                           @click="getDeliveryOrderForm(scope.row)">
                     修改状态
                 </el-button>
             </template>
         </el-table-column>
     </el-table>
-    <el-dialog center width="600px" v-model="deliveryArrangementFormVisible"
-               title="Change deliveryArrangement Status Confirm">
+    <el-dialog center width="600px" v-model="deliveryOrderFormVisible" title="Change Order Status Confirm">
         <el-form label-position="right" label-width="170px">
             <el-form-item label="创建时间: ">
-                {{selectedDeliveryArrangement.createTime}}
+                {{selectedDeliveryOrder.createTime}}
             </el-form-item>
             <el-form-item label="商品名称: ">
-                {{selectedDeliveryArrangement.assetName}}
-            </el-form-item>
-            <el-form-item label="数量: ">
-                {{selectedDeliveryArrangement.quantity}}
-            </el-form-item>
-            <el-form-item label="运费: ">
-                {{selectedDeliveryArrangement.fee}}
-            </el-form-item>
-            <el-form-item label="发货地: ">
-                {{selectedDeliveryArrangement.startPlace}}
-            </el-form-item>
-            <el-form-item label="收货地: ">
-                {{selectedDeliveryArrangement.endPlace}}
+                {{selectedDeliveryOrder.assetName}}
             </el-form-item>
             <el-form-item label="备注: ">
-                {{selectedDeliveryArrangement.note}}
+                {{selectedDeliveryOrder.note}}
             </el-form-item>
             <el-form-item v-show="noteDeliveryDetailVisible" label="DeliveryDetailNote:">
                 <el-input placeholder="note for DeliveryDetail" v-model=this.noteDeliveryDetail></el-input>
@@ -72,7 +56,7 @@
                 <el-input placeholder="contact for DeliveryDetail" v-model=this.contact></el-input>
             </el-form-item>
             <el-select @change="showNoteDeliveryDetail" style="margin-left: 170px"
-                       v-model="selectedDeliveryArrangement.newStatus" placeholder="Select">
+                       v-model="selectedDeliveryOrder.newStatus" placeholder="Select">
                 <el-option
                         v-for="item in statusOptions"
                         :key="item"
@@ -84,27 +68,32 @@
         </el-form>
         <template #footer>
           <span>
-            <el-button @click="deliveryArrangementFormVisible = false">取消</el-button>
-            <el-button type="primary" @click="changeDeliveryArrangementStatus()">确定</el-button>
+            <el-button @click="deliveryOrderFormVisible = false">取消</el-button>
+            <el-button type="primary" @click="changeDeliveryOrderStatus()">确定</el-button>
           </span>
         </template>
     </el-dialog>
 </template>
 
 <script>
-    import {request} from "../../api/axios";
+    import {request} from "../../../api/axios";
     import {ElMessage, ElNotification} from 'element-plus';
 
     export default {
-        name: "DeliveryArrangements",
+        name: "DeliveryOrders",
         methods: {
             showNoteDeliveryDetail() {
-                this.noteDeliveryDetailVisible = this.selectedDeliveryArrangement.newStatus === 1;
+                if (this.selectedDeliveryOrder.newStatus === 1) {
+                    // 无法创建暂时永远设置为false
+                    this.noteDeliveryDetailVisible = false;
+                } else {
+                    this.noteDeliveryDetailVisible = false;
+                }
             },
-            getDeliveryArrangementForm(deliveryArrangementProxy) {
-                this.selectedDeliveryArrangement = JSON.parse(JSON.stringify(deliveryArrangementProxy));
-                this.selectedDeliveryArrangement.newStatus = this.selectedDeliveryArrangement.status;
-                this.deliveryArrangementFormVisible = true;
+            getDeliveryOrderForm(orderProxy) {
+                this.selectedDeliveryOrder = JSON.parse(JSON.stringify(orderProxy));
+                this.selectedDeliveryOrder.newStatus = this.selectedDeliveryOrder.status;
+                this.deliveryOrderFormVisible = true;
             },
             filterStatus(value, row) {
                 return row.status === value
@@ -124,10 +113,10 @@
             getStatus(status) {
                 return this.statusOptions[status].label;
             },
-            // get index of asset in deliveryArrangements(sort function causes the returning index is not correct)
-            getDeliveryArrangementIndex(tradeID) {
+            // get index of asset in orders(sort function causes the returning index is not correct)
+            getDeliveryOrdersIndex(tradeID) {
                 let index = -1;
-                this.deliveryArrangements.forEach((deliveryArrangement, i) => {
+                this.orders.forEach((order, i) => {
                     if (tradeID === asset["tradeID"]) {
                         index = i;
                     }
@@ -135,92 +124,88 @@
                 return index;
             },
             checkDisabled(status) {
-                if (status - 1 > this.selectedDeliveryArrangement.status) {
+                if (status - 1 > this.selectedDeliveryOrder.status) {
                     return true;
                 }
-                if (status < this.selectedDeliveryArrangement.status) {
+                if (status < this.selectedDeliveryOrder.status) {
                     return true;
                 }
-                if (this.user.orgType === 'middleman') {
-                    return !(status === 3);
+                if (this.user.orgType === 'supplier') {
+                    return true;
                 } else {
                     return !(status === 1 || status === 2 || status === 0);
                 }
             },
-            changeDeliveryArrangementStatus() {
-                this.deliveryArrangementFormVisible = false;
-                if (this.selectedDeliveryArrangement.status === this.selectedDeliveryArrangement.newStatus) {
+            changeDeliveryOrderStatus() {
+                this.deliveryOrderFormVisible = false;
+                if (this.selectedDeliveryOrder.status === this.selectedDeliveryOrder.newStatus) {
                     ElMessage({
                         message: '修改成功',
                         type: 'success',
                     });
-                    this.getDeliveryArrangements();
+                    this.getDeliveryOrders();
 
                 } else {
                     let body = {
                         function: "",
-                        args: [this.selectedDeliveryArrangement.tradeID]
+                        args: [this.selectedDeliveryOrder.tradeID]
                     };
-                    //deliveryOrder的修改status的body
-                    let bodyDeliveryOrder = {
+                    //DeliveryDetail修改status的body
+                    let bodyDeliveryDetail = {
                         function: "",
-                        args: [this.selectedDeliveryArrangement.tradeID]
+                        args: [this.selectedDeliveryOrder.tradeID]
                     };
 
-                    if (this.selectedDeliveryArrangement.newStatus === 1) {
-                        body.function = "HandleDeliveryArrangement";
-                        bodyDeliveryOrder.function = "HandleDeliveryOrder";
+                    if (this.selectedDeliveryOrder.newStatus === 1) {
+                        body.function = "HandleDeliveryOrder";
+                        bodyDeliveryDetail.function = "HandleDeliveryArrangement";
+                        // 无法通过deliveryOrder这边创建deliveryDetail
+                        // this.createDeliveryDetail();
                     }
-                    if (this.selectedDeliveryArrangement.newStatus === 2) {
-                        body.function = "FinishDeliveryArrangement";
-                        bodyDeliveryOrder.function = "FinishDeliveryOrder";
+                    if (this.selectedDeliveryOrder.newStatus === 2) {
+                        body.function = "FinishDeliveryOrder";
+                        bodyDeliveryDetail.function = "FinishDeliveryArrangement";
                     }
-                    if (this.selectedDeliveryArrangement.newStatus === 3) {
-                        body.function = "ConfirmFinishDeliveryArrangement";
+                    if (this.selectedDeliveryOrder.newStatus === 3) {
+                        body.function = "ConfirmFinishDeliveryOrder";
+                        bodyDeliveryDetail.function = "ConfirmDeliveryArrangement";
                     }
                     let that = this;
                     that.loading = true;
-                    //handle的时候顺便创造deliveryDetail
-                    if (this.selectedDeliveryArrangement.newStatus === 1) {
-                        this.createDeliveryDetail();
-                    }
-                    //同时修改deliveryOrder的status
-                    if (this.selectedDeliveryArrangement.newStatus !== 3) {
-                        request('/work/invoke', bodyDeliveryOrder, "POST").then(response => {
-                            ElMessage({
-                                message: '修改DeliveryStatus成功',
-                                type: 'success',
-                            });
-                        }).catch(error => {
-                            that.loading = false;
+
+                    //先修改DeliveryArrangement的status
+                    request('/work/invoke', bodyDeliveryDetail, "POST").then(response => {
+                        ElMessage({
+                            message: '修改DeliveryArrangement成功',
+                            type: 'success',
                         });
-                    }
+                    }).catch(error => {
+                        that.loading = false;
+                    });
+
                     request('/work/invoke', body, "POST").then(response => {
                         ElMessage({
                             message: '修改成功',
                             type: 'success',
                         });
                         that.loading = false;
-                        that.noteDeliveryDetailVisible = false;
-                        that.getDeliveryArrangements();
+                        that.getDeliveryOrders();
                     }).catch(error => {
                         that.loading = false;
                     });
-
-
                 }
             },
-            getDeliveryArrangements() {
+            getDeliveryOrders() {
                 let body = {
-                    function: "GetAllDeliveryArrangements",
+                    function: "GetAllDeliveryOrders",
                     args: []
                 };
                 let that = this;
                 this.loading = true;
                 request('/work/query', body, "POST").then(response => {
-                    that.deliveryArrangements = response.data.result;
-                    if (that.deliveryArrangements === null) {
-                        that.deliveryArrangements = [];
+                    that.deliveryOrders = response.data.result;
+                    if (that.deliveryOrders === null) {
+                        that.deliveryOrders = [];
                     }
                     that.loading = false;
                 }).catch(error => {
@@ -230,16 +215,16 @@
             getUser() {
                 this.user = JSON.parse(window.localStorage.getItem("user"));
             },
-
             createDeliveryDetail() {
                 let body = {
                     function: "CreateDeliveryDetail",
                     transient: {
                         detail: {
-                            TradeId: this.selectedDeliveryArrangement.tradeID,
-                            AssetName: this.selectedDeliveryArrangement.assetName,
-                            StartPlace: this.selectedDeliveryArrangement.startPlace,
-                            EndPlace: this.selectedDeliveryArrangement.endPlace,
+                            TradeId: this.selectedDeliveryOrder.tradeID,
+                            AssetName: this.selectedDeliveryOrder.assetName,
+                            // 这两个属性deliveryorder并没有
+                            StartPlace: this.selectedDeliveryOrder.startPlace,
+                            EndPlace: this.selectedDeliveryOrder.endPlace,
                             Contact: this.contact,
                             note: this.noteDeliveryDetail,
                         }
@@ -250,23 +235,22 @@
                         message: '创建DeliveryDetail成功',
                         type: 'success',
                     });
+                    console.log('创建DeliveryDetail成功')
                 }).catch(error => {
                     console.log('创建DeliveryDetail失败')
                 });
             },
-
-
         },
         data() {
             return {
-                deliveryArrangements: [],
+                deliveryOrders: [],
                 loading: true,
                 user: {},
-                deliveryArrangementFormVisible: false,
+                deliveryOrderFormVisible: false,
                 noteDeliveryDetail: "",
-                noteDeliveryDetailVisible: false,
-                selectedDeliveryArrangement: {},
                 contact: "",
+                noteDeliveryDetailVisible: false,
+                selectedDeliveryOrder: {},
                 statusOptions: [
                     {
                         value: 0,
@@ -280,16 +264,12 @@
                         value: 2,
                         label: '处理完成'
                     },
-                    {
-                        value: 3,
-                        label: '确认完成'
-                    }
                 ]
             }
         },
         mounted() {
             this.getUser();
-            this.getDeliveryArrangements();
+            this.getDeliveryOrders();
         }
     }
 </script>

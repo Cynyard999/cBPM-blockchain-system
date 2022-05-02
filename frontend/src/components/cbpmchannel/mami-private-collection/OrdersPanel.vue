@@ -1,6 +1,6 @@
 <template>
     <el-table
-            :data="supplyOrders"
+            :data="orders"
             :default-sort="{ prop: 'createTime', order: 'descending' }"
             v-loading="loading"
             ref="tableRef"
@@ -13,9 +13,9 @@
         <el-table-column prop="quantity" label="数量"/>
         <el-table-column prop="totalPrice" label="总价"/>
         <el-table-column prop="shippingAddress" label="发货地"/>
+        <el-table-column prop="receivingAddress" label="收货地"/>
         <el-table-column prop="note" label="备注" overflow/>
         <el-table-column prop="ownerOrg" label="所属组织"/>
-        <el-table-column prop="handlerOrg" label="处理组织"/>
         <el-table-column prop="updateTime" label="修改时间"/>
         <el-table-column
                 prop="tag"
@@ -35,38 +35,40 @@
         </el-table-column>
         <el-table-column label="Operations" width="120">
             <template #default="scope">
-                <el-button type="text" size="small" @click="getSupplyOrderForm(scope.row)">
+                <el-button type="text" size="small" @click="getOrderForm(scope.row)">
                     修改状态
                 </el-button>
             </template>
         </el-table-column>
     </el-table>
-
-    <el-dialog center width="500px" v-model="supplyOrderFormVisible" title="Change Order Status Confirm">
+    <el-dialog center width="500px" v-model="orderFormVisible" title="Change Order Status Confirm">
         <el-form label-position="right" label-width="100px">
             <el-form-item label="创建时间: ">
-                {{selectedSupplyOrder.createTime}}
+                {{selectedOrder.createTime}}
             </el-form-item>
             <el-form-item label="商品名称: ">
-                {{selectedSupplyOrder.assetName}}
+                {{selectedOrder.assetName}}
             </el-form-item>
             <el-form-item label="数量: ">
-                {{selectedSupplyOrder.quantity}}
+                {{selectedOrder.quantity}}
             </el-form-item>
             <el-form-item label="总价: ">
-                {{selectedSupplyOrder.totalPrice}}
+                {{selectedOrder.totalPrice}}
             </el-form-item>
-            <el-form-item label="发货地: ">
-                {{selectedSupplyOrder.shippingAddress}}
+            <el-form-item label="收货地: ">
+                {{selectedOrder.receivingAddress}}
             </el-form-item>
             <el-form-item label="备注: ">
-                {{selectedSupplyOrder.note}}
+                {{selectedOrder.note}}
             </el-form-item>
-            <el-form-item v-show="noteDeliveryOrderVisible" label="DeliveryNote:">
-                <el-input placeholder="note for deliveryOrder" v-model=this.noteForDeliveryOrder></el-input>
+            <el-form-item v-show="noteForOtherVisible" label="SupplyNote:">
+                <el-input placeholder="note for supplyOrder" v-model=this.noteForSupplyOrder></el-input>
             </el-form-item>
-            <el-select @change="showNoteDelivery" style="margin-left: 100px" v-model="selectedSupplyOrder.newStatus"
-                       placeholder="Select">
+            <el-form-item v-show="noteForOtherVisible" label="DeliveryNote: ">
+                <el-input placeholder="note for deliveryArrangement" v-model=this.noteForDeliveryArrangement></el-input>
+            </el-form-item>
+            <el-select style="margin-left: 100px" @change="this.showNoteForOtherOrder()"
+                       v-model="selectedOrder.newStatus" placeholder="Select">
                 <el-option
                         v-for="item in statusOptions"
                         :key="item"
@@ -75,34 +77,35 @@
                         :disabled="checkDisabled(item.value)"
                 />
             </el-select>
+
         </el-form>
         <template #footer>
           <span>
-            <el-button @click="supplyOrderFormVisible = false">取消</el-button>
-            <el-button type="primary" @click="changeSupplyOrderStatus()">确定</el-button>
+            <el-button @click="hideForms()">取消</el-button>
+            <el-button type="primary" @click="changeOrderStatus()">确定</el-button>
           </span>
         </template>
     </el-dialog>
 </template>
 
 <script>
-    import {request} from "../../api/axios";
+    import {request} from "../../../api/axios";
     import {ElMessage, ElNotification} from 'element-plus';
 
     export default {
-        name: "SupplyOrders",
+        name: "orders",
         methods: {
-            showNoteDelivery() {
-                if (this.selectedSupplyOrder.newStatus === 2) {
-                    this.noteDeliveryOrderVisible = true;
-                } else {
-                    this.noteDeliveryOrderVisible = false;
-                }
+            showNoteForOtherOrder() {
+                this.noteForOtherVisible = this.selectedOrder.newStatus === 1;
             },
-            getSupplyOrderForm(orderProxy) {
-                this.selectedSupplyOrder = JSON.parse(JSON.stringify(orderProxy));
-                this.selectedSupplyOrder.newStatus = this.selectedSupplyOrder.status;
-                this.supplyOrderFormVisible = true;
+            hideForms(){
+                this.orderFormVisible = false;
+                this.noteForOtherVisible=false;
+            },
+            getOrderForm(orderProxy) {
+                this.selectedOrder = JSON.parse(JSON.stringify(orderProxy));
+                this.selectedOrder.newStatus = this.selectedOrder.status;
+                this.orderFormVisible = true;
             },
             filterStatus(value, row) {
                 return row.status === value
@@ -123,7 +126,7 @@
                 return this.statusOptions[status].label;
             },
             // get index of asset in orders(sort function causes the returning index is not correct)
-            getSupplyOrdersIndex(tradeID) {
+            getOrdersIndex(tradeID) {
                 let index = -1;
                 this.orders.forEach((order, i) => {
                     if (tradeID === asset["tradeID"]) {
@@ -133,21 +136,21 @@
                 return index;
             },
             checkDisabled(status) {
-                if (status - 1 > this.selectedSupplyOrder.status) {
+                if (status - 1 > this.selectedOrder.status) {
                     return true;
                 }
-                if (status < this.selectedSupplyOrder.status) {
+                if (status < this.selectedOrder.status) {
                     return true;
                 }
-                if (this.user.orgType === 'middleman') {
+                if (this.user.orgType === 'manufacturer') {
                     return !(status === 3);
                 } else {
                     return !(status === 1 || status === 2 || status === 0);
                 }
             },
-            changeSupplyOrderStatus() {
-                this.supplyOrderFormVisible = false;
-                if (this.selectedSupplyOrder.status === this.selectedSupplyOrder.newStatus) {
+            changeOrderStatus() {
+                this.orderFormVisible = false;
+                if (this.selectedOrder.status === this.selectedOrder.newStatus) {
                     ElMessage({
                         message: '修改成功',
                         type: 'success',
@@ -156,95 +159,118 @@
 
                 } else {
                     let body = {
-                        channelName: "mischannel",
-                        contractName: "mischaincode",
                         function: "",
-                        args: [this.selectedSupplyOrder.tradeID]
+                        args: [this.selectedOrder.tradeID]
                     };
-                    if (this.selectedSupplyOrder.newStatus === 1) {
-                        body.function = "HandleSupplyOrder";
+                    if (this.selectedOrder.newStatus === 1) {
+                        this.createSupplyOrder();
+                        this.createDeliveryArrangement();
+                        body.function = "HandleOrder";
                     }
-                    if (this.selectedSupplyOrder.newStatus === 2) {
-                        body.function = "FinishSupplyOrder";
+                    if (this.selectedOrder.newStatus === 2) {
+                        body.function = "FinishOrder";
                     }
-                    if (this.selectedSupplyOrder.newStatus === 3) {
-                        body.function = "ConfirmFinishSupplyOrder";
+                    if (this.selectedOrder.newStatus === 3) {
+                        body.function = "ConfirmFinishOrder";
                     }
                     let that = this;
                     that.loading = true;
-                    //完成supplyerOrder后一起创建deleveryOrder
-                    if (this.selectedSupplyOrder.newStatus === 2) {
-                        this.createDeliveryOrder();
-                    }
                     request('/work/invoke', body, "POST").then(response => {
+                        // TODO handleOrder的时候一起把创建supplyOrder和DeliveryArrangement
                         ElMessage({
                             message: '修改成功',
                             type: 'success',
                         });
                         that.loading = false;
-                        that.noteDeliveryOrderVisible = false;
-                        that.getSupplyOrders();
+                        that.noteForOtherVisible = false;
+                        that.getOrders();
+
                     }).catch(error => {
                         that.loading = false;
                     });
                 }
             },
-            getSupplyOrders() {
+            getOrders() {
                 let body = {
-                    channelName: "cbpmchannel",
-                    contractName: "cbpmchaincode",
-                    function: "GetAllSupplyOrders",
+                    function: "GetAllOrders",
                     args: []
                 };
                 let that = this;
                 this.loading = true;
                 request('/work/query', body, "POST").then(response => {
-                    that.supplyOrders = response.data.result;
-                    if (that.supplyOrders === null) {
-                        that.supplyOrders = [];
+                    that.orders = response.data.result;
+                    if (that.orders === null) {
+                        that.orders = [];
                     }
                     that.loading = false;
                 }).catch(error => {
                     that.loading = false;
+
                 });
             },
             getUser() {
                 this.user = JSON.parse(window.localStorage.getItem("user"));
             },
-            createDeliveryOrder() {
+            // TODO 在middleman对order进行handle的同时进行创建supplyOrder
+            createSupplyOrder() {
                 let body = {
-                    channelName: "scchannel",
-                    contractName: "scchaincode",
-                    function: "CreateDeliveryOrder",
+                    function: "CreateSupplyOrder",
                     transient: {
                         order: {
-                            tradeID: this.selectedSupplyOrder.tradeID,
-                            assetName: this.selectedSupplyOrder.assetName,
-                            note: this.noteForDeliveryOrder,
+                            TradeId: this.selectedOrder.tradeID,
+                            AssetId: this.selectedOrder.assetID,
+                            Quantity: this.selectedOrder.quantity,
+                            Note: this.noteForSupplyOrder,
                         }
-
                     }
                 };
                 request('/work/invoke', body, "POST").then(response => {
                     ElMessage({
-                        message: '创建DeliveryOrder成功',
+                        message: '创建supplyorder成功',
                         type: 'success',
                     });
-                    console.log('创建DeliveryOrder成功')
+                    console.log('创建supplyorder成功')
                 }).catch(error => {
-                    console.log('创建DeliveryOrder失败')
+                    console.log('创建supplyorder失败');
                 });
-            }
+            },
+            createDeliveryArrangement() {
+                let body = {
+                    function: "CreateDeliveryArrangement",
+                    transient: {
+                        arrangement: {
+                            TradeID: this.selectedOrder.tradeID,
+                            AssetName: this.selectedOrder.assetName,
+                            Quantity: this.selectedOrder.quantity,
+                            StartPlace: this.selectedOrder.shippingAddress,
+                            EndPlace: this.selectedOrder.receivingAddress,
+                            Fee: 250.4,
+                            Note: this.noteForDeliveryArrangement
+                        }
+                    }
+                };
+                request('/work/invoke', body, "POST").then(response => {
+                    ElMessage({
+                        message: '创建arrangement成功',
+                        type: 'success',
+                    });
+                    console.log('创建arranmement成功')
+                }).catch(error => {
+                    console.log('创建arrangement失败')
+                });
+            },
+
         },
         data() {
             return {
-                supplyOrders: [],
+                orders: [],
                 loading: true,
                 user: {},
-                supplyOrderFormVisible: false,
-                noteDeliveryOrderVisible: false,
-                noteForDeliveryOrder: "",
-                selectedSupplyOrder: {},
+                orderFormVisible: false,
+                noteForOtherVisible: false,
+                noteForSupplyOrder: "",
+                noteForDeliveryArrangement: "",
+                selectedOrder: {},
                 statusOptions: [
                     {
                         value: 0,
@@ -262,12 +288,12 @@
                         value: 3,
                         label: '确认完成'
                     }
-                ]
+                ],
             }
         },
         mounted() {
             this.getUser();
-            this.getSupplyOrders();
+            this.getOrders();
         }
     }
 </script>

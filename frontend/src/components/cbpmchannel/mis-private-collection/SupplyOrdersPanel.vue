@@ -1,6 +1,6 @@
 <template>
     <el-table
-            :data="deliveryOrders"
+            :data="supplyOrders"
             :default-sort="{ prop: 'createTime', order: 'descending' }"
             v-loading="loading"
             ref="tableRef"
@@ -9,6 +9,10 @@
     >
         <el-table-column prop="createTime" label="创建时间"/>
         <el-table-column prop="assetName" label="名称"/>
+        <el-table-column prop="assetPrice" label="单价" sortable/>
+        <el-table-column prop="quantity" label="数量"/>
+        <el-table-column prop="totalPrice" label="总价"/>
+        <el-table-column prop="shippingAddress" label="发货地"/>
         <el-table-column prop="note" label="备注" overflow/>
         <el-table-column prop="ownerOrg" label="所属组织"/>
         <el-table-column prop="handlerOrg" label="处理组织"/>
@@ -31,32 +35,38 @@
         </el-table-column>
         <el-table-column label="Operations" width="120">
             <template #default="scope">
-                <el-button v-if="this.user.orgType==='supplier'" type="text" size="small"
-                           @click="getDeliveryOrderForm(scope.row)">
+                <el-button type="text" size="small" @click="getSupplyOrderForm(scope.row)">
                     修改状态
                 </el-button>
             </template>
         </el-table-column>
     </el-table>
-    <el-dialog center width="600px" v-model="deliveryOrderFormVisible" title="Change Order Status Confirm">
-        <el-form label-position="right" label-width="170px">
+
+    <el-dialog center width="500px" v-model="supplyOrderFormVisible" title="Change Order Status Confirm">
+        <el-form label-position="right" label-width="100px">
             <el-form-item label="创建时间: ">
-                {{selectedDeliveryOrder.createTime}}
+                {{selectedSupplyOrder.createTime}}
             </el-form-item>
             <el-form-item label="商品名称: ">
-                {{selectedDeliveryOrder.assetName}}
+                {{selectedSupplyOrder.assetName}}
+            </el-form-item>
+            <el-form-item label="数量: ">
+                {{selectedSupplyOrder.quantity}}
+            </el-form-item>
+            <el-form-item label="总价: ">
+                {{selectedSupplyOrder.totalPrice}}
+            </el-form-item>
+            <el-form-item label="发货地: ">
+                {{selectedSupplyOrder.shippingAddress}}
             </el-form-item>
             <el-form-item label="备注: ">
-                {{selectedDeliveryOrder.note}}
+                {{selectedSupplyOrder.note}}
             </el-form-item>
-            <el-form-item v-show="noteDeliveryDetailVisible" label="DeliveryDetailNote:">
-                <el-input placeholder="note for DeliveryDetail" v-model=this.noteDeliveryDetail></el-input>
+            <el-form-item v-show="noteDeliveryOrderVisible" label="DeliveryNote:">
+                <el-input placeholder="note for deliveryOrder" v-model=this.noteForDeliveryOrder></el-input>
             </el-form-item>
-            <el-form-item v-show="noteDeliveryDetailVisible" label="contactForDeliveryDetail:">
-                <el-input placeholder="contact for DeliveryDetail" v-model=this.contact></el-input>
-            </el-form-item>
-            <el-select @change="showNoteDeliveryDetail" style="margin-left: 170px"
-                       v-model="selectedDeliveryOrder.newStatus" placeholder="Select">
+            <el-select @change="showNoteDelivery" style="margin-left: 100px" v-model="selectedSupplyOrder.newStatus"
+                       placeholder="Select">
                 <el-option
                         v-for="item in statusOptions"
                         :key="item"
@@ -68,32 +78,31 @@
         </el-form>
         <template #footer>
           <span>
-            <el-button @click="deliveryOrderFormVisible = false">取消</el-button>
-            <el-button type="primary" @click="changeDeliveryOrderStatus()">确定</el-button>
+            <el-button @click="supplyOrderFormVisible = false">取消</el-button>
+            <el-button type="primary" @click="changeSupplyOrderStatus()">确定</el-button>
           </span>
         </template>
     </el-dialog>
 </template>
 
 <script>
-    import {request} from "../../api/axios";
+    import {request} from "../../../api/axios";
     import {ElMessage, ElNotification} from 'element-plus';
 
     export default {
-        name: "DeliveryOrders",
+        name: "SupplyOrders",
         methods: {
-            showNoteDeliveryDetail() {
-                if (this.selectedDeliveryOrder.newStatus === 1) {
-                    // 无法创建暂时永远设置为false
-                    this.noteDeliveryDetailVisible = false;
+            showNoteDelivery() {
+                if (this.selectedSupplyOrder.newStatus === 2) {
+                    this.noteDeliveryOrderVisible = true;
                 } else {
-                    this.noteDeliveryDetailVisible = false;
+                    this.noteDeliveryOrderVisible = false;
                 }
             },
-            getDeliveryOrderForm(orderProxy) {
-                this.selectedDeliveryOrder = JSON.parse(JSON.stringify(orderProxy));
-                this.selectedDeliveryOrder.newStatus = this.selectedDeliveryOrder.status;
-                this.deliveryOrderFormVisible = true;
+            getSupplyOrderForm(orderProxy) {
+                this.selectedSupplyOrder = JSON.parse(JSON.stringify(orderProxy));
+                this.selectedSupplyOrder.newStatus = this.selectedSupplyOrder.status;
+                this.supplyOrderFormVisible = true;
             },
             filterStatus(value, row) {
                 return row.status === value
@@ -114,7 +123,7 @@
                 return this.statusOptions[status].label;
             },
             // get index of asset in orders(sort function causes the returning index is not correct)
-            getDeliveryOrdersIndex(tradeID) {
+            getSupplyOrdersIndex(tradeID) {
                 let index = -1;
                 this.orders.forEach((order, i) => {
                     if (tradeID === asset["tradeID"]) {
@@ -124,88 +133,75 @@
                 return index;
             },
             checkDisabled(status) {
-                if (status - 1 > this.selectedDeliveryOrder.status) {
+                if (status - 1 > this.selectedSupplyOrder.status) {
                     return true;
                 }
-                if (status < this.selectedDeliveryOrder.status) {
+                if (status < this.selectedSupplyOrder.status) {
                     return true;
                 }
-                if (this.user.orgType === 'supplier') {
-                    return true;
+                if (this.user.orgType === 'middleman') {
+                    return !(status === 3);
                 } else {
                     return !(status === 1 || status === 2 || status === 0);
                 }
             },
-            changeDeliveryOrderStatus() {
-                this.deliveryOrderFormVisible = false;
-                if (this.selectedDeliveryOrder.status === this.selectedDeliveryOrder.newStatus) {
+            changeSupplyOrderStatus() {
+                this.supplyOrderFormVisible = false;
+                if (this.selectedSupplyOrder.status === this.selectedSupplyOrder.newStatus) {
                     ElMessage({
                         message: '修改成功',
                         type: 'success',
                     });
-                    this.getDeliveryOrders();
+                    this.getOrders();
 
                 } else {
                     let body = {
+                        channelName: "mis-private-collection",
+                        contractName: "mischaincode",
                         function: "",
-                        args: [this.selectedDeliveryOrder.tradeID]
+                        args: [this.selectedSupplyOrder.tradeID]
                     };
-                    //DeliveryDetail修改status的body
-                    let bodyDeliveryDetail = {
-                        function: "",
-                        args: [this.selectedDeliveryOrder.tradeID]
-                    };
-
-                    if (this.selectedDeliveryOrder.newStatus === 1) {
-                        body.function = "HandleDeliveryOrder";
-                        bodyDeliveryDetail.function = "HandleDeliveryArrangement";
-                        // 无法通过deliveryOrder这边创建deliveryDetail
-                        // this.createDeliveryDetail();
+                    if (this.selectedSupplyOrder.newStatus === 1) {
+                        body.function = "HandleSupplyOrder";
                     }
-                    if (this.selectedDeliveryOrder.newStatus === 2) {
-                        body.function = "FinishDeliveryOrder";
-                        bodyDeliveryDetail.function = "FinishDeliveryArrangement";
+                    if (this.selectedSupplyOrder.newStatus === 2) {
+                        body.function = "FinishSupplyOrder";
                     }
-                    if (this.selectedDeliveryOrder.newStatus === 3) {
-                        body.function = "ConfirmFinishDeliveryOrder";
-                        bodyDeliveryDetail.function = "ConfirmDeliveryArrangement";
+                    if (this.selectedSupplyOrder.newStatus === 3) {
+                        body.function = "ConfirmFinishSupplyOrder";
                     }
                     let that = this;
                     that.loading = true;
-
-                    //先修改DeliveryArrangement的status
-                    request('/work/invoke', bodyDeliveryDetail, "POST").then(response => {
-                        ElMessage({
-                            message: '修改DeliveryArrangement成功',
-                            type: 'success',
-                        });
-                    }).catch(error => {
-                        that.loading = false;
-                    });
-
+                    //完成supplyerOrder后一起创建deleveryOrder
+                    if (this.selectedSupplyOrder.newStatus === 2) {
+                        this.createDeliveryOrder();
+                    }
                     request('/work/invoke', body, "POST").then(response => {
                         ElMessage({
                             message: '修改成功',
                             type: 'success',
                         });
                         that.loading = false;
-                        that.getDeliveryOrders();
+                        that.noteDeliveryOrderVisible = false;
+                        that.getSupplyOrders();
                     }).catch(error => {
                         that.loading = false;
                     });
                 }
             },
-            getDeliveryOrders() {
+            getSupplyOrders() {
                 let body = {
-                    function: "GetAllDeliveryOrders",
+                    channelName: "cbpmchannel",
+                    contractName: "cbpmchaincode",
+                    function: "GetAllSupplyOrders",
                     args: []
                 };
                 let that = this;
                 this.loading = true;
                 request('/work/query', body, "POST").then(response => {
-                    that.deliveryOrders = response.data.result;
-                    if (that.deliveryOrders === null) {
-                        that.deliveryOrders = [];
+                    that.supplyOrders = response.data.result;
+                    if (that.supplyOrders === null) {
+                        that.supplyOrders = [];
                     }
                     that.loading = false;
                 }).catch(error => {
@@ -215,42 +211,40 @@
             getUser() {
                 this.user = JSON.parse(window.localStorage.getItem("user"));
             },
-            createDeliveryDetail() {
+            createDeliveryOrder() {
                 let body = {
-                    function: "CreateDeliveryDetail",
+                    channelName: "sc-private-collection",
+                    contractName: "scchaincode",
+                    function: "CreateDeliveryOrder",
                     transient: {
-                        detail: {
-                            TradeId: this.selectedDeliveryOrder.tradeID,
-                            AssetName: this.selectedDeliveryOrder.assetName,
-                            // 这两个属性deliveryorder并没有
-                            StartPlace: this.selectedDeliveryOrder.startPlace,
-                            EndPlace: this.selectedDeliveryOrder.endPlace,
-                            Contact: this.contact,
-                            note: this.noteDeliveryDetail,
+                        order: {
+                            tradeID: this.selectedSupplyOrder.tradeID,
+                            assetName: this.selectedSupplyOrder.assetName,
+                            note: this.noteForDeliveryOrder,
                         }
+
                     }
                 };
                 request('/work/invoke', body, "POST").then(response => {
                     ElMessage({
-                        message: '创建DeliveryDetail成功',
+                        message: '创建DeliveryOrder成功',
                         type: 'success',
                     });
-                    console.log('创建DeliveryDetail成功')
+                    console.log('创建DeliveryOrder成功')
                 }).catch(error => {
-                    console.log('创建DeliveryDetail失败')
+                    console.log('创建DeliveryOrder失败')
                 });
-            },
+            }
         },
         data() {
             return {
-                deliveryOrders: [],
+                supplyOrders: [],
                 loading: true,
                 user: {},
-                deliveryOrderFormVisible: false,
-                noteDeliveryDetail: "",
-                contact: "",
-                noteDeliveryDetailVisible: false,
-                selectedDeliveryOrder: {},
+                supplyOrderFormVisible: false,
+                noteDeliveryOrderVisible: false,
+                noteForDeliveryOrder: "",
+                selectedSupplyOrder: {},
                 statusOptions: [
                     {
                         value: 0,
@@ -264,12 +258,16 @@
                         value: 2,
                         label: '处理完成'
                     },
+                    {
+                        value: 3,
+                        label: '确认完成'
+                    }
                 ]
             }
         },
         mounted() {
             this.getUser();
-            this.getDeliveryOrders();
+            this.getSupplyOrders();
         }
     }
 </script>

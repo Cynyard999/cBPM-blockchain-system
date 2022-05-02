@@ -23,21 +23,21 @@ const router = createRouter({
                     path: "assets",
                     name: "manufacturer-assets",
                     components: {
-                        manufacturerSubpage: () => import("../components/mamichannel/AssetsPanel.vue")
+                        manufacturerSubpage: () => import("../components/cbpmchannel/mami-private-collection/AssetsPanel.vue")
                     }
                 },
                 {
                     path: "orders",
                     name: "manufacturer-orders",
                     components: {
-                        manufacturerSubpage: () => import("../components/mamichannel/OrdersPanel.vue")
+                        manufacturerSubpage: () => import("../components/cbpmchannel/mami-private-collection/OrdersPanel.vue")
                     }
                 },
                 {
                     path: "delivery-details",
                     name: "manufacturer-delivery-details",
                     components: {
-                        manufacturerSubpage: () => import("../components/cmachannel/DeliveryDetailsPanel.vue")
+                        manufacturerSubpage: () => import("../components/cbpmchannel/cma-private-collection/DeliveryDetailsPanel.vue")
                     }
                 },
             ],
@@ -62,21 +62,21 @@ const router = createRouter({
                     path: "delivery-arrangements",
                     name: "carrier-delivery-arrangements",
                     components: {
-                        carrierSubpage: () => import("../components/micchannel/DeliveryArrangementsPanel.vue")
+                        carrierSubpage: () => import("../components/cbpmchannel/mic-private-collection/DeliveryArrangementsPanel.vue")
                     }
                 },
                 {
                     path: "delivery-details",
                     name: "carrier-delivery-details",
                     components: {
-                        carrierSubpage: () => import("../components/cmachannel/DeliveryDetailsPanel.vue")
+                        carrierSubpage: () => import("../components/cbpmchannel/cma-private-collection/DeliveryDetailsPanel.vue")
                     }
                 },
                 {
                     path: "delivery-orders",
                     name: "carrier-delivery-orders",
                     components: {
-                        carrierSubpage: () => import("../components/scchannel/DeliveryOrdersPanel.vue")
+                        carrierSubpage: () => import("../components/cbpmchannel/sc-private-collection/DeliveryOrdersPanel.vue")
                     }
                 },
             ],
@@ -98,24 +98,24 @@ const router = createRouter({
             component: () => import('../views/Supplier.vue'),
             children: [
                 {
-                    path: "assets",
+                    path: "supply-assets",
                     name: "supplier-assets",
                     components: {
-                        supplierSubpage: () => import("../components/mischannel/AssetsPanel.vue")
+                        supplierSubpage: () => import("../components/cbpmchannel/mis-private-collection/SupplyAssetsPanel.vue")
                     }
                 },
                 {
                     path: "supply-orders",
-                    name: "supplier-supply-orders1",
+                    name: "supplier-supply-orders",
                     components: {
-                        supplierSubpage: () => import("../components/mischannel/SupplyOrdersPanel.vue")
+                        supplierSubpage: () => import("../components/cbpmchannel/mis-private-collection/SupplyOrdersPanel.vue")
                     }
                 },
                 {
                     path: "delivery-orders",
                     name: "supplier-delivery-orders",
                     components: {
-                        supplierSubpage: () => import("../components/scchannel/DeliveryOrdersPanel.vue")
+                        supplierSubpage: () => import("../components/cbpmchannel/sc-private-collection/DeliveryOrdersPanel.vue")
                     }
                 },
             ],
@@ -140,35 +140,35 @@ const router = createRouter({
                     path: "assets",
                     name: "middleman-assets",
                     components: {
-                        middlemanSubpage: () => import("../components/mischannel/AssetsPanel.vue")
+                        middlemanSubpage: () => import("../components/cbpmchannel/mis-private-collection/SupplyAssetsPanel.vue")
                     }
                 },
                 {
                     path: "supply-orders",
                     name: "middleman-supply-orders",
                     components: {
-                        middlemanSubpage: () => import("../components/mischannel/SupplyOrdersPanel.vue")
+                        middlemanSubpage: () => import("../components/cbpmchannel/mis-private-collection/SupplyOrdersPanel.vue")
                     }
                 },
                 {
                     path: "goods",
                     name: "middleman-goods",
                     components: {
-                        middlemanSubpage: () => import("../components/mamichannel/AssetsPanel.vue")
+                        middlemanSubpage: () => import("../components/cbpmchannel/mami-private-collection/AssetsPanel.vue")
                     }
                 },
                 {
                     path: "orders",
                     name: "middleman-orders",
                     components: {
-                        middlemanSubpage: () => import("../components/mamichannel/OrdersPanel.vue")
+                        middlemanSubpage: () => import("../components/cbpmchannel/mami-private-collection/OrdersPanel.vue")
                     }
                 },
                 {
                     path: "delivery-arrangements",
                     name: "middleman-delivery-arrangements",
                     components: {
-                        middlemanSubpage: () => import("../components/micchannel/DeliveryArrangementsPanel.vue")
+                        middlemanSubpage: () => import("../components/cbpmchannel/mic-private-collection/DeliveryArrangementsPanel.vue")
                     }
                 },
             ],

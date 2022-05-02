@@ -94,7 +94,7 @@
 </template>
 
 <script>
-    import {request} from "../../api/axios";
+    import {request} from "../../../api/axios";
     import {ElMessage, ElNotification} from 'element-plus';
 
     export default {
