@@ -4,6 +4,7 @@ C_RESET='\033[0m'
 C_RED='\033[0;31m'
 C_GREEN='\033[0;32m'
 C_BLUE='\033[0;34m'
+C_LIGHT_BLUE='\033[1;34m'
 C_YELLOW='\033[1;33m'
 
 # println echos string
@@ -23,7 +24,7 @@ function successln() {
 
 # infoln echos in blue color
 function infoln() {
-  println "${C_BLUE}${1}${C_RESET}"
+  println "${C_LIGHT_BLUE}${1}${C_RESET}"
 }
 
 # warnln echos in yellow color
