@@ -8,6 +8,8 @@
                 <li><a href="/carrier">Carrier</a></li>
                 <li><a href="/supplier">Supplier</a></li>
                 <li><a href="/middleman">Middleman</a></li>
+                <li v-show="isAdmin" @click="registerFormVisible = true"><span style="cursor: pointer;">Register</span>
+                </li>
                 <li v-show="!isLogin" @click="loginFormVisible = true"><span style="cursor: pointer;">Login</span></li>
                 <li v-show="isLogin">
                     <el-tooltip placement="bottom">
@@ -24,17 +26,47 @@
                 </li>
                 <el-dialog title="登录" v-model="loginFormVisible" center width="500px">
                     <el-form :model="userInput" label-position="right" label-width="75px">
-                        <el-form-item label="Email">
-                            <el-input v-model="userInput.email" prefix-icon="User"></el-input>
+                        <el-form-item label="邮箱">
+                            <el-input v-model="userInput.email" prefix-icon="Message"></el-input>
                         </el-form-item>
-                        <el-form-item label="Password">
+                        <el-form-item label="密码">
                             <el-input v-model="userInput.pwd" prefix-icon="Key" show-password></el-input>
                         </el-form-item>
                     </el-form>
                     <template #footer>
                           <span>
-                            <el-button @click="loginFormVisible = false">Cancel</el-button>
+                            <el-button @click="cancelLogin">Cancel</el-button>
                             <el-button type="primary" @click="login">Confirm</el-button>
+                          </span>
+                    </template>
+                </el-dialog>
+                <el-dialog title="注册" v-model="registerFormVisible" center width="500px">
+                    <el-form :model="adminInput" label-position="right" label-width="75px">
+                        <el-form-item label="企业">
+                            <el-select v-model="adminInput.orgType"
+                                       placeholder="选择所属企业">
+                                <el-option
+                                        v-for="item in orgOptions"
+                                        :key="item.value"
+                                        :label="item.label"
+                                        :value="item.value"
+                                />
+                            </el-select>
+                        </el-form-item>
+                        <el-form-item label="邮箱">
+                            <el-input v-model="adminInput.email" prefix-icon="Message"></el-input>
+                        </el-form-item>
+                        <el-form-item label="用户名">
+                            <el-input v-model="adminInput.userName" prefix-icon="User"></el-input>
+                        </el-form-item>
+                        <el-form-item label="密码">
+                            <el-input v-model="adminInput.pwd" prefix-icon="Key" show-password></el-input>
+                        </el-form-item>
+                    </el-form>
+                    <template #footer>
+                          <span>
+                            <el-button @click="cancelRegister">Cancel</el-button>
+                            <el-button type="primary" @click="register">Confirm</el-button>
                           </span>
                     </template>
                 </el-dialog>
@@ -46,6 +78,7 @@
 <script>
     import {request} from "../api/axios";
     import router from "../router";
+    import crypto from 'crypto'
     import {ElMessage} from 'element-plus'
     import {ElNotification} from 'element-plus'
 
@@ -54,20 +87,81 @@
         data() {
             return {
                 isLogin: false,
+                isAdmin: false,
                 userName: "",
                 userOrg: "",
                 userInput: {
-                    "email": "",
-                    "pwd": ""
+                    email: "",
+                    pwd: ""
                 },
+                adminInput: {
+                    email: "",
+                    userName: "",
+                    pwd: "",
+                    orgType: "",
+                },
+                orgOptions: [
+                    {
+                        value: 'manufacturer',
+                        label: 'manufacturer'
+                    },
+                    {
+                        value: 'carrier',
+                        label: 'carrier'
+                    },
+                    {
+                        value: 'middleman',
+                        label: 'middleman'
+                    },
+                    {
+                        value: 'supplier',
+                        label: 'supplier'
+                    },
+                ],
                 loginFormVisible: false,
-            }
+                registerFormVisible: false,
+            };
         },
         mounted() {
             this.checkUserLogin();
         },
         methods: {
+            register() {
+                // TODO 加密
+                request('user/register', this.adminInput, 'POST').then(response => {
+                    ElNotification({
+                        title: '注册成功',
+                        message: response.data.result.name,
+                        type: 'success',
+                        duration: 1000
+                    });
+                    this.registerFormVisible = false;
+                }).catch(error => {
+                    ElNotification({
+                        title: '注册失败',
+                        message: error.data.result.message,
+                        type: 'success',
+                        duration: 1000
+                    });
+                });
+            },
+            cancelRegister() {
+                this.registerFormVisible = false;
+                this.adminInput = {
+                    email: "",
+                    userName: "",
+                    pwd: "",
+                    orgType: ""
+                };
+            },
             login() {
+                // TODO 加密
+                // const md5 = crypto.createHash('md5');
+                // let userEncryptedInput = {
+                //     "email": this.userInput.email,
+                //     "pwd": ""
+                // };
+                // userEncryptedInput.pwd = md5.update(this.userInput.email.charAt(0) + this.userInput.pwd + this.userInput.email.charAt(0)).digest("hex");
                 request('user/login', this.userInput, 'POST').then(response => {
                     ElNotification({
                         title: '登录成功',
@@ -86,10 +180,18 @@
                     });
                 });
             },
+            cancelLogin(){
+                this.loginFormVisible = false;
+                this.userInput = {
+                    email: "",
+                    pwd: ""
+                };
+            },
             logout() {
                 this.userName = "";
                 this.userOrg = "";
                 this.isLogin = false;
+                this.isAdmin = false;
                 window.localStorage.removeItem("token");
                 window.localStorage.removeItem("user");
                 router.replace('/home').then(ElMessage({
@@ -97,17 +199,18 @@
                     type: 'success',
                 }));
             },
-
-            test() {
-            },
             checkUserLogin() {
                 let token = window.localStorage.getItem("token");
                 if (token) {
                     this.isLogin = true;
-                    this.userName = JSON.parse(window.localStorage.getItem("user"))["name"]
-                    this.userOrg = JSON.parse(window.localStorage.getItem("user"))["orgType"]
+                    this.userName = JSON.parse(window.localStorage.getItem("user"))["name"];
+                    this.userOrg = JSON.parse(window.localStorage.getItem("user"))["orgType"];
+                    if (this.userOrg === "admin") {
+                        this.isAdmin = true;
+                    }
                 } else {
                     this.isLogin = false;
+                    this.isAdmin = false;
                     this.userName = "";
                 }
             }
@@ -149,7 +252,7 @@
     }
 
     header .web-name:after {
-        content: " on Fabirc";
+        content: " on Fabric";
         height: 100%;
         text-decoration: none;
         color: #5C6B73;
