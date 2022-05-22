@@ -44,6 +44,10 @@ type Order struct {
 	Note             string  `json:"note"`
 }
 
+func (t *CBPMChaincode) Init(ctx contractapi.TransactionContextInterface) error {
+	return nil
+}
+
 // CreateAsset 创建Asset，transient传入assetID，assetName，assetPrice，shippingAddress，publicDescription，中间商根据供应商的asset创建自己能提供的asset，价格名称等可以变化
 func (t *CBPMChaincode) CreateAsset(ctx contractapi.TransactionContextInterface) (*Asset, error) {
 	// TODO 查询另一通道的信息，与供货商提供的Asset信息校验
