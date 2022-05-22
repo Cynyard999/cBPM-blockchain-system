@@ -31,7 +31,7 @@
         </el-table-column>
         <el-table-column label="Operations" width="120">
             <template #default="scope">
-                <el-button v-if="this.user.orgType==='supplier'" type="text" size="small"
+                <el-button v-if="this.user.orgType==='carrier'" type="text" size="small"
                            @click="getDeliveryOrderForm(scope.row)">
                     修改状态
                 </el-button>
