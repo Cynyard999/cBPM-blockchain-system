@@ -80,23 +80,23 @@ public class UserImpl implements UserService {
             Wallet wallet = Wallets.newFileSystemWallet(Paths.get("wallet"));
             String orgType = jsonObject.getString("orgType");
             if (orgType.length() == 0) {
-                return ResponseVo.buildFailure("orgType must not be null");
+                return ResponseVo.buildFailure("orgType must not be null", 400);
             }
             String userName = jsonObject.getString("userName");
             if (userName.length() == 0) {
-                return ResponseVo.buildFailure("userName must not be null");
+                return ResponseVo.buildFailure("userName must not be null", 400);
             }
             if (wallet.get(orgType + "-" + userName) != null) {
-                return ResponseVo.buildFailure("user " + userName + " is already registered");
+                return ResponseVo.buildFailure("user " + userName + " is already registered", 422);
             }
 
             String pwd = jsonObject.getString("pwd");
             if (pwd.length() == 0) {
-                return ResponseVo.buildFailure("password must not be null");
+                return ResponseVo.buildFailure("password must not be null", 400);
             }
             String email = jsonObject.getString("email");
             if (userRepository.findByEmail(email) != null) {
-                return ResponseVo.buildFailure(email + " has already been registered.");
+                return ResponseVo.buildFailure(email + " has already been registered.", 422);
             }
             UserVo userVo = new UserVo(userName, pwd, orgType, email);
             userName = orgType + "-" + userName;
@@ -130,9 +130,7 @@ public class UserImpl implements UserService {
             String enrollmentSecret = caClient.register(registrationRequest, userAdmin);
             //密码若与系统register返回的不一样则报错
             if (!pwd.equals(enrollmentSecret)) {
-                ResponseVo responseVo = new ResponseVo(false);
-                responseVo.setMessage("get wrong pwd from ca-server");
-                return responseVo;
+                return ResponseVo.buildFailure("get wrong pwd from ca-server", 500);
             } else {
 //                System.out.println("get right pwd from ca-server");
             }
@@ -150,7 +148,7 @@ public class UserImpl implements UserService {
             return ResponseVo.buildSuccess(token, userInfo);
         } catch (Exception e) {
             log.info("register failure: " + e.getMessage());
-            return ResponseVo.buildFailure("register failure: unvalid orgType.");
+            return ResponseVo.buildFailure(e.getMessage(), 500);
         }
 
 
@@ -161,20 +159,21 @@ public class UserImpl implements UserService {
     public ResponseVo login(JSONObject jsonObject) {
         String email = jsonObject.getString("email");
         if (email.length() == 0) {
-            return ResponseVo.buildFailure("email must not be null.");
+            return ResponseVo.buildFailure("email must not be null.", 400);
         }
 
         String password = jsonObject.getString("pwd");
         if (password.length() == 0) {
-            return ResponseVo.buildFailure("password must not be null.");
+            return ResponseVo.buildFailure("password must not be null.", 400);
         }
         UserVo userVo = userRepository.findByEmail(email);
         if (userVo == null) {
             return ResponseVo
-                    .buildFailure("this email has not been registered, please register first.");
+                    .buildFailure("this email has not been registered, please register first.",
+                            400);
         }
         if (!userVo.getPassword().equals(password)) {
-            return ResponseVo.buildFailure("wrong email or password.");
+            return ResponseVo.buildFailure("wrong email or password.", 400);
         } else {
             String token = JwtUtil.createToken(userVo);
             JSONObject userInfo = new JSONObject();

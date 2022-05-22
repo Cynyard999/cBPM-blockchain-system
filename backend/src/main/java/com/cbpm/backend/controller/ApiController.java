@@ -37,7 +37,7 @@ public class ApiController {
         if (responseVo.isSuccess()) {
             return ResponseEntity.ok().body(responseVo);
         } else {
-            return ResponseEntity.status(500).body(responseVo);
+            return ResponseEntity.status(responseVo.getStatus()).body(responseVo);
         }
     }
 
@@ -58,7 +58,7 @@ public class ApiController {
         if (responseVo.isSuccess()) {
             return ResponseEntity.ok().body(responseVo);
         } else {
-            return ResponseEntity.status(500).body(responseVo);
+            return ResponseEntity.status(responseVo.getStatus()).body(responseVo);
         }
     }
 }

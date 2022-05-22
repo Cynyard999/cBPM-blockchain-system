@@ -7,7 +7,6 @@ package com.cbpm.backend.controller;
  * @date 2022/4/5 15:18
  */
 
-import com.cbpm.backend.serviceImpl.ApiImpl;
 import com.cbpm.backend.serviceImpl.UserImpl;
 import com.cbpm.backend.util.JsonReader;
 import com.cbpm.backend.vo.ResponseVo;
@@ -38,7 +37,7 @@ public class UserController {
             responseHeaders.set("Authorization", responseVo.getMessage());
             return ResponseEntity.ok().headers(responseHeaders).body(responseVo);
         } else {
-            return ResponseEntity.status(401).body(responseVo);
+            return ResponseEntity.status(responseVo.getStatus()).body(responseVo);
         }
 
     }
@@ -54,7 +53,7 @@ public class UserController {
             responseHeaders.set("Authorization", responseVo.getMessage());
             return ResponseEntity.ok().headers(responseHeaders).body(responseVo);
         } else {
-            return ResponseEntity.status(401).body(responseVo);
+            return ResponseEntity.status(responseVo.getStatus()).body(responseVo);
         }
     }
 }

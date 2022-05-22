@@ -14,19 +14,25 @@ public class ResponseVo {
 
     Object result;
 
-    public ResponseVo(boolean success) {
+    int status;
+
+    private ResponseVo(boolean success) {
         this.success = success;
     }
 
-    public ResponseVo(String message) {
+    private ResponseVo(String message) {
         this.message = message;
     }
 
-    public ResponseVo(Object object) {
+    private ResponseVo(Object object) {
         this.result = object;
     }
 
-    public ResponseVo(String message, Object result) {
+    public ResponseVo(int status) {
+        this.status = status;
+    }
+
+    private ResponseVo(String message, Object result) {
         this.message = message;
         this.result = result;
     }
@@ -35,42 +41,33 @@ public class ResponseVo {
         return success;
     }
 
-    public static ResponseVo buildSuccess() {
-        ResponseVo responseVo = new ResponseVo("success");
-        responseVo.setSuccess(true);
-        return responseVo;
-    }
-
-    public static ResponseVo buildSuccess(String message) {
-        if (message.length() == 0) {
+    public static ResponseVo buildSuccess(String message, Object content) {
+        if (message == null || message.length() == 0) {
             message = "success";
         }
-        ResponseVo responseVo = new ResponseVo(true);
-        responseVo.setMessage(message);
-        return responseVo;
-    }
-
-    public static ResponseVo buildSuccess(String message, Object content) {
         ResponseVo responseVo = new ResponseVo(message, content);
         responseVo.setSuccess(true);
+        responseVo.setStatus(200);
         return responseVo;
     }
 
-    public static ResponseVo buildSuccess(Object content) {
-        ResponseVo responseVo = new ResponseVo(content);
-        responseVo.setSuccess(true);
-        return responseVo;
-    }
-
-    public static ResponseVo buildFailure(String message) {
+    public static ResponseVo buildFailure(String message, int status) {
+        if (message == null || message.length() == 0) {
+            message = "failure";
+        }
         ResponseVo responseVo = new ResponseVo(message);
         responseVo.setSuccess(false);
+        responseVo.setStatus(status);
         return responseVo;
     }
 
-    public static ResponseVo buildFailure(Object content) {
-        ResponseVo responseVo = new ResponseVo(false);
-        responseVo.setResult(content);
+    public static ResponseVo buildFailure(String message, Object content, int status) {
+        if (message == null || message.length() == 0) {
+            message = "failure";
+        }
+        ResponseVo responseVo = new ResponseVo(message, content);
+        responseVo.setSuccess(false);
+        responseVo.setStatus(status);
         return responseVo;
     }
 
@@ -93,14 +90,23 @@ public class ResponseVo {
     public void setResult(Object result) {
         this.result = result;
     }
+
+    public int getStatus() {
+        return status;
+    }
+
+    public void setStatus(int status) {
+        this.status = status;
+    }
+
     @Override
-    public String toString(){
-        String res="";
-        if(this.success){
-            res+="success,";
-        }else {
-            res+="false,";
+    public String toString() {
+        String res = "";
+        if (this.success) {
+            res += "success,";
+        } else {
+            res += "false,";
         }
-        return res+"message:"+this.getMessage();
+        return res + "message:" + this.getMessage();
     }
 }

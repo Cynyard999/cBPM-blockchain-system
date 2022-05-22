@@ -57,7 +57,8 @@ public class JwtFilter implements Filter {
             if (token == null) {
                 response.setStatus(401);
                 response.getOutputStream()
-                        .write(JSON.toJSONString(ResponseVo.buildFailure("unauthorized operation"))
+                        .write(JSON.toJSONString(
+                                ResponseVo.buildFailure("unauthorized operation", 401))
                                 .getBytes());
                 return;
             }
@@ -75,25 +76,29 @@ public class JwtFilter implements Filter {
                 log.info("invalid token signature for token: " + token);
                 response.setStatus(403);
                 response.getOutputStream()
-                        .write(JSON.toJSONString(ResponseVo.buildFailure("invalid token signature"))
+                        .write(JSON.toJSONString(
+                                ResponseVo.buildFailure("invalid token signature", 403))
                                 .getBytes());
             } catch (TokenExpiredException e) {
                 log.info("token has expired: " + token);
                 response.setStatus(403);
                 response.getOutputStream()
-                        .write(JSON.toJSONString(ResponseVo.buildFailure("invalid token signature"))
+                        .write(JSON.toJSONString(
+                                ResponseVo.buildFailure("invalid token signature", 403))
                                 .getBytes());
             } catch (InvalidClaimException e) {
                 log.info("invalid token claims for token: " + token);
                 response.setStatus(403);
                 response.getOutputStream()
-                        .write(JSON.toJSONString(ResponseVo.buildFailure("invalid token claims"))
+                        .write(JSON
+                                .toJSONString(ResponseVo.buildFailure("invalid token claims", 403))
                                 .getBytes());
             } catch (Exception e) {
                 log.info("token authentication failure: " + e.getMessage());
                 response.setStatus(403);
                 response.getOutputStream()
-                        .write(JSON.toJSONString(ResponseVo.buildFailure("invalid token claims"))
+                        .write(JSON
+                                .toJSONString(ResponseVo.buildFailure("invalid token claims", 403))
                                 .getBytes());
             }
 
