@@ -35,7 +35,7 @@
                     </el-form>
                     <template #footer>
                           <span>
-                            <el-button @click="cancelLogin">Cancel</el-button>
+                            <el-button @click="loginOver">Cancel</el-button>
                             <el-button type="primary" @click="login">Confirm</el-button>
                           </span>
                     </template>
@@ -65,7 +65,7 @@
                     </el-form>
                     <template #footer>
                           <span>
-                            <el-button @click="cancelRegister">Cancel</el-button>
+                            <el-button @click="registerOver">Cancel</el-button>
                             <el-button type="primary" @click="register">Confirm</el-button>
                           </span>
                     </template>
@@ -78,8 +78,8 @@
 <script>
     import {request} from "../api/axios";
     import router from "../router";
-    import crypto from 'crypto'
     import {ElMessage} from 'element-plus'
+    import md5 from 'js-md5';
     import {ElNotification} from 'element-plus'
 
     export default {
@@ -127,7 +127,7 @@
         },
         methods: {
             register() {
-                // TODO 加密
+                this.adminInput.pwd = md5(this.adminInput.email.charAt(0) + this.adminInput.pwd + this.adminInput.email.charAt(1));
                 request('user/register', this.adminInput, 'POST').then(response => {
                     ElNotification({
                         title: '注册成功',
@@ -135,17 +135,17 @@
                         type: 'success',
                         duration: 1000
                     });
-                    this.registerFormVisible = false;
+                    this.registerOver();
                 }).catch(error => {
                     ElNotification({
                         title: '注册失败',
-                        message: error.data.result.message,
-                        type: 'success',
+                        message: error.data.message,
+                        type: 'error',
                         duration: 1000
                     });
                 });
             },
-            cancelRegister() {
+            registerOver() {
                 this.registerFormVisible = false;
                 this.adminInput = {
                     email: "",
@@ -155,32 +155,31 @@
                 };
             },
             login() {
-                // TODO 加密
-                // const md5 = crypto.createHash('md5');
-                // let userEncryptedInput = {
-                //     "email": this.userInput.email,
-                //     "pwd": ""
-                // };
-                // userEncryptedInput.pwd = md5.update(this.userInput.email.charAt(0) + this.userInput.pwd + this.userInput.email.charAt(0)).digest("hex");
-                request('user/login', this.userInput, 'POST').then(response => {
+                let userEncryptedInput = {
+                    "email": this.userInput.email,
+                    "pwd": ""
+                };
+                userEncryptedInput.pwd = md5(this.userInput.email.charAt(0) + this.userInput.pwd + this.userInput.email.charAt(1));
+                //5c690ccd483bab51498c83fd7fced363
+                request('user/login', userEncryptedInput, 'POST').then(response => {
                     ElNotification({
                         title: '登录成功',
                         message: response.data.result.name,
                         type: 'success',
                         duration: 1000
                     });
-                    this.loginFormVisible = false;
+                    this.loginOver();
                     this.checkUserLogin();
                 }).catch(error => {
                     ElNotification({
                         title: '登录失败',
-                        message: error.data.result.message,
-                        type: 'success',
+                        message: error.data.message,
+                        type: 'error',
                         duration: 1000
                     });
                 });
             },
-            cancelLogin(){
+            loginOver() {
                 this.loginFormVisible = false;
                 this.userInput = {
                     email: "",

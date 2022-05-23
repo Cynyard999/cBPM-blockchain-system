@@ -44,11 +44,11 @@ axios.interceptors.response.use(
                 }));
                 return Promise.reject(response);
             } else {
-                ElMessage.warning(ShowMessage(response.status) + ": " + response.data.message);
+                // ElMessage.warning(ShowMessage(response.status) + ": " + response.data.message);
                 return Promise.reject(response);
             }
         } else {
-            ElMessage.warning('网络连接异常,请稍后再试!');
+            return Promise.reject(error);
         }
     }
 );
