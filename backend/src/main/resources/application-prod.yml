@@ -2,15 +2,13 @@ server:
   port: 8080
 #linux环境
 spring:
-  application:
-    name: backend
   datasource:
     url: jdbc:mysql://172.19.241.74:3306/blockChain
     username: root
     password: 123456
     driver-class-name: com.mysql.cj.jdbc.Driver
 
-backend:
+network:
   # 网络配置文件路径
   networkConfigPathFormat: /home/steve/homework/cBPM-blockchain-system/backend/src/main/resources/connection-%s.json
   #network path

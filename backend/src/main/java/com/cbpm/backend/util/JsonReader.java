@@ -8,9 +8,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.nio.charset.StandardCharsets;
-import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import org.springframework.context.annotation.Configuration;
 
 /**
  * @author Polaris
@@ -18,7 +16,6 @@ import org.springframework.context.annotation.Configuration;
  * @description: 读取request里面的json
  * @date 2022/4/9 13:19
  */
-@Configuration
 public class JsonReader {
 
     public static JSONObject receivePostBody(HttpServletRequest request) throws IOException, UnsupportedEncodingException {

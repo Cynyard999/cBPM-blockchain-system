@@ -2,6 +2,9 @@ spring:
   profiles:
     active: dev
 
+  application:
+    name: backend
+
   jpa:
     hibernate:
       ddl-auto: update
@@ -16,3 +19,10 @@ logging:
     org.springframework.security: warn
     org.springframework.web: warn
     com.cbpm.backend: info
+
+network:
+  orgNames: manufacturer, carrier, supplier, middleman
+  orgMSPs: ManufacturerMSP, CarrierMSP, SupplierMSP, MiddlemanMSP
+  orgAdminNames: manufacturer-admin, carrier-admin, supplier-admin, middleman-admin
+  certificatePathSuffix: /admin/msp/signcerts/cert.pem
+  privateKeyPathSuffix: /admin/msp/keystore/private_sk

@@ -30,12 +30,9 @@ public class UserController {
     ResponseEntity<ResponseVo> register(HttpServletRequest request) throws Exception {
         JSONObject jsonObject = JsonReader.receivePostBody(request);
         ResponseVo responseVo = userImpl.register(jsonObject);
-        log.info("Request: " + jsonObject.toJSONString() + " and Response: "
-                + responseVo.toString());
-        HttpHeaders responseHeaders = new HttpHeaders();
+        log.info("Request " + request.getRequestURI() + ": " + jsonObject.toJSONString());
         if (responseVo.isSuccess()) {
-            responseHeaders.set("Authorization", responseVo.getMessage());
-            return ResponseEntity.ok().headers(responseHeaders).body(responseVo);
+            return ResponseEntity.ok().body(responseVo);
         } else {
             return ResponseEntity.status(responseVo.getStatus()).body(responseVo);
         }
@@ -46,8 +43,7 @@ public class UserController {
     ResponseEntity<ResponseVo> login(HttpServletRequest request) throws Exception {
         JSONObject jsonObject = JsonReader.receivePostBody(request);
         ResponseVo responseVo = userImpl.login(jsonObject);
-        log.info("Request: " + jsonObject.toJSONString() + " and Response: "
-                + responseVo.toString());
+        log.info("Request " + request.getRequestURI() + ": " + jsonObject.toJSONString());
         HttpHeaders responseHeaders = new HttpHeaders();
         if (responseVo.isSuccess()) {
             responseHeaders.set("Authorization", responseVo.getMessage());

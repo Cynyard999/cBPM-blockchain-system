@@ -27,13 +27,12 @@ public class ApiController {
      * @update by Polaris in 1/4/2022
      */
     @PostMapping("/invoke")
-    public ResponseEntity<ResponseVo>invokeFunc(HttpServletRequest request) throws Exception {
+    public ResponseEntity<ResponseVo> invokeFunc(HttpServletRequest request) throws Exception {
         String orgType = request.getAttribute("orgType").toString();
         JSONObject jsonObject = JsonReader.receivePostBody(request);
         jsonObject.put("orgType", orgType);
         ResponseVo responseVo = apiImpl.invoke(jsonObject);
-        log.info("Request: " + jsonObject.toJSONString() + "and Response: " + responseVo
-                .toString());
+        log.info("Request " + request.getRequestURI() + ": " + jsonObject.toJSONString());
         if (responseVo.isSuccess()) {
             return ResponseEntity.ok().body(responseVo);
         } else {
@@ -49,12 +48,12 @@ public class ApiController {
      * @update by Polaris in 1/4/2022
      */
     @PostMapping("/query")
-    public ResponseEntity<ResponseVo>  queryFunc(HttpServletRequest request) throws Exception {
+    public ResponseEntity<ResponseVo> queryFunc(HttpServletRequest request) throws Exception {
         String orgType = request.getAttribute("orgType").toString();
         JSONObject jsonObject = JsonReader.receivePostBody(request);
         jsonObject.put("orgType", orgType);
         ResponseVo responseVo = apiImpl.query(jsonObject);
-        log.info("Request: " + jsonObject.toJSONString() + "and Response: " + responseVo.toString());
+        log.info("Request " + request.getRequestURI() + ": " + jsonObject.toJSONString());
         if (responseVo.isSuccess()) {
             return ResponseEntity.ok().body(responseVo);
         } else {

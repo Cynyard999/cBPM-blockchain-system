@@ -26,50 +26,45 @@ public class GatewayConfig {
     /**
      * network路径
      */
-    @Value("${backend.networkPath}")
+    @Value("${network.networkPath}")
     private String networkPath;
-    /**
-     * wallet文件夹路径
-     */
-    private final String walletDirectory = "wallet";
+
     /**
      * 网络配置文件路径
      */
-    @Value("${backend.networkConfigPathFormat}")
+    @Value("${network.networkConfigPathFormat}")
     private String networkConfigPathFormat;
+
     /**
      * 四种组织名称
      */
-    private final String[] orgs = {"carrier", "supplier", "manufacturer", "middleman"};
+    @Value("${network.orgNames}")
+    private String[] orgNames;
 
     /**
      * 四种组织msp
      */
-    private final String[] orgMSPs = {"CarrierMSP", "SupplierMSP", "ManufacturerMSP",
-            "MiddlemanMSP"};
+    @Value("${network.orgMSPs}")
+    private String[] orgMSPs;
 
     /**
      * 用户名
      */
-    private final String[] orgAdminNames = {"carrier-admin", "supplier-admin", "manufacturer-admin",
-            "middleman-admin"};
+    @Value("${network.orgAdminNames}")
+    private String[] orgAdminNames;
+
     /**
      * 用户证书路径后缀
      */
-    private final String certificatePathSuffix = "/admin/msp/signcerts/cert.pem";
-    /**
-     * 用户私钥路径后缀
-     */
-    private String privateKeyPathSuffix = "/admin/msp/keystore/private_sk";
+    @Value("${network.certificatePathSuffix}")
+    private String certificatePathSuffix;
 
     /**
-     * admin用户证书路径后缀
-     */
-    private final String certificatePathSuffixAdmin = "/msp/signcerts/cert.pem";
-    /**
      * 用户私钥路径后缀
      */
-    private String privateKeyPathSuufixAdmin = "/msp/keystore/private_sk";
+    @Value("${network.privateKeyPathSuffix}")
+    private String privateKeyPathSuffix;
+
 
     /**
      * @return java.util.HashMap<java.lang.String, org.hyperledger.fabric.gateway.Gateway>
@@ -82,48 +77,33 @@ public class GatewayConfig {
             throws IOException, InvalidKeyException, CertificateException {
         HashMap<String, Gateway> gatewayHashMap = new HashMap<>();
         //初始化网关wallet账户用于连接网络
-        Wallet wallet = Wallets.newFileSystemWallet(Paths.get(this.walletDirectory));
+        String walletDirectory = "wallet";
+        Wallet wallet = Wallets.newFileSystemWallet(Paths.get(walletDirectory));
         //初始化时将所有组织的admin用户认证信息都存进wallet中，以便后面直接调用
-        for (int i = 0; i < orgs.length; i++) {
+        for (int i = 0; i < orgNames.length; i++) {
             //获取证书
             X509Certificate certificate = readX509Certificate(
-                    Paths.get(this.networkPath + orgs[i] + this.certificatePathSuffix));
+                    Paths.get(this.networkPath + orgNames[i] + this.certificatePathSuffix));
             //获取私钥
             PrivateKey privateKey = getPrivateKey(
-                    Paths.get(this.networkPath + orgs[i] + this.privateKeyPathSuffix));
+                    Paths.get(this.networkPath + orgNames[i] + this.privateKeyPathSuffix));
             //存进wallet
             wallet.put(orgAdminNames[i],
                     Identities.newX509Identity(orgMSPs[i], certificate, privateKey));
-            //配置org-ca-admin的身份
-            certificate = readX509Certificate(Paths.get(
-                    this.networkPath + orgs[i] + "/" + orgs[i] + "-ca-admin"
-                            + this.certificatePathSuffixAdmin));
 
-            privateKey = getPrivateKey(Paths.get(
-                    this.networkPath + orgs[i] + "/" + orgs[i] + "-ca-admin"
-                            + this.privateKeyPathSuufixAdmin));
-            //存进wallet
-            wallet.put(orgs[i] + "-ca-admin",
-                    Identities.newX509Identity(orgMSPs[i], certificate, privateKey));
+            // TODO 配置org-ca-admin的身份，存入wallet并放入hashMap中
 
             //根据connection.json 获取Fabric网络连接对象
-            String networkConfigPath = String.format(this.networkConfigPathFormat, orgs[i]);
+            String networkConfigPath = String.format(this.networkConfigPathFormat, orgNames[i]);
             Gateway.Builder builder = Gateway.createBuilder()
                     .identity(wallet, orgAdminNames[i])
                     .networkConfig(Paths.get(networkConfigPath));
             //把所有组织的连接的gateway存起来，以便后面直接调用
-            gatewayHashMap.put(orgs[i], builder.connect());
+            gatewayHashMap.put(orgNames[i], builder.connect());
         }
         return gatewayHashMap;
     }
 
-    /**
-     * @param certificatePath
-     * @description: 获取证书
-     * @return: java.security.cert.X509Certificate
-     * @author: Polaris
-     * @date: 2022/4/1
-     */
     private static X509Certificate readX509Certificate(final Path certificatePath)
             throws IOException, CertificateException {
         try (Reader certificateReader = Files
@@ -132,13 +112,6 @@ public class GatewayConfig {
         }
     }
 
-    /**
-     * @param privateKeyPath
-     * @description: 获取私钥
-     * @return: java.security.PrivateKey
-     * @author: Polaris
-     * @date: 2022/4/1
-     */
     private static PrivateKey getPrivateKey(final Path privateKeyPath)
             throws IOException, InvalidKeyException {
         try (Reader privateKeyReader = Files

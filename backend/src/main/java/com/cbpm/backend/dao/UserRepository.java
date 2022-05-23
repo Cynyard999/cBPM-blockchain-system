@@ -9,6 +9,8 @@ public interface UserRepository extends CrudRepository<UserVo, Integer> {
 
     List<UserVo> findByOrgType(String orgType);
 
+    UserVo findByName(String name);
+
     UserVo findByEmail(String email);
 
 }

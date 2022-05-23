@@ -1,16 +1,14 @@
 server:
   port: 8080
-# 本地环境
+# 本地数据库环境
 spring:
-  application:
-    name: backend
   datasource:
     url: jdbc:mysql://127.0.0.1/blockChain
     username: root
     password: password
     driver-class-name: com.mysql.cj.jdbc.Driver
 
-backend:
+network:
   # 网络配置文件路径
   networkConfigPathFormat: src/main/resources/connection-%s.json
   #network path

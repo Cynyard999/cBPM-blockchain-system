@@ -27,7 +27,7 @@ import lombok.extern.slf4j.Slf4j;
  */
 
 @Slf4j
-@WebFilter(filterName = "JwtFilter", urlPatterns = "/work/*")
+@WebFilter(filterName = "JwtFilter", urlPatterns = {"/work/*","/user/register"})
 public class JwtFilter implements Filter {
 
     @Override
@@ -71,6 +71,18 @@ public class JwtFilter implements Filter {
                 request.setAttribute("orgType", orgType);
                 request.setAttribute("email", userEmail);
                 request.setAttribute("userId", userId);
+                String url = request.getRequestURI();
+                System.out.println(url);
+                if ("/user/register".equals(url)) {
+                    if (!"admin".equals(orgType)) {
+                        response.setStatus(401);
+                        response.getOutputStream()
+                                .write(JSON.toJSONString(
+                                        ResponseVo.buildFailure("unauthorized operation", 401))
+                                        .getBytes());
+                        return;
+                    }
+                }
                 filterChain.doFilter(request, response);
             } catch (SignatureVerificationException e) {
                 log.info("invalid token signature for token: " + token);
@@ -84,7 +96,7 @@ public class JwtFilter implements Filter {
                 response.setStatus(403);
                 response.getOutputStream()
                         .write(JSON.toJSONString(
-                                ResponseVo.buildFailure("invalid token signature", 403))
+                                ResponseVo.buildFailure("token has expired", 403))
                                 .getBytes());
             } catch (InvalidClaimException e) {
                 log.info("invalid token claims for token: " + token);
@@ -98,7 +110,8 @@ public class JwtFilter implements Filter {
                 response.setStatus(403);
                 response.getOutputStream()
                         .write(JSON
-                                .toJSONString(ResponseVo.buildFailure("invalid token claims", 403))
+                                .toJSONString(ResponseVo
+                                        .buildFailure("token authentication failure", 403))
                                 .getBytes());
             }
 
