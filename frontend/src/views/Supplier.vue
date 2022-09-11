@@ -34,6 +34,7 @@
                 </el-col>
             </el-row>
         </el-aside>
+<!--        使用router-view做子页面跳转，子页面名称为supplierSubpage，有单个子页面的话也可以不用名称作标识-->
         <el-main>
             <router-view name="supplierSubpage"></router-view>
         </el-main>
@@ -48,14 +49,6 @@
         name: "Supplier",
         components: {
             Header
-        },
-        methods: {},
-        mounted() {
-            // request('/work/query', {}, 'POST').then(response => {
-            //     console.log(response)
-            // }).catch(error => {
-            //     console.log(error)
-            // });
         }
     }
 </script>

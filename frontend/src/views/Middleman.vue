@@ -55,7 +55,7 @@
     import Header from "../components/Header.vue"
 
     export default {
-        name: "Middleman.vue",
+        name: "Middleman",
         components: {
             Header
         }

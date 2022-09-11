@@ -6,6 +6,7 @@
 
 <template>
     <div>
+<!--        使用router-view做页面跳转-->
         <router-view/>
     </div>
 </template>

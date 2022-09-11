@@ -7,7 +7,7 @@ package com.cbpm.backend.controller;
  * @date 2022/4/5 15:18
  */
 
-import com.cbpm.backend.serviceImpl.UserImpl;
+import com.cbpm.backend.service.UserService;
 import com.cbpm.backend.util.JsonReader;
 import com.cbpm.backend.vo.ResponseVo;
 import javax.servlet.http.HttpServletRequest;
@@ -24,12 +24,13 @@ import com.alibaba.fastjson.JSONObject;
 public class UserController {
 
     @Resource
-    UserImpl userImpl;
+    UserService userService;
 
     @PostMapping("/register")
     ResponseEntity<ResponseVo> register(HttpServletRequest request) throws Exception {
+        // TODO 直接在参数中读取请求的body，eg: @RequestBody
         JSONObject jsonObject = JsonReader.receivePostBody(request);
-        ResponseVo responseVo = userImpl.register(jsonObject);
+        ResponseVo responseVo = userService.register(jsonObject);
         log.info("Request " + request.getRequestURI() + ": " + jsonObject.toJSONString());
         if (responseVo.isSuccess()) {
             return ResponseEntity.ok().body(responseVo);
@@ -42,7 +43,7 @@ public class UserController {
     @PostMapping("/login")
     ResponseEntity<ResponseVo> login(HttpServletRequest request) throws Exception {
         JSONObject jsonObject = JsonReader.receivePostBody(request);
-        ResponseVo responseVo = userImpl.login(jsonObject);
+        ResponseVo responseVo = userService.login(jsonObject);
         log.info("Request " + request.getRequestURI() + ": " + jsonObject.toJSONString());
         HttpHeaders responseHeaders = new HttpHeaders();
         if (responseVo.isSuccess()) {

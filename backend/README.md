@@ -2,4 +2,4 @@
 
 Springboot+fabric-gateway-java连接网络
 
-与前端交互
+SpringMVC与前端请求交互

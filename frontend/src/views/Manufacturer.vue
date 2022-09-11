@@ -44,13 +44,10 @@
     import Header from "../components/Header.vue"
 
     export default {
-        name: 'Home',
+        name: "Manufacturer",
         components: {
             Header
         },
-        methods: {},
-        mounted() {
-        }
     }
 </script>
 

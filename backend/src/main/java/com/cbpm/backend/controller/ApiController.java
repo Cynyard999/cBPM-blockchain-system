@@ -1,6 +1,6 @@
 package com.cbpm.backend.controller;
 
-import com.cbpm.backend.serviceImpl.ApiImpl;
+import com.cbpm.backend.service.ApiService;
 import com.cbpm.backend.util.JsonReader;
 import com.cbpm.backend.vo.ResponseVo;
 import javax.servlet.http.HttpServletRequest;
@@ -16,7 +16,7 @@ import com.alibaba.fastjson.JSONObject;
 public class ApiController {
 
     @Resource
-    ApiImpl apiImpl;
+    ApiService apiService;
 
 
     /**
@@ -31,7 +31,7 @@ public class ApiController {
         String orgType = request.getAttribute("orgType").toString();
         JSONObject jsonObject = JsonReader.receivePostBody(request);
         jsonObject.put("orgType", orgType);
-        ResponseVo responseVo = apiImpl.invoke(jsonObject);
+        ResponseVo responseVo = apiService.invoke(jsonObject);
         log.info("Request " + request.getRequestURI() + ": " + jsonObject.toJSONString());
         if (responseVo.isSuccess()) {
             return ResponseEntity.ok().body(responseVo);
@@ -52,7 +52,7 @@ public class ApiController {
         String orgType = request.getAttribute("orgType").toString();
         JSONObject jsonObject = JsonReader.receivePostBody(request);
         jsonObject.put("orgType", orgType);
-        ResponseVo responseVo = apiImpl.query(jsonObject);
+        ResponseVo responseVo = apiService.query(jsonObject);
         log.info("Request " + request.getRequestURI() + ": " + jsonObject.toJSONString());
         if (responseVo.isSuccess()) {
             return ResponseEntity.ok().body(responseVo);

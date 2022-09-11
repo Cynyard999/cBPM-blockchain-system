@@ -1,6 +1,6 @@
-import {createRouter, createWebHistory} from 'vue-router'
-import {ElMessage} from 'element-plus'
-import 'element-plus/dist/index.css'
+import {createRouter, createWebHistory} from 'vue-router';
+import {ElMessage} from 'element-plus';
+import 'element-plus/dist/index.css';
 
 const routerHistory = createWebHistory();
 
@@ -39,20 +39,20 @@ const router = createRouter({
                     components: {
                         manufacturerSubpage: () => import("../components/cbpmchannel/cma-private-collection/DeliveryDetailsPanel.vue")
                     }
-                },
+                }
             ],
             beforeEnter: (to, from, next) => {
                 let userInfo = JSON.parse(window.localStorage.getItem("user"));
                 if (userInfo['orgType'] !== 'manufacturer') {
                     ElMessage({
                         message: '企业信息不匹配',
-                        type: 'warning',
+                        type: 'warning'
                     });
                     next('/home');
                 } else {
-                    next()
+                    next();
                 }
-            },
+            }
         },
         {
             path: '/carrier',
@@ -78,20 +78,20 @@ const router = createRouter({
                     components: {
                         carrierSubpage: () => import("../components/cbpmchannel/sc-private-collection/DeliveryOrdersPanel.vue")
                     }
-                },
+                }
             ],
             beforeEnter: (to, from, next) => {
                 let userInfo = JSON.parse(window.localStorage.getItem("user"));
                 if (userInfo['orgType'] !== 'carrier') {
                     ElMessage({
                         message: '企业信息不匹配',
-                        type: 'warning',
+                        type: 'warning'
                     });
                     next('/home');
                 } else {
-                    next()
+                    next();
                 }
-            },
+            }
         },
         {
             path: '/supplier',
@@ -117,20 +117,20 @@ const router = createRouter({
                     components: {
                         supplierSubpage: () => import("../components/cbpmchannel/sc-private-collection/DeliveryOrdersPanel.vue")
                     }
-                },
+                }
             ],
             beforeEnter: (to, from, next) => {
                 let userInfo = JSON.parse(window.localStorage.getItem("user"));
                 if (userInfo['orgType'] !== 'supplier') {
                     ElMessage({
                         message: '企业信息不匹配',
-                        type: 'warning',
+                        type: 'warning'
                     });
                     next('/home');
                 } else {
-                    next()
+                    next();
                 }
-            },
+            }
         },
         {
             path: '/middleman',
@@ -170,20 +170,20 @@ const router = createRouter({
                     components: {
                         middlemanSubpage: () => import("../components/cbpmchannel/mic-private-collection/DeliveryArrangementsPanel.vue")
                     }
-                },
+                }
             ],
             beforeEnter: (to, from, next) => {
                 let userInfo = JSON.parse(window.localStorage.getItem("user"));
                 if (userInfo['orgType'] !== 'middleman') {
                     ElMessage({
                         message: '企业信息不匹配',
-                        type: 'warning',
+                        type: 'warning'
                     });
                     next('/home');
                 } else {
-                    next()
+                    next();
                 }
-            },
+            }
         }
     ]
 });
@@ -192,11 +192,11 @@ router.beforeEach((to, from, next) => {
     if ((to.path !== "/home" && to.path !== "/") && (window.localStorage.getItem("user") === null || window.localStorage.getItem("user") === undefined)) {
         ElMessage({
             message: '请先登录',
-            type: 'warning',
+            type: 'warning'
         });
         next('/home');
     } else {
         next();
     }
 });
-export default router
+export default router;

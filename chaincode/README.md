@@ -2,7 +2,15 @@
 
 
 
-存放不同channel上的智能合约项目
+## prod
+
+项目使用的chainnel和chaincode
+
+- chaincode-cbpm: 部署在项目中四个organization使用的channel，部署在cbpmchannel
+
+## test
+
+用于测试的channel和chaincode
 
 - chaincode-carrier-manufacturer: 运输商-生产商智能合约，部署在cmachannel
 - chaincode-manufacturer-middleman: 生产商-中间商智能合约，部署在mamichannel

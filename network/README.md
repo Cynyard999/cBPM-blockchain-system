@@ -1,8 +1,12 @@
-- cbpm: orderer, admin
-- manufacturer: peer1, peer2, admin
-- supplier: peer1, peer2, admin
-- carrier: peer1, peer2, admin
-- middleman: peer1, peer2, admin
+# Network Nodes
+
+- ca-tls
+- cbpm: orderer-cbpm, cbpm-ca
+- manufacturer: peer1, peer2, manufacturer-ca,  couchdb1
+- supplier: peer1, peer2, supplier-ca, couchdb2
+- carrier: peer1, peer2, carrier-ca, couchdb3
+- middleman: peer1, peer2, middleman-ca, couchdb4
+- cli
 
 
 
@@ -22,11 +26,12 @@
 ```shell
 ### 更新链码
 docker exec -it cli /bin/bash
+
 # 在容器中
 export CHANNEL=cbpmchannel
 export CHAINCODE=chaincode-cbpm
 export CHAINCODE_LANG=golang
-export CHAINCODE_VERSION=1.1
+export CHAINCODE_VERSION=$SPECIFIED_VERSION
 export CHAINCODE_NAME=cbpmchaincode
 
 ./scripts/upgrade-chaincode.sh
